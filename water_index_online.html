@@ -835,7 +835,7 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
           <th style="width:60px;">桶数</th>
           <th style="width:100px;">单价</th>
           <th style="width:60px;text-align:right;">金额</th>
-          <th style="width:40px;"></th>
+          <th style="width:48px;">排序</th>
         </tr>
       </thead>
       <tbody id="表体"></tbody>
@@ -1503,7 +1503,7 @@ const CLOUD = {
     this._showStatus('\ud83d\udd04 \u540c\u6b65\u4e2d...');
     try {
       const map = [
-        ['village_data', 'villages', '\u5356\u6c34_village_data'],
+        ['village_data', 'villages', '\u5356\u6c34_village_data'],\n        ['village_order', 'village_order', '\u5356\u6c34_village_order'],
         ['expense_data', 'expenses', '\u5356\u6c34_expense_data'],
         ['custom_villages', 'customVillages', '\u5356\u6c34_custom_villages'],
         ['custom_expenses', 'customExpenses', '\u5356\u6c34_custom_expenses'],
@@ -1556,7 +1556,19 @@ let _dataCache = { villages: {}, expenses: {}, customVillages: [], customExpense
 let 当前欠款筛选 = 'unpaid';
 
 // 基础数据
-let 村庄 = ['西皮溪','文西新村','文昌阁','黄家团','兰家坪','滑石江','官村','锦和镇','锦和集镇','寒池坳','谭家寨','岩门镇','岩门满家','岩门高速桥','岩门街上','大路坳','大塘','城东一期','城东二期','城东三期','马兰廉租房','枫木林','新村镇','赠送自用','农业局','陀里','龙公桥','平原5组','宋家湾','宋家湾麻将馆','下桐油坡','锦和粉店','锦和西街社区','锦和加油站','后海广告','锦和梁家村','杨家庄','楠木桥','运管所附近'];
+let _默认村庄 = ['西皮溪','文西新村','文昌阁','黄家团','兰家坪','滑石江','官村','锦和镇','锦和集镇','寒池坳','谭家寨','岩门镇','岩门满家','岩门高速桥','岩门街上','大路坳','大塘','城东一期','城东二期','城东三期','马兰廉租房','枫木林','新村镇','赠送自用','农业局','陀里','龙公桥','平原5组','宋家湾','宋家湾麻将馆','下桐油坡','锦和粉店','锦和西街社区','锦和加油站','后海广告','锦和梁家村','杨家庄','楠木桥','运管所附近'];
+function 读村庄列表() {
+  try {
+    let saved = JSON.parse(localStorage.getItem('卖水_village_order'));
+    if (saved && saved.length > 0) return saved;
+  } catch(e) {}
+  return _默认村庄.slice();
+}
+function 存村庄列表(arr) {
+  localStorage.setItem('卖水_village_order', JSON.stringify(arr));
+  云同步('village_order', arr);
+}
+let 村庄 = 读村庄列表();
 let 固定开支 = ['⛽加油','🍚吃饭','🎮零花钱'];
 
 // ========== 数据读写（纯本地存储）==========
@@ -1564,7 +1576,7 @@ function 读自定义() { return _dataCache.customVillages; }
 function 存自定义(l) { _dataCache.customVillages = l; localStorage.setItem('卖水_custom_villages', JSON.stringify(l)); 云同步('custom_villages', l); }
 function 读自定义开支() { return _dataCache.customExpenses; }
 function 存自定义开支(l) { _dataCache.customExpenses = l; localStorage.setItem('卖水_custom_expenses', JSON.stringify(l)); 云同步('custom_expenses', l); }
-function 获取所有村庄() { return 村庄.concat(读自定义()); }
+function 获取所有村庄() { let list = 读村庄列表(); let custom = 读自定义(); custom.forEach(function(c) { if (list.indexOf(c) === -1) list.push(c); }); return list; }
 function 获取所有开支项() { return 固定开支.concat(读自定义开支()); }
 function 读数据() { return _dataCache.villages; }
 function 存数据(d) { CloudSync.push(); _dataCache.villages = d; localStorage.setItem('卖水_village_data', JSON.stringify(d)); 云同步('village_data', d); }
@@ -1928,7 +1940,11 @@ function 加载当天() {
     let 价按钮 = '<span class="price-btn '+(价==4?'p4':'')+'" onclick="设价(\''+v+'\',4,'+i+')">4元</span><span class="price-btn '+(价==5?'p5':'')+'" onclick="设价(\''+v+'\',5,'+i+')">5元</span><span class="price-btn" onclick="自定额(\''+v+'\','+i+')">自定</span>';
     let 是否自定义 = 村庄.indexOf(v) == -1;
     let 序号 = 是否自定义 ? '✚' : (i<9?'0':'')+(i+1);
-    html += '<tr id="行_'+i+'"><td style="color:'+(是否自定义?'#2d8a4e':'#999')+';font-size:13px;">'+序号+'</td><td class="vname">'+v+'</td><td><input class="vinput" type="number" min="0" step="1" value="'+(d.桶||'')+'" oninput="更新('+i+')" onfocus="this.select()" placeholder="0"></td><td><div class="price-quick">'+价按钮+'</div><input class="vinput vprice" type="number" min="0" step="0.1" value="'+(d.价||'')+'" oninput="更新('+i+')" onfocus="this.select()" placeholder="价" style="margin-top:4px;font-size:14px;"></td><td class="vmoney" id="钱_'+i+'">'+(钱>0?钱:'')+'</td><td style="text-align:center;">'+(是否自定义 ? '<button class="del-btn" onclick="删除自定义('+i+')" title="移除此村">✕</button>' : '')+'</td></tr>';
+    let 排序按钮 = '<div style="display:flex;flex-direction:column;gap:1px;">';
+    排序按钮 += '<button style="border:none;background:none;cursor:pointer;font-size:11px;padding:0 2px;line-height:14px;color:#888;" onclick="上移村庄('+i+')" title="上移">▲</button>';
+    排序按钮 += '<button style="border:none;background:none;cursor:pointer;font-size:11px;padding:0 2px;line-height:14px;color:#888;" onclick="下移村庄('+i+')" title="下移">▼</button>';
+    排序按钮 += '</div>';
+    html += '<tr id="行_'+i+'"><td style="color:'+(是否自定义?'#2d8a4e':'#999')+';font-size:13px;">'+序号+'</td><td class="vname">'+v+'</td><td><input class="vinput" type="number" min="0" step="1" value="'+(d.桶||'')+'" oninput="更新('+i+')" onfocus="this.select()" placeholder="0"></td><td><div class="price-quick">'+价按钮+'</div><input class="vinput vprice" type="number" min="0" step="0.1" value="'+(d.价||'')+'" oninput="更新('+i+')" onfocus="this.select()" placeholder="价" style="margin-top:4px;font-size:14px;"></td><td class="vmoney" id="钱_'+i+'">'+(钱>0?钱:'')+'</td><td style="text-align:center;">'+排序按钮+'<button class="del-btn" onclick="删除村庄('+i+')" title="移除此村">✕</button></td></tr>';
   }
   html += '<tr class="total-row"><td></td><td>📊 合计</td><td class="total-num" id="合计桶">'+总桶+'</td><td></td><td class="total-money" id="合计钱">'+总钱+'</td><td></td></tr>';
   html += '<tr class="add-row"><td style="text-align:center;color:#2d8a4e;font-size:16px;">➕</td><td><input class="vinput" id="新增村名" placeholder="填村镇名" style="font-size:14px;font-weight:500;"></td><td><input class="vinput" id="新增桶数" type="number" min="0" step="1" placeholder="桶数" style="font-size:14px;"></td><td><input class="vinput" id="新增价格" type="number" min="0" step="0.1" placeholder="单价" style="font-size:14px;"></td><td style="text-align:center;"><button class="add-btn" onclick="添加自定义()" title="添加此村">＋</button></td><td></td></tr>';
@@ -1982,14 +1998,59 @@ function 添加自定义() {
   存数据(all); 加载当天();
 }
 
-function 删除自定义(idx) {
-  if (!confirm('确定移除此村镇？数据不会丢失，只是不再显示。')) return;
+function 删除村庄(idx) {
   let allV = 获取所有村庄();
   let 村名 = allV[idx];
   if (!村名) return;
+  if (!confirm('确定移除「'+村名+'」？历史数据不会丢失，只是不再显示。')) return;
+  // Remove from custom list if present
   let 自定义 = 读自定义();
-  let i = 自定义.indexOf(村名);
-  if (i != -1) { 自定义.splice(i, 1); 存自定义(自定义); }
+  let ci = 自定义.indexOf(村名);
+  if (ci != -1) { 自定义.splice(ci, 1); 存自定义(自定义); }
+  // Remove from village order list
+  let list = 读村庄列表();
+  let li = list.indexOf(村名);
+  if (li != -1) { list.splice(li, 1); 存村庄列表(list); }
+  加载当天();
+}
+function 上移村庄(idx) {
+  if (idx <= 0) return;
+  let list = 读村庄列表();
+  let custom = 读自定义();
+  // Combine to get full list with order
+  let full = 获取所有村庄();
+  let name = full[idx];
+  let prevName = full[idx-1];
+  // Reorder in the saved list
+  let li = list.indexOf(name);
+  let pi = list.indexOf(prevName);
+  if (li !== -1 && pi !== -1) {
+    list.splice(pi, 0, list.splice(li, 1)[0]);
+    存村庄列表(list);
+  } else if (li === -1) {
+    // name is custom, insert before prevName in list
+    list.splice(pi, 0, name);
+    存村庄列表(list);
+  }
+  加载当天();
+}
+function 下移村庄(idx) {
+  let full = 获取所有村庄();
+  if (idx >= full.length - 1) return;
+  let list = 读村庄列表();
+  let name = full[idx];
+  let nextName = full[idx+1];
+  let li = list.indexOf(name);
+  let ni = list.indexOf(nextName);
+  if (li !== -1 && ni !== -1) {
+    list.splice(ni+1, 0, list.splice(li, 1)[0]);
+    存村庄列表(list);
+  } else if (li === -1) {
+    // name is custom, insert after nextName in list
+    let insertAt = ni !== -1 ? ni + 1 : list.length;
+    list.splice(insertAt, 0, name);
+    存村庄列表(list);
+  }
   加载当天();
 }
 
