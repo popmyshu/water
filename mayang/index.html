@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="麻阳信息网-麻阳苗族自治县本地便民信息平台，免费发布招聘求职、房屋租售、二手交易、顺风拼车">
+<title>麻阳信息网 - 麻阳本地便民信息平台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;padding-bottom:70px}
+.page{display:none}.page.active{display:block}
+.header{background:linear-gradient(135deg,#1a73e8,#1557b0);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:100}
+.header-top{display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:18px;font-weight:700}
+.search-bar{display:flex;background:rgba(255,255,255,0.2);border-radius:20px;padding:6px 12px;margin-top:8px}
+.search-bar input{background:0;border:0;color:#fff;flex:1;outline:0;font-size:14px}
+.search-bar input::placeholder{color:rgba(255,255,255,0.7)}
+.search-bar i{color:rgba(255,255,255,0.7)}
+.anti-scam{background:#fff3e0;color:#e65100;padding:6px 12px;font-size:12px;text-align:center;border-bottom:1px solid #ffe0b2}
+.anti-scam i{color:#ff6f00}
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px;background:#fff;margin:8px}
+.cat-item{text-align:center;padding:8px 4px;border-radius:8px;cursor:pointer}
+.cat-item:hover{background:#f0f4ff}
+.cat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:22px}
+.cat-name{font-size:12px;color:#333}
+.section-title{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 8px}
+.section-title h3{font-size:16px;font-weight:700;color:#333}
+.section-title a{font-size:12px;color:#1a73e8}
+.listing{padding:0 12px}
+.post-card{background:#fff;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.post-card .post-header{display:flex;align-items:center;margin-bottom:8px}
+.post-card .avatar{width:36px;height:36px;border-radius:50%;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a73e8;margin-right:10px;font-weight:700}
+.post-card .user-info{flex:1}
+.post-card .username{font-size:13px;font-weight:600;color:#333}
+.post-card .tag{font-size:11px;background:#e3f2fd;color:#1a73e8;padding:2px 8px;border-radius:4px}
+.post-card .time{font-size:11px;color:#999;margin-top:2px}
+.post-card .post-title{font-size:15px;font-weight:600;color:#222;margin-bottom:4px}
+.post-card .post-desc{font-size:13px;color:#666;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.post-card .post-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid #f0f0f0;font-size:12px;color:#999}
+.post-card .post-meta .price{color:#e53935;font-weight:700;font-size:14px}
+.post-card .post-meta .views i{margin-right:3px}
+.post-card .badge-top{background:#ff6f00;color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;margin-right:4px}
+.banner{background:linear-gradient(135deg,#667eea,#764ba2);margin:8px 12px;border-radius:12px;padding:16px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.banner h4{font-size:16px;font-weight:700}
+.banner p{font-size:12px;opacity:0.9;margin-top:4px}
+.banner .btn{background:#fff;color:#667eea;border:0;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid #e0e0e0;z-index:200;padding:4px 0;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav a{flex:1;text-align:center;padding:6px 0;color:#999;text-decoration:none;font-size:11px}
+.bottom-nav a i{display:block;font-size:20px;margin-bottom:2px}
+.bottom-nav a.active{color:#1a73e8}
+.btn-post{position:fixed;bottom:80px;right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#ff6f00,#e65100);color:#fff;border:0;font-size:24px;box-shadow:0 4px 12px rgba(230,81,0,0.4);cursor:pointer;z-index:150;display:flex;align-items:center;justify-content:center}
+.chat-btn{position:fixed;bottom:80px;left:16px;width:48px;height:48px;border-radius:50%;background:#1a73e8;color:#fff;border:0;font-size:20px;box-shadow:0 4px 12px rgba(26,115,232,0.4);cursor:pointer;z-index:150;display:flex;align-items:center;justify-content:center}
+.chat-box{position:fixed;bottom:140px;left:16px;right:16px;max-height:400px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:200;display:none;flex-direction:column;overflow:hidden}
+.chat-box.show{display:flex}
+.chat-header{background:#1a73e8;color:#fff;padding:10px 14px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.chat-header .close-btn{background:0;border:0;color:#fff;font-size:18px;cursor:pointer}
+.chat-msg{flex:1;padding:10px;overflow-y:auto;max-height:280px;min-height:200px}
+.chat-msg .msg{background:#f0f4ff;padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:13px;line-height:1.5;max-width:85%}
+.chat-msg .msg.bot{align-self:flex-start;border-bottom-left-radius:2px}
+.chat-msg .msg.user{background:#1a73e8;color:#fff;align-self:flex-end;border-bottom-right-radius:2px;margin-left:auto}
+.chat-input-bar{display:flex;padding:8px;border-top:1px solid #e0e0e0}
+.chat-input-bar input{flex:1;border:1px solid #ddd;border-radius:20px;padding:8px 12px;outline:0;font-size:13px}
+.chat-input-bar button{background:#1a73e8;color:#fff;border:0;border-radius:50%;width:36px;height:36px;margin-left:8px;cursor:pointer}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:300;display:none}
+.modal-overlay.show{display:block}
+.modal-content{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:16px 16px 0 0;z-index:301;max-height:85vh;overflow-y:auto;padding:20px;display:none}
+.modal-content.show{display:block}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0}
+.form-group{margin-bottom:14px}
+.form-group label{font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:0;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a73e8}
+.form-group textarea{resize:vertical;min-height:80px}
+.btn-submit{width:100%;padding:12px;background:linear-gradient(135deg,#ff6f00,#e65100);color:#fff;border:0;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer}
+.btn-submit:hover{opacity:0.9}
+.shop-card{background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;gap:12px}
+.shop-card .shop-img{width:80px;height:80px;border-radius:8px;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0}
+.shop-card .shop-info{flex:1}
+.shop-card .shop-name{font-size:15px;font-weight:700;color:#333}
+.shop-card .shop-desc{font-size:12px;color:#888;margin-top:4px}
+.shop-card .shop-phone{font-size:12px;color:#1a73e8;margin-top:4px}
+.shop-card .shop-tag{font-size:11px;background:#fff3e0;color:#e65100;padding:1px 6px;border-radius:3px;display:inline-block;margin-top:4px}
+.empty-state{text-align:center;padding:40px 20px;color:#999}
+.empty-state i{font-size:48px;margin-bottom:12px;color:#ddd}
+.tel-book{padding:12px}
+.tel-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#fff;border-radius:8px;margin-bottom:6px}
+.tel-item .tel-name{font-size:14px;font-weight:600;color:#333}
+.tel-item .tel-num{font-size:13px;color:#1a73e8}
+.category-tabs{display:flex;overflow-x:auto;padding:8px 12px;gap:6px;background:#fff;margin-top:4px}
+.category-tabs::-webkit-scrollbar{display:none}
+.category-tabs .tab{padding:5px 14px;border-radius:16px;font-size:13px;white-space:nowrap;border:1px solid #ddd;cursor:pointer;background:#fff;color:#666}
+.category-tabs .tab.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.detail-modal .post-detail{padding:16px}
+.detail-modal .detail-title{font-size:18px;font-weight:700;margin-bottom:8px}
+.detail-modal .detail-meta{font-size:13px;color:#888;margin-bottom:12px}
+.detail-modal .detail-body{font-size:14px;line-height:1.8;color:#333}
+.detail-modal .detail-contact{background:#f5f5f5;padding:12px;border-radius:8px;margin-top:12px}
+.detail-modal .detail-contact p{margin-bottom:4px;font-size:13px}
+@media(min-width:768px){body{max-width:480px;margin:0 auto;border-left:1px solid #e0e0e0;border-right:1px solid #e0e0e0;min-height:100vh}}
+.phone-hidden{color:#1a73e8;cursor:pointer;font-size:13px}
+.report-btn{font-size:12px;color:#999;cursor:pointer}
+.report-btn:hover{color:#e53935}
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;display:none;animation:fadeIn 0.3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+
+<!-- 反诈提示 -->
+<div class="anti-scam"><i class="fas fa-shield-alt"></i> 警惕：手工外发、刷单、贷款、押金类多为诈骗，请谨慎核实！</div>
+
+<!-- 头部 -->
+<header class="header">
+  <div class="header-top">
+    <span class="header-title"><i class="fas fa-map-marker-alt"></i> 麻阳信息网</span>
+    <div>
+      <button onclick="showModal('post')" style="background:rgba(255,255,255,0.2);border:0;color:#fff;padding:6px 12px;border-radius:16px;font-size:13px;cursor:pointer"><i class="fas fa-plus"></i> 发布</button>
+    </div>
+  </div>
+  <div class="search-bar">
+    <i class="fas fa-search"></i>
+    <input type="text" id="searchInput" placeholder="搜招聘、租房、二手..." onkeyup="searchPosts(this.value)">
+  </div>
+</header>
+
+<!-- 分类导航 -->
+<div class="cat-grid" id="catGrid">
+  <div class="cat-item" onclick="switchTab('all')">
+    <div class="cat-icon" style="background:#e3f2fd;color:#1a73e8"><i class="fas fa-home"></i></div>
+    <div class="cat-name">全部分类</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('job')">
+    <div class="cat-icon" style="background:#e8f5e9;color:#2e7d32"><i class="fas fa-briefcase"></i></div>
+    <div class="cat-name">招聘求职</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('house')">
+    <div class="cat-icon" style="background:#fce4ec;color:#c62828"><i class="fas fa-home"></i></div>
+    <div class="cat-name">房屋租售</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('second')">
+    <div class="cat-icon" style="background:#fff3e0;color:#e65100"><i class="fas fa-exchange-alt"></i></div>
+    <div class="cat-name">二手交易</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('ride')">
+    <div class="cat-icon" style="background:#e0f7fa;color:#00838f"><i class="fas fa-car"></i></div>
+    <div class="cat-name">顺风拼车</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('shop')">
+    <div class="cat-icon" style="background:#f3e5f5;color:#6a1b9a"><i class="fas fa-store"></i></div>
+    <div class="cat-name">商家推广</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('news')">
+    <div class="cat-icon" style="background:#e3f2fd;color:#1565c0"><i class="fas fa-newspaper"></i></div>
+    <div class="cat-name">本地资讯</div>
+  </div>
+  <div class="cat-item" onclick="switchTab('tel')">
+    <div class="cat-icon" style="background:#fbe9e7;color:#bf360c"><i class="fas fa-phone-alt"></i></div>
+    <div class="cat-name">便民电话</div>
+  </div>
+  <div class="cat-item" onclick="showModal('join')">
+    <div class="cat-icon" style="background:linear-gradient(135deg,#ff6f00,#e65100);color:#fff"><i class="fas fa-crown"></i></div>
+    <div class="cat-name">商家入驻</div>
+  </div>
+  <div class="cat-item" onclick="showModal('post')">
+    <div class="cat-icon" style="background:#e0f2f1;color:#00695c"><i class="fas fa-edit"></i></div>
+    <div class="cat-name">免费发布</div>
+  </div>
+</div>
+
+<!-- 推荐商家横幅 -->
+<div class="banner">
+  <div><h4><i class="fas fa-store-alt"></i> 入驻商家推荐</h4><p>推广您的生意，让更多麻阳人找到你</p></div>
+  <button class="btn" onclick="showModal('join')">立即入驻</button>
+</div>
+
+<!-- 分类标签切换 -->
+<div class="category-tabs" id="categoryTabs">
+  <span class="tab active" data-tab="all" onclick="switchTab('all')">全部</span>
+  <span class="tab" data-tab="job" onclick="switchTab('job')">招聘求职</span>
+  <span class="tab" data-tab="house" onclick="switchTab('house')">房屋租售</span>
+  <span class="tab" data-tab="second" onclick="switchTab('second')">二手交易</span>
+  <span class="tab" data-tab="ride" onclick="switchTab('ride')">顺风拼车</span>
+  <span class="tab" data-tab="shop" onclick="switchTab('shop')">商家推广</span>
+  <span class="tab" data-tab="news" onclick="switchTab('news')">本地资讯</span>
+</div>
+
+<!-- 信息列表 -->
+<div class="section-title">
+  <h3><i class="fas fa-list"></i> 最新信息</h3>
+  <a href="#" onclick="showModal('post')"><i class="fas fa-plus-circle"></i> 免费发布</a>
+</div>
+<div class="listing" id="postList"></div>
+
+<!-- 便民电话页面 -->
+<div class="tel-book" id="telPage" style="display:none;padding-top:0">
+  <div class="section-title"><h3><i class="fas fa-phone-alt"></i> 麻阳便民电话</h3></div>
+  <div id="telList"></div>
+</div>
+
+<!-- 底部导航 -->
+<nav class="bottom-nav">
+  <a href="#" class="active" onclick="showPage('home')"><i class="fas fa-home"></i>首页</a>
+  <a href="#" onclick="showPage('tel')"><i class="fas fa-phone-alt"></i>便民电话</a>
+  <a href="#" onclick="showModal('post')"><i class="fas fa-plus-circle"></i>发布</a>
+  <a href="#" onclick="showModal('join')"><i class="fas fa-crown"></i>商家入驻</a>
+  <a href="#" onclick="showAbout()"><i class="fas fa-info-circle"></i>关于</a>
+</nav>
+
+<!-- 发布按钮 -->
+<button class="btn-post" onclick="showModal('post')"><i class="fas fa-plus"></i></button>
+<!-- AI客服按钮 -->
+<button class="chat-btn" onclick="toggleChat()"><i class="fas fa-robot"></i></button>
+
+<!-- 聊天窗口 -->
+<div class="chat-box" id="chatBox">
+  <div class="chat-header">
+    <span><i class="fas fa-robot"></i> 麻阳AI小助手</span>
+    <button class="close-btn" onclick="toggleChat()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="chat-msg" id="chatMessages">
+    <div class="msg bot">你好！我是麻阳信息网AI小助手，有么子问题尽管问我！便民信息、发信息、找信息都可以~</div>
+  </div>
+  <div class="chat-input-bar">
+    <input type="text" id="chatInput" placeholder="说句话..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- 发布/详情/入驻 模态框 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+
+<!-- 发布表单 -->
+<div class="modal-content" id="postModal">
+  <div class="modal-title">免费发布信息</div>
+  <div class="form-group">
+    <label>信息分类 *</label>
+    <select id="postCategory"><option value="job">招聘求职</option><option value="house">房屋租售</option><option value="second">二手交易</option><option value="ride">顺风拼车</option><option value="shop">商家推广</option></select>
+  </div>
+  <div class="form-group">
+    <label>标题 *</label>
+    <input type="text" id="postTitle" placeholder="请输入标题">
+  </div>
+  <div class="form-group">
+    <label>详细内容 *</label>
+    <textarea id="postContent" placeholder="请详细描述..."></textarea>
+  </div>
+  <div class="form-group">
+    <label>联系人 *</label>
+    <input type="text" id="postContact" placeholder="您的称呼">
+  </div>
+  <div class="form-group">
+    <label>联系电话 *</label>
+    <input type="tel" id="postPhone" placeholder="手机号码">
+  </div>
+  <div class="form-group">
+    <label>价格（选填）</label>
+    <input type="text" id="postPrice" placeholder="如：面议 / 800元/月 / 2000元">
+  </div>
+  <p style="font-size:12px;color:#999;margin-bottom:10px"><i class="fas fa-info-circle"></i> 发布后需AI审核，正常情况1小时内自动发布。置顶推广30元/7天。</p>
+  <button class="btn-submit" onclick="submitPost()"><i class="fas fa-paper-plane"></i> 提交审核</button>
+</div>
+
+<!-- 详情模态框 -->
+<div class="modal-content detail-modal" id="detailModal">
+  <div style="text-align:right;margin-bottom:8px"><button onclick="closeModal()" style="background:0;border:0;font-size:18px;color:#999;cursor:pointer"><i class="fas fa-times"></i></button></div>
+  <div class="post-detail" id="postDetail"></div>
+</div>
+
+<!-- 入驻模态框 -->
+<div class="modal-content" id="joinModal">
+  <div class="modal-title"><i class="fas fa-crown" style="color:#ff6f00"></i> 商家入驻</div>
+  <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:12px;padding:20px;text-align:center;margin-bottom:16px">
+    <div style="font-size:36px;color:#e65100;margin-bottom:8px"><i class="fas fa-store"></i></div>
+    <div style="font-size:24px;font-weight:700;color:#e65100">399元/年</div>
+    <div style="font-size:13px;color:#bf360c;margin-top:4px">让你的生意被全麻阳人看到！</div>
+  </div>
+  <div style="margin-bottom:16px">
+    <div style="display:flex;gap:8px;margin-bottom:8px"><i class="fas fa-check-circle" style="color:#2e7d32"></i><span style="font-size:13px">专属商家页面展示</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><i class="fas fa-check-circle" style="color:#2e7d32"></i><span style="font-size:13px">信息置顶优先曝光</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><i class="fas fa-check-circle" style="color:#2e7d32"></i><span style="font-size:13px">无限次发布信息</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><i class="fas fa-check-circle" style="color:#2e7d32"></i><span style="font-size:13px">店铺电话+地图定位</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><i class="fas fa-check-circle" style="color:#2e7d32"></i><span style="font-size:13px">AI自动回复客户咨询</span></div>
+  </div>
+  <div class="form-group">
+    <label>店铺名称 *</label>
+    <input type="text" id="shopName" placeholder="如：西晃山矿泉水">
+  </div>
+  <div class="form-group">
+    <label>联系人 *</label>
+    <input type="text" id="shopContact" placeholder="您的称呼">
+  </div>
+  <div class="form-group">
+    <label>联系电话 *</label>
+    <input type="tel" id="shopPhone" placeholder="手机号码">
+  </div>
+  <div class="form-group">
+    <label>店铺介绍</label>
+    <textarea id="shopDesc" placeholder="介绍您的业务..."></textarea>
+  </div>
+  <p style="font-size:12px;color:#999;margin-bottom:10px"><i class="fas fa-info-circle"></i> 提交后AI客服会联系您办理入驻。</p>
+  <button class="btn-submit" onclick="submitJoin()" style="background:linear-gradient(135deg,#ff6f00,#e65100)"><i class="fas fa-crown"></i> 提交入驻申请</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== 数据层 ====================
+const STORAGE_KEY = 'mayang_info_data';
+
+function getDefaultData() {
+  return {
+    posts: [],
+    shops: [],
+    telBook: [
+      {name:'麻阳人民医院',phone:'0745-5822120'},
+      {name:'麻阳公安局',phone:'0745-5822345'},
+      {name:'麻阳汽车站',phone:'0745-5823456'},
+      {name:'麻阳自来水公司',phone:'0745-5824567'},
+      {name:'麻阳电力公司',phone:'0745-5825678'},
+      {name:'麻阳政务服务中心',phone:'0745-5826789'},
+      {name:'麻阳顺丰快递',phone:'0745-5827890'},
+      {name:'麻阳中通快递',phone:'0745-5828901'},
+      {name:'麻阳美团外卖',phone:'0745-5829012'},
+      {name:'麻阳饿了么',phone:'0745-5830123'},
+      {name:'西晃山矿泉水-华华',phone:'19269664548'},
+      {name:'麻阳出租车召车',phone:'0745-5888888'},
+      {name:'麻阳开锁服务',phone:'0745-5877777'},
+      {name:'麻阳家政保洁',phone:'0745-5866666'},
+      {name:'麻阳家电维修',phone:'0745-5855555'}
+    ],
+    reviewQueue: [],
+    nextId: 1000
+  };
+}
+
+function getData() {
+  try {
+    const d = localStorage.getItem(STORAGE_KEY);
+    if(d) return JSON.parse(d);
+  } catch(e){}
+  const def = getDefaultData();
+  seedData(def);
+  saveData(def);
+  return def;
+}
+
+function saveData(d) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+}
+
+function seedData(d) {
+  const now = Date.now();
+  const day = 86400000;
+  const jobs = [
+    {cat:'job',title:'麻阳湘荣商行招聘业务员',content:'底薪3500+提成+补助+年终奖，月休4天，要求有D证以上驾驶证，踏实守信。',contact:'满经理',phone:'192****4548',price:'3500+提成',user:'满经理',avatar:'👔',views:158,time:now-1*day},
+    {cat:'job',title:'蓝思科技直招普工',content:'入职奖励3000元+车费补贴+五险一金，月薪5500-7500元，年龄18-47岁。',contact:'胡经理',phone:'186****8008',price:'5500-7500',user:'胡经理',avatar:'👷',views:1420,time:now-2*day},
+    {cat:'job',title:'麻阳锦和镇招送货员',content:'招送货员一名，要求会骑三轮车，熟悉麻阳路线，吃苦耐劳，工资面议。',contact:'张老板',phone:'152****3456',price:'面议',user:'张老板',avatar:'🚚',views:89,time:now-3*day},
+    {cat:'job',title:'麻阳城东美容店招洗车工',content:'包吃住，年龄60岁以下，男女不限，新熟手均可，工资面议。',contact:'龙茂林',phone:'152****7890',price:'面议',user:'龙茂林',avatar:'🚗',views:56,time:now-4*day},
+    {cat:'job',title:'麻阳高村镇招文员',content:'熟练办公软件，月薪3000-4000，周末双休，麻阳县城上班。',contact:'李姐',phone:'135****2345',price:'3000-4000',user:'李姐',avatar:'📋',views:210,time:now-5*day},
+    {cat:'house',title:'麻阳城东电梯房三室两厅出租',content:'精装修，家具家电齐全，拎包入住，月租1200元，交通便利。',contact:'王先生',phone:'138****5678',price:'1200元/月',user:'王先生',avatar:'🏠',views:320,time:now-1*day},
+    {cat:'house',title:'老石桥附近一室一厅出租',content:'简装，带家具，交通便利，随时看房，月租500元。',contact:'曾女士',phone:'139****6789',price:'500元/月',user:'曾女士',avatar:'🔑',views:167,time:now-2*day},
+    {cat:'house',title:'麻阳步行街旺铺转让',content:'人流量大，适合餐饮、服装，面积50平，转让费面议。',contact:'陈老板',phone:'150****4567',price:'面议',user:'陈老板',avatar:'🏪',views:430,time:now-3*day},
+    {cat:'house',title:'锦和镇两室一厅出租',content:'新装修，干净整洁，月租400元，适合上班族。',contact:'刘叔',phone:'151****7890',price:'400元/月',user:'刘叔',avatar:'🏡',views:98,time:now-4*day},
+    {cat:'house',title:'麻阳中学附近陪读房出租',content:'两室一厅，离学校近，环境安静，月租600元。',contact:'杨姐',phone:'152****3456',price:'600元/月',user:'杨姐',avatar:'📚',views:245,time:now-5*day},
+    {cat:'second',title:'九成新电动车转让',content:'雅迪电动车，买来半年，续航60公里，骑得少，现低价转让。',contact:'小周',phone:'187****2345',price:'1500元',user:'小周',avatar:'🛵',views:89,time:now-1*day},
+    {cat:'second',title:'家用冰箱洗衣机出售',content:'搬家处理，海尔冰箱+小天鹅洗衣机，功能正常，打包价800元。',contact:'赵姐',phone:'136****5678',price:'800元',user:'赵姐',avatar:'📦',views:156,time:now-2*day},
+    {cat:'second',title:'儿童自行车八成新',content:'小孩长大了不用了，凤凰牌儿童自行车，带辅助轮，50元自取。',contact:'刘妈妈',phone:'152****8901',price:'50元',user:'刘妈妈',avatar:'🚲',views:67,time:now-3*day},
+    {cat:'second',title:'实木沙发一套处理',content:'七成新实木沙发，款式经典，自提，价格可议。',contact:'吴叔',phone:'138****1234',price:'600元',user:'吴叔',avatar:'🛋️',views:34,time:now-4*day},
+    {cat:'second',title:'二手空调1.5匹转让',content:'格力空调，去年买的，搬家带不走，冷暖两用，1200元。',contact:'小陈',phone:'158****5678',price:'1200元',user:'小陈',avatar:'❄️',views:210,time:now-5*day},
+    {cat:'ride',title:'麻阳→怀化 每天往返',content:'每天早上7点麻阳出发，下午5点怀化返回，可带人带货，15元/位。',contact:'老田',phone:'139****4567',price:'15元/位',user:'老田',avatar:'🚗',views:520,time:now-1*day},
+    {cat:'ride',title:'麻阳→长沙 周六拼车',content:'本周六早上出发去长沙，可坐3人，每人80元，有行李提前说。',contact:'阿强',phone:'152****6789',price:'80元/位',user:'阿强',avatar:'🚙',views:340,time:now-2*day},
+    {cat:'ride',title:'麻阳→凤凰古城 顺风车',content:'周五下午去凤凰，可带2人，每人30元。',contact:'小杨',phone:'187****1234',price:'30元/位',user:'小杨',avatar:'🏯',views:180,time:now-3*day},
+    {cat:'ride',title:'麻阳→吉首 每天有车',content:'每天上午9点麻阳出发去吉首，可带货，电话联系。',contact:'龙师傅',phone:'138****5678',price:'25元/位',user:'龙师傅',avatar:'🚐',views:430,time:now-4*day},
+    {cat:'ride',title:'麻阳→铜仁 拼车',content:'每天不定时发车去铜仁，可带小件货物，价格从优。',contact:'吴司机',phone:'150****9012',price:'35元/位',user:'吴司机',avatar:'🚘',views:290,time:now-5*day},
+    {cat:'shop',title:'西晃山天然矿泉水-华华送水',content:'麻阳本地天然矿泉水，5元/桶38斤，全城配送。固定路线：西皮溪→文西新村→文昌阁→锦和→岩门→城东',contact:'华华',phone:'19269664548',price:'5元/桶',user:'华华',avatar:'💧',views:890,time:now-1*day},
+    {cat:'shop',title:'麻阳好地方汽车美容',content:'专业洗车、美容、装饰，城东锦江新城二期门面，价格实惠。',contact:'龙老板',phone:'152****7890',price:'到店咨询',user:'龙老板',avatar:'🧼',views:230,time:now-2*day},
+    {cat:'shop',title:'麻阳满氏麻将馆',content:'农业局右边，环境舒适，欢迎麻阳牌友来玩。',contact:'满老板',phone:'152****3456',price:'到店',user:'满老板',avatar:'🀄',views:560,time:now-3*day},
+    {cat:'shop',title:'麻阳农资建材市场后海广告店',content:'专业广告设计制作，招牌、传单、横幅，价格合理。',contact:'田老板',phone:'138****5678',price:'按需报价',user:'田老板',avatar:'📢',views:180,time:now-4*day},
+    {cat:'shop',title:'麻阳锦和农资店',content:'化肥、农药、种子、农膜，批发零售，锦和集镇老街。',contact:'刘老板',phone:'139****9012',price:'到店咨询',user:'刘老板',avatar:'🌾',views:120,time:now-5*day},
+    {cat:'news',title:'麻阳2025年春季招聘会即将举办',content:'县人社局将于4月底在麻阳广场举办春季大型招聘会，预计50家企业参加。',contact:'县人社局',phone:'0745-5820123',price:'',user:'麻阳发布',avatar:'📰',views:560,time:now-1*day},
+    {cat:'news',title:'麻阳西晃山风景区周末迎客高峰',content:'周末天气晴好，西晃山风景区迎来大批游客，建议错峰出行。',contact:'景区管理处',phone:'0745-5823456',price:'',user:'麻阳发布',avatar:'🏔️',views:430,time:now-2*day},
+    {cat:'news',title:'麻阳2025年城乡医保缴费通知',content:'2025年城乡居民医保缴费截止日期为6月30日，请及时缴费。',contact:'县医保局',phone:'0745-5824567',price:'',user:'麻阳发布',avatar:'🏥',views:890,time:now-3*day},
+    {cat:'news',title:'麻阳锦和镇赶集日调整通知',content:'自5月1日起，锦和镇赶集日调整为每旬逢2、5、8日。',contact:'镇政府',phone:'0745-5834567',price:'',user:'麻阳发布',avatar:'📢',views:670,time:now-4*day}
+  ];
+  d.posts = jobs.map((j,i)=>({...j,id:d.nextId+i,status:'published',top:j.title.includes('西晃山')?true:false,time:j.time||(now-i*day)}));
+  d.nextId += jobs.length;
+  d.shops = [
+    {name:'西晃山天然矿泉水',contact:'华华',phone:'19269664548',desc:'麻阳本地天然山泉水，5元/桶38斤，城区配送，量大优惠。西晃山源头直取，天然健康！',tag:'推荐商家'},
+    {name:'麻阳好地方汽车美容',contact:'龙老板',phone:'152****7890',desc:'洗车打蜡、内饰清洁、汽车贴膜，城东锦江新城二期。',tag:'认证商家'},
+    {name:'麻阳满氏麻将馆',contact:'满老板',phone:'152****3456',desc:'环境舒适，棋牌娱乐，农业局右边满氏麻将馆。',tag:'人气商家'}
+  ];
+}
+
+// ==================== 渲染层 ====================
+function renderPosts(cat='all',search='') {
+  const data = getData();
+  let posts = data.posts.filter(p=>p.status==='published');
+  if(cat!=='all') posts = posts.filter(p=>p.cat===cat);
+  if(search) posts = posts.filter(p=>p.title.includes(search)||p.content.includes(search));
+  posts.sort((a,b)=>{
+    if(a.top && !b.top) return -1;
+    if(!a.top && b.top) return 1;
+    return b.time - a.time;
+  });
+  const list = document.getElementById('postList');
+  if(posts.length===0) {
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无信息</p><p style="font-size:13px;margin-top:8px"><a href="#" onclick="showModal(\'post\')" style="color:#1a73e8">点击发布第一条</a></p></div>';
+    return;
+  }
+  list.innerHTML = posts.map(p=>{
+    const timeAgo = getTimeAgo(p.time);
+    const priceHtml = p.price ? `<span class="price">${p.price}</span>` : '';
+    const topHtml = p.top ? '<span class="badge-top">置顶</span>' : '';
+    const catMap = {job:'招聘求职',house:'房屋租售',second:'二手交易',ride:'顺风拼车',shop:'商家推广',news:'本地资讯'};
+    return `<div class="post-card" onclick="showDetail(${p.id})">
+      <div class="post-header">
+        <div class="avatar">${p.avatar||'👤'}</div>
+        <div class="user-info">
+          <div><span class="tag">${catMap[p.cat]||p.cat}</span> ${topHtml}</div>
+          <div class="time">${p.user||'麻阳网友'} · ${timeAgo}</div>
+        </div>
+      </div>
+      <div class="post-title">${p.title}</div>
+      <div class="post-desc">${p.content}</div>
+      <div class="post-meta">
+        <div>${priceHtml}</div>
+        <div class="views"><i class="far fa-eye"></i> ${p.views||0} <span class="report-btn" onclick="event.stopPropagation();report(${p.id})"><i class="far fa-flag"></i></span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTels() {
+  const data = getData();
+  document.getElementById('telList').innerHTML = data.telBook.map(t=>
+    `<div class="tel-item"><div><div class="tel-name"><i class="fas fa-phone-alt" style="color:#1a73e8;margin-right:6px"></i>${t.name}</div></div><div class="tel-num">${t.phone}</div></div>`
+  ).join('');
+}
+
+function renderShops() {
+  const data = getData();
+  const banner = document.querySelector('.banner');
+  if(data.shops.length>0) {
+    const s = data.shops[0];
+    banner.innerHTML = `<div><h4><i class="fas fa-store-alt"></i> ${s.name}</h4><p>${s.desc}</p></div><button class="btn" onclick="showModal('join')">我也要入驻</button>`;
+  }
+  // Also render shop listings
+  const list = document.getElementById('postList');
+  const shopsHtml = data.shops.map(s=>
+    `<div class="shop-card">
+      <div class="shop-img"><i class="fas fa-store"></i></div>
+      <div class="shop-info">
+        <div class="shop-name">${s.name} ${s.tag?`<span class="shop-tag">${s.tag}</span>`:''}</div>
+        <div class="shop-desc">${s.desc}</div>
+        <div class="shop-phone"><i class="fas fa-phone-alt"></i> ${s.phone}</div>
+      </div>
+    </div>`
+  ).join('');
+  // Replace listing section if on shop tab
+  if(document.querySelector('#categoryTabs .tab.active')?.dataset?.tab==='shop') {
+    // shops rendered above in postList
+  }
+}
+
+// ==================== 交互层 ====================
+function switchTab(cat) {
+  document.querySelectorAll('.category-tabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===cat));
+  document.getElementById('telPage').style.display = cat==='tel'?'block':'none';
+  document.querySelector('.listing').style.display = cat==='tel'?'none':'block';
+  if(cat==='tel') { renderTels(); return; }
+  if(cat==='shop') {
+    const data = getData();
+    const list = document.getElementById('postList');
+    list.innerHTML = data.shops.map(s=>
+      `<div class="shop-card">
+        <div class="shop-img"><i class="fas fa-store"></i></div>
+        <div class="shop-info">
+          <div class="shop-name">${s.name} ${s.tag?`<span class="shop-tag">${s.tag}</span>`:''}</div>
+          <div class="shop-desc">${s.desc}</div>
+          <div class="shop-phone"><i class="fas fa-phone-alt"></i> ${s.phone}</div>
+          <div class="shop-desc" style="margin-top:6px;color:#1a73e8;font-size:12px"><i class="fas fa-crown"></i> 入驻商家</div>
+        </div>
+      </div>`
+    ).join('');
+    if(data.shops.length===0) list.innerHTML = '<div class="empty-state"><i class="fas fa-store"></i><p>暂无入驻商家</p><p style="font-size:13px;margin-top:8px"><a href="#" onclick="showModal(\'join\')" style="color:#1a73e8">立即入驻</a></p></div>';
+    return;
+  }
+  renderPosts(cat, document.getElementById('searchInput').value);
+}
+
+function searchPosts(q) {
+  const active = document.querySelector('#categoryTabs .tab.active')?.dataset?.tab||'all';
+  renderPosts(active, q);
+}
+
+function showModal(type) {
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('postModal').classList.toggle('show',type==='post');
+  document.getElementById('detailModal').classList.toggle('show',type==='detail');
+  document.getElementById('joinModal').classList.toggle('show',type==='join');
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal-content').forEach(m=>m.classList.remove('show'));
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function showDetail(id) {
+  const data = getData();
+  const p = data.posts.find(x=>x.id===id);
+  if(!p) return;
+  p.views = (p.views||0)+1;
+  saveData(data);
+  const catMap = {job:'招聘求职',house:'房屋租售',second:'二手交易',ride:'顺风拼车',shop:'商家推广',news:'本地资讯'};
+  const phoneHtml = p.phone ? `<p><strong>电话：</strong><span class="phone-hidden" onclick="this.textContent='${p.phone}'">点击显示</span></p>` : '';
+  document.getElementById('postDetail').innerHTML = `
+    <div class="detail-title">${p.title}</div>
+    <div class="detail-meta"><span class="tag">${catMap[p.cat]||p.cat}</span> · ${p.user||'麻阳网友'} · ${getTimeAgo(p.time)} · ${p.views}次浏览</div>
+    <div class="detail-body">${p.content.replace(/\n/g,'<br>')}</div>
+    <div class="detail-contact">
+      <p><strong>联系人：</strong>${p.contact||p.user||'未填'}</p>
+      ${phoneHtml}
+      ${p.price?`<p><strong>价格：</strong>${p.price}</p>`:''}
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn-submit" style="background:#1a73e8;padding:8px 20px;font-size:13px;width:auto" onclick="closeModal()"><i class="fas fa-check"></i> 知道了</button>
+    </div>
+  `;
+  showModal('detail');
+}
+
+function submitPost() {
+  const cat = document.getElementById('postCategory').value;
+  const title = document.getElementById('postTitle').value.trim();
+  const content = document.getElementById('postContent').value.trim();
+  const contact = document.getElementById('postContact').value.trim();
+  const phone = document.getElementById('postPhone').value.trim();
+  const price = document.getElementById('postPrice').value.trim();
+
+  if(!title||!content||!contact||!phone) {
+    showToast('请填写完整信息');
+    return;
+  }
+  // Anti-fraud check
+  const fraud = ['手工外发','刷单','日结','高薪','无需经验','押金','加盟','传销','赌博','贷款','日赚'];
+  for(const f of fraud) {
+    if(title.includes(f)||content.includes(f)) {
+      showToast('内容包含违规关键词，已被拦截');
+      return;
+    }
+  }
+
+  const data = getData();
+  const post = {
+    id: data.nextId++,
+    cat, title, content, contact, phone, price,
+    user: contact,
+    avatar: '👤',
+    views: 0,
+    time: Date.now(),
+    top: false,
+    status: 'pending'
+  };
+  data.posts.push(post);
+  data.reviewQueue.push(post.id);
+  saveData(data);
+  showToast('发布成功！正在AI审核中，预计1小时内发布');
+  closeModal();
+  document.querySelectorAll('#postModal input, #postModal textarea').forEach(e=>e.value='');
+  renderPosts();
+}
+
+function submitJoin() {
+  const name = document.getElementById('shopName').value.trim();
+  const contact = document.getElementById('shopContact').value.trim();
+  const phone = document.getElementById('shopPhone').value.trim();
+  const desc = document.getElementById('shopDesc').value.trim();
+  if(!name||!contact||!phone) { showToast('请填写完整信息'); return; }
+  const data = getData();
+  data.shops.push({name,contact,phone,desc:desc||'暂无介绍',tag:'新入驻'});
+  saveData(data);
+  showToast('入驻申请已提交！AI客服将尽快联系您');
+  closeModal();
+  document.querySelectorAll('#joinModal input, #joinModal textarea').forEach(e=>e.value='');
+}
+
+function report(id) {
+  showToast('已举报，AI审核员将处理');
+}
+
+// ==================== AI客服 ====================
+function toggleChat() {
+  const box = document.getElementById('chatBox');
+  box.classList.toggle('show');
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  const container = document.getElementById('chatMessages');
+  container.innerHTML += `<div class="msg user">${msg}</div>`;
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+  setTimeout(()=>{
+    const reply = getAIReply(msg);
+    container.innerHTML += `<div class="msg bot">${reply}</div>`;
+    container.scrollTop = container.scrollHeight;
+  },500+Math.random()*1000);
+}
+
+function getAIReply(msg) {
+  if(msg.includes('怎么发')||msg.includes('发布')||msg.includes('发信息')) {
+    return '点右下角那个"+"号或者底部导航的"发布"，填好信息提交就行，AI审核通过后就自动发布咯！有么子问题随时问我~';
+  }
+  if(msg.includes('价格')||msg.includes('多少钱')||msg.includes('收费')) {
+    return '置顶推广30块钱7天，商家入驻399一年，免费发布信息不要钱！麻阳本地真实信息平台，实在得很~';
+  }
+  if(msg.includes('人工')||msg.includes('真人')||msg.includes('客服')) {
+    return '我是麻阳信息网AI小助手，24小时在线！么子问题直接问我，高效又方便~ 需要人工的话可以打19269664548找华华。';
+  }
+  if(msg.includes('外地')||msg.includes('不是麻阳')||msg.includes('别的县')) {
+    return '不好意思，我们只做麻阳苗族自治县的本地便民信息哦~ 你是麻阳哪里的？我可以帮你找找本地的信息！';
+  }
+  if(msg.includes('骗子')||msg.includes('诈骗')||msg.includes('假的')) {
+    return '我们平台有AI反诈系统，手工外发、刷单、贷款、押金类的信息会自动拦截。看到可疑的可以直接点举报，AI审核员会处理！';
+  }
+  if(msg.includes('商家')||msg.includes('入驻')) {
+    return '商家入驻399一年，让你的生意被全麻阳人看到！专属店铺页面，还能无限发布信息，点击"商家入驻"按钮提交就行~';
+  }
+  if(msg.includes('招聘')||msg.includes('找工作')) {
+    return '点"招聘求职"分类，上面有很多麻阳本地的工作信息！你也可以免费发布求职信息，老板看到会联系你~';
+  }
+  if(msg.includes('电话')||msg.includes('号码')||msg.includes('联系方式')) {
+    return '底部导航点"便民电话"，里面有麻阳医院、派出所、快递、开锁、送水等实用电话，很方便的！';
+  }
+  if(msg.includes('你好')||msg.includes('嗨')||msg.includes('在吗')) {
+    return '在呢在呢！我是麻阳信息网AI小助手，有么子需要帮忙的？找信息、发信息、商家入驻，样样都行！';
+  }
+  return '你好！我是麻阳信息网AI小助手。找信息、发信息、商家入驻，有么子需要帮忙的尽管说！你也可以直接点下面的分类浏览~';
+}
+
+// ==================== 通用函数 ====================
+function getTimeAgo(t) {
+  const diff = Date.now() - t;
+  const mins = Math.floor(diff/60000);
+  if(mins<1) return '刚刚';
+  if(mins<60) return mins+'分钟前';
+  const hrs = Math.floor(mins/60);
+  if(hrs<24) return hrs+'小时前';
+  const days = Math.floor(hrs/24);
+  if(days<30) return days+'天前';
+  return Math.floor(days/30)+'个月前';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+
+function showPage(p) {
+  document.querySelectorAll('.bottom-nav a').forEach(a=>a.classList.toggle('active',a.textContent.trim().includes(p==='home'?'首页':p==='tel'?'电话':'关于')));
+  if(p==='home') { renderPosts(); document.getElementById('telPage').style.display='none'; }
+  if(p==='tel') { switchTab('tel'); }
+}
+
+function showAbout() {
+  showToast('麻阳信息网 v1.0 · AI全自动运营 · 麻阳本地便民信息平台');
+}
+
+// ==================== 初始化 ====================
+renderPosts();
+renderTels();
+</script>
+</body>
+</html>

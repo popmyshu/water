@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>西晃山 · 湖南麻阳 · 天然矿泉水之源</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Serif SC", serif;
+  background: #F5F0E8;
+  color: #2D3748;
+  line-height: 1.8;
+}
+/* 色彩变量 */
+:root {
+  --green: #5B8C5A;
+  --green-light: #7BA88E;
+  --green-dark: #3D6B3C;
+  --gray-water: #4A5568;
+  --blue-deep: #3D5A80;
+  --gold: #C9A96E;
+  --red-slight: #C23B22;
+  --paper: #F5F0E8;
+  --cloud: #F0F4F0;
+  --ink: #2D3748;
+  --tea: #718096;
+}
+/* 导航栏 */
+.navbar {
+  position: fixed; top:0; left:0; right:0; z-index:999;
+  background: rgba(53,73,58,0.92);
+  backdrop-filter: blur(8px);
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.navbar .logo {
+  font-size: 18px; font-weight: 700; color: #F5F0E8;
+  display: flex; align-items: center; gap: 8px;
+}
+.navbar .logo span { color: var(--gold); }
+.navbar .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+.navbar .nav-links a {
+  color: rgba(245,240,232,0.85);
+  text-decoration: none; font-size: 13px; padding: 4px 10px;
+  border-radius: 4px; transition: all 0.3s;
+}
+.navbar .nav-links a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.menu-toggle { display: none; background:none; border:none; color:#F5F0E8; font-size:24px; cursor:pointer; }
+
+/* Hero全屏首屏 */
+.hero {
+  height: 100vh; min-height: 600px;
+  background: linear-gradient(135deg, #2a3f2a 0%, #3D6B3C 30%, #5B8C5A 60%, #7BA88E 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset:0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(245,240,232,0.06)" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,138.7C672,128,768,160,864,176C960,192,1056,192,1152,170.7C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>') bottom/100% auto no-repeat;
+  pointer-events: none;
+}
+.hero-content { text-align: center; color: #F5F0E8; z-index:1; padding: 0 20px; }
+.hero-content h1 {
+  font-size: clamp(2.5rem,6vw,4.5rem);
+  font-weight: 900; letter-spacing: 6px;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  margin-bottom: 12px;
+}
+.hero-content .subtitle {
+  font-size: clamp(1rem,2.5vw,1.6rem);
+  opacity: 0.92; letter-spacing: 8px; margin-bottom: 30px;
+}
+.hero-content .tagline {
+  font-size: clamp(0.9rem,2vw,1.2rem);
+  opacity: 0.8; max-width: 600px; margin: 0 auto 40px;
+  line-height: 1.8;
+}
+.hero-btn {
+  display: inline-block; padding: 14px 40px;
+  background: var(--gold); color: #2D3748;
+  border-radius: 40px; text-decoration: none;
+  font-weight: 700; font-size: 16px;
+  transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.hero-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0,0,0,0.3); }
+.hero-scroll {
+  position: absolute; bottom: 30px; left:50%; transform:translateX(-50%);
+  color: rgba(245,240,232,0.7); font-size: 14px; animation: bounce 2s infinite;
+}
+@keyframes bounce { 0%,100% { transform:translateX(-50%) translateY(0); } 50% { transform:translateX(-50%) translateY(8px); } }
+
+/* 通用 sections */
+.section { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
+.section-title {
+  text-align: center; margin-bottom: 50px;
+  font-size: clamp(1.6rem,3vw,2.4rem);
+  font-weight: 800; color: var(--green-dark);
+  position: relative;
+}
+.section-title::after {
+  content: ''; display: block; width: 60px; height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--green-light));
+  margin: 12px auto 0; border-radius: 2px;
+}
+.section-subtitle {
+  text-align: center; color: var(--tea);
+  margin-top: -30px; margin-bottom: 50px;
+  font-size: 15px;
+}
+
+/* 首页栏目导览 - 六宫格 */
+.grid-6 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px; margin-top: 30px;
+}
+.grid-card {
+  background: white; border-radius: 16px; padding: 30px 20px;
+  text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  transition: all 0.3s; cursor: pointer;
+  text-decoration: none; color: var(--ink); display: block;
+}
+.grid-card:hover { transform: translateY(-6px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+.grid-card .icon { font-size: 36px; margin-bottom: 12px; }
+.grid-card h3 { font-size: 17px; margin-bottom: 6px; color: var(--green-dark); }
+.grid-card p { font-size: 13px; color: var(--tea); line-height: 1.6; }
+
+/* 风景 - 横向滚动卡片 */
+.scroll-x {
+  display: flex; gap: 20px; overflow-x: auto;
+  padding: 10px 0 20px; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-x::-webkit-scrollbar { height:6px; }
+.scroll-x::-webkit-scrollbar-thumb { background: var(--green-light); border-radius:3px; }
+.scroll-x::-webkit-scrollbar-track { background: transparent; }
+.scene-card {
+  min-width: 280px; max-width: 340px; flex-shrink: 0;
+  background: white; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  scroll-snap-align: start; transition: all 0.3s;
+}
+.scene-card:hover { transform: translateY(-4px); box-shadow: 0 6px 25px rgba(0,0,0,0.15); }
+.scene-card .img-placeholder {
+  height: 200px; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(255,255,255,0.7);
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+}
+.scene-card .card-body { padding: 18px; }
+.scene-card .card-body h4 { font-size: 16px; margin-bottom: 6px; color: var(--green-dark); }
+.scene-card .card-body p { font-size: 13px; color: var(--tea); line-height: 1.6; }
+.scene-card .card-body .tag {
+  display: inline-block; font-size: 11px; padding: 2px 10px;
+  border-radius: 12px; margin-top: 8px;
+  background: rgba(91,140,90,0.12); color: var(--green);
+}
+
+/* 历史民俗 - 卷轴风 */
+.roll-wrap {
+  position: relative;
+  background: linear-gradient(135deg, #f5f0e8, #ede4d6);
+  border: 2px solid var(--gold); border-radius: 8px;
+  padding: 40px 30px; margin: 20px 0;
+}
+.roll-wrap::before, .roll-wrap::after {
+  content: '⛰'; position: absolute; font-size: 28px; opacity: 0.6;
+}
+.roll-wrap::before { top: 10px; left: 15px; }
+.roll-wrap::after { bottom: 10px; right: 15px; transform: rotate(180deg); }
+.roll-wrap .roll-title {
+  font-size: 22px; color: var(--green-dark);
+  text-align: center; margin-bottom: 16px;
+  letter-spacing: 4px;
+}
+.roll-wrap p { font-size: 14px; color: var(--ink); line-height: 2; text-indent: 2em; }
+.roll-wrap .signature {
+  text-align: right; font-size: 13px; color: var(--tea);
+  margin-top: 16px; font-style: italic;
+}
+
+/* 水知识 - 信息卡片 */
+.info-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+.info-card {
+  background: white; border-radius: 12px; padding: 24px;
+  border-left: 4px solid var(--green);
+}
+.info-card h4 { font-size: 16px; color: var(--green-dark); margin-bottom: 8px; }
+.info-card p { font-size: 14px; color: var(--tea); line-height: 1.7; }
+.info-card .num {
+  font-size: 28px; font-weight: 800; color: var(--green);
+  margin-bottom: 4px;
+}
+
+/* 游玩攻略 - 时间线 */
+.timeline { position: relative; padding: 20px 0; }
+.timeline::before {
+  content: ''; position: absolute; left: 20px; top: 0; bottom: 0;
+  width: 3px; background: linear-gradient(to bottom, var(--gold), var(--green-light));
+  border-radius: 2px;
+}
+.timeline-item { display: flex; gap: 16px; margin-bottom: 30px; position: relative; }
+.timeline-item .dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--green); border: 3px solid var(--paper);
+  flex-shrink: 0; margin-top: 4px;
+  position: relative; z-index: 1;
+}
+.timeline-item .content { flex: 1; }
+.timeline-item .content h4 { font-size: 16px; color: var(--green-dark); margin-bottom: 4px; }
+.timeline-item .content p { font-size: 14px; color: var(--tea); line-height: 1.7; }
+.timeline-item .content .time-tag {
+  display: inline-block; font-size: 11px; padding: 2px 10px;
+  border-radius: 12px; background: var(--gold); color: #3D2E1A;
+  margin-bottom: 6px;
+}
+
+/* 生态保护 */
+.eco-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 40px; }
+.eco-stat {
+  background: white; border-radius: 12px; padding: 24px;
+  text-align: center;
+}
+.eco-stat .big { font-size: 36px; font-weight: 800; color: var(--green); }
+.eco-stat .big span { font-size: 16px; font-weight: 400; color: var(--tea); }
+.eco-stat p { font-size: 14px; color: var(--ink); margin-top: 8px; }
+
+/* 页尾 */
+.footer {
+  background: var(--green-dark); color: rgba(245,240,232,0.8);
+  text-align: center; padding: 40px 20px;
+  font-size: 14px; line-height: 2;
+}
+.footer strong { color: var(--gold); }
+.footer .brand { font-size: 18px; margin-bottom: 8px; color: #F5F0E8; }
+.footer a { color: var(--gold); text-decoration: none; }
+
+/* 返回顶部 */
+.gotop {
+  position: fixed; bottom: 30px; right: 20px; z-index: 99;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--green); color: white; border: none;
+  font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s; opacity: 0; transform: translateY(20px);
+  pointer-events: none;
+}
+.gotop.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.gotop:hover { background: var(--green-dark); }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .navbar .nav-links {
+    display: none; flex-direction: column; position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: rgba(53,73,58,0.97);
+    padding: 10px 20px;
+  }
+  .navbar .nav-links.open { display: flex; }
+  .menu-toggle { display: block; }
+  .grid-6 { grid-template-columns: repeat(2,1fr); }
+  .info-grid { grid-template-columns: 1fr; }
+  .eco-stats { grid-template-columns: 1fr; }
+  .section { padding: 50px 16px; }
+  .scene-card { min-width: 240px; }
+}
+@media (max-width: 480px) {
+  .grid-6 { grid-template-columns: 1fr; }
+  .eco-stats { grid-template-columns: 1fr; }
+  .roll-wrap { padding: 30px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="navbar" id="navbar">
+  <div class="logo">⛰️ <span>西晃山</span></div>
+  <button class="menu-toggle" onclick="toggleMenu()" aria-label="菜单">☰</button>
+  <div class="nav-links" id="navLinks">
+    <a href="#home">首页</a>
+    <a href="#scenery">风景</a>
+    <a href="#history">历史</a>
+    <a href="#water-knowledge">水知识</a>
+    <a href="#guide">攻略</a>
+    <a href="#eco">生态</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="hero-content">
+    <h1>西 晃 山</h1>
+    <div class="subtitle">湖南 · 麻阳 · 盘瓠故里</div>
+    <div class="tagline">
+      武陵山脉的绿色明珠 · 天然矿泉水之源<br>
+      云海之上的高山草甸 · 千年苗乡的生态秘境
+    </div>
+    <a href="#nav-1" class="hero-btn">🏔️ 开始探索</a>
+  </div>
+  <div class="hero-scroll">▼ 向下探索</div>
+</section>
+
+<!-- 首页栏目导览 -->
+<section class="section" id="nav-1">
+  <h2 class="section-title">探索西晃山</h2>
+  <p class="section-subtitle">五大板块，带您走进这座湘西神山</p>
+  <div class="grid-6">
+    <a href="#scenery" class="grid-card">
+      <div class="icon">🏞️</div>
+      <h3>风景名胜</h3>
+      <p>云海、草甸、原始森林、溪流山泉四大奇观</p>
+    </a>
+    <a href="#history" class="grid-card">
+      <div class="icon">📜</div>
+      <h3>历史民俗</h3>
+      <p>盘瓠文化、苗乡传说、千年民俗传承</p>
+    </a>
+    <a href="#water-knowledge" class="grid-card">
+      <div class="icon">💧</div>
+      <h3>水知识科普</h3>
+      <p>山泉水从何而来？森林如何涵养水源</p>
+    </a>
+    <a href="#guide" class="grid-card">
+      <div class="icon">🗺️</div>
+      <h3>游玩攻略</h3>
+      <p>路线推荐、四季美景、交通住宿全指南</p>
+    </a>
+    <a href="#eco" class="grid-card">
+      <div class="icon">🌿</div>
+      <h3>生态保护</h3>
+      <p>生物多样性、保护行动、人与自然和谐</p>
+    </a>
+  </div>
+</section>
+
+<!-- 风景名胜 -->
+<section class="section" id="scenery">
+  <h2 class="section-title">🏞️ 风景名胜</h2>
+  <p class="section-subtitle">云海之上 · 武陵深处的绿色仙境</p>
+  <div class="scroll-x">
+    <div class="scene-card">
+      <div class="img-placeholder">☁️ 西晃山云海</div>
+      <div class="card-body">
+        <h4>云海奇观</h4>
+        <p>海拔1400余米，常年云雾缭绕。清晨日出时分，云海翻涌如万马奔腾，霞光浸染层峦叠嶂，宛如仙境画卷。</p>
+        <span class="tag">📍 观日出最佳</span>
+      </div>
+    </div>
+    <div class="scene-card">
+      <div class="img-placeholder">🌿 高山草甸</div>
+      <div class="card-body">
+        <h4>高山草甸</h4>
+        <p>山顶千亩高山草甸，春夏绿草如茵，野花遍地；秋冬金草连天，大气磅礴。是户外露营、观星的绝佳去处。</p>
+        <span class="tag">📍 海拔1400m</span>
+      </div>
+    </div>
+    <div class="scene-card">
+      <div class="img-placeholder">🌲 原始森林</div>
+      <div class="card-body">
+        <h4>原始森林</h4>
+        <p>山体植被保存完好，古木参天，藤萝交错。松杉林、竹林、阔叶林层层迭迭，空气中负氧离子极高。</p>
+        <span class="tag">📍 天然氧吧</span>
+      </div>
+    </div>
+    <div class="scene-card">
+      <div class="img-placeholder">💧 溪流山泉</div>
+      <div class="card-body">
+        <h4>溪流山泉</h4>
+        <p>西晃山泉水清冽甘甜，是从深层花岗岩裂隙中涌出的优质山泉。天然矿泉水富含矿物质，口感纯净。</p>
+        <span class="tag">📍 水源地保护区</span>
+      </div>
+    </div>
+    <div class="scene-card">
+      <div class="img-placeholder">🏔️ 高山湿地</div>
+      <div class="card-body">
+        <h4>高山湿地</h4>
+        <p>山巅存有罕见的高山湿地生态系统，涵养水源、调节气候，是多种珍稀动植物的栖息家园。</p>
+        <span class="tag">📍 生态核心区</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 历史民俗 -->
+<section class="section" id="history">
+  <h2 class="section-title">📜 历史民俗</h2>
+  <p class="section-subtitle">千年苗乡 · 盘瓠传说 · 文化根脉</p>
+  <div class="roll-wrap">
+    <div class="roll-title">盘瓠文化与西晃山</div>
+    <p>麻阳是盘瓠文化的核心发源地之一。相传远古时期，盘瓠助帝喾平叛有功，娶帝喾之女，繁衍苗族先民。西晃山一带至今保留着丰富的盘瓠崇拜遗迹，苗族同胞世代传颂着先祖开山辟土的英雄故事。山中古庙遗址、祭坛石刻，无声诉说着千百年来苗乡人的信仰与敬畏。</p>
+    <p>每年农历三月三、六月六，山下各村寨仍举行隆重的祭祀活动——苗歌对唱、傩戏表演、祭祀盘瓠。锣鼓喧天，歌舞升平，是了解湘西苗族文化不可多得的活态窗口。</p>
+    <div class="signature">—— 麻阳苗族自治县 · 文化源流</div>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin-top:24px;">
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>🎭 苗族傩戏</h4>
+      <p>湘西古老的祭祀戏剧，被誉为"中国戏剧的活化石"。面具古朴夸张，唱腔高亢苍凉，展现苗族先民与自然神灵对话的原始信仰。</p>
+    </div>
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>🎶 苗歌对唱</h4>
+      <p>苗族无字传承的文化密码。山歌、情歌、古歌，曲调百转千回，歌词即兴创作。上山砍柴、下田劳作、节日聚会，处处有歌声。</p>
+    </div>
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>🍚 民俗节庆</h4>
+      <p>除了三月三、六月六，还有四月八（牛王节）、吃新节、苗年等。每家每户打糍粑、腌酸鱼、蒸腊肉，热情好客，淳朴动人。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 水知识科普 -->
+<section class="section" id="water-knowledge">
+  <h2 class="section-title">💧 水知识科普</h2>
+  <p class="section-subtitle">从雨滴到山泉——一滴水的奇妙旅程</p>
+  <div class="info-grid">
+    <div class="info-card">
+      <h4>🌧️ 山地水循环</h4>
+      <p>西晃山海拔1400余米，来自东南季风的水汽在爬升过程中遇冷凝结，形成丰富的降水。年均降雨量超过1600mm，为山泉提供了源源不断的补给。</p>
+    </div>
+    <div class="info-card">
+      <h4>🌲 森林涵养水源</h4>
+      <p>山体植被覆盖率高达95%以上。茂密的原始森林如同巨大的海绵——树冠截留雨水，枯枝落叶层吸收水分，根系固土保水，缓慢释放到地下。</p>
+    </div>
+    <div class="info-card">
+      <h4>⛰️ 花岗岩深层过滤</h4>
+      <p>西晃山体由数亿年花岗岩构成。雨水渗入岩层裂隙，经过漫长的深层运移和自然过滤，溶解了对人体有益的矿物质，最终从山腰裂隙中涌出。</p>
+    </div>
+    <div class="info-card">
+      <h4>🧪 天然矿泉水品质</h4>
+      <p>经检测，西晃山泉水呈天然弱碱性（pH 7.2-7.8），富含钙、镁、钾、偏硅酸等矿物质和微量元素。口感清冽甘甜，是真正的高品质天然山泉水。</p>
+    </div>
+  </div>
+  <div class="roll-wrap" style="margin-top:30px;">
+    <div class="roll-title">🌊 森林与水的共生关系</div>
+    <p>森林是"绿色水库"。一亩林地比一亩裸地多蓄水20吨。西晃山的每一滴山泉，都经历了"云→雨→林冠截留→枯落物吸持→土壤渗透→岩石裂隙运移→泉水涌出"的完整过程。保护森林，就是保护水源。每一桶西晃山矿泉水，背后都是整座山的生态守护。</p>
+  </div>
+</section>
+
+<!-- 游玩攻略 -->
+<section class="section" id="guide">
+  <h2 class="section-title">🗺️ 游玩攻略</h2>
+  <p class="section-subtitle">四季皆美 · 西晃山旅行完全指南</p>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="content">
+        <span class="time-tag">🌸 春季</span>
+        <h4>踏青赏花（3月-5月）</h4>
+        <p>山花烂漫，杜鵑滿山。登顶远眺，云海之上的高山草甸开始返青。山下油菜花金黄一片，苗寨炊烟袅袅，是最适合徒步的季节。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="content">
+        <span class="time-tag">🌿 夏季</span>
+        <h4>避暑纳凉（6月-8月）</h4>
+        <p>山中气温比山下低8-10°C，是避暑天堂。溪涧戏水、林间露营、山顶观星。清晨看云海日出，傍晚听松涛阵阵。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="content">
+        <span class="time-tag">🍂 秋季</span>
+        <h4>登高望远（9月-11月）</h4>
+        <p>天高云淡，层林尽染。秋天的西晃山色彩绚烂——金黄草甸、火红枫叶、墨绿松林交织。空气通透度最佳，极目远眺，群山连绵。</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="dot"></div>
+      <div class="content">
+        <span class="time-tag">❄️ 冬季</span>
+        <h4>雾凇雪景（12月-2月）</h4>
+        <p>海拔较高，冬季常有雾凇冰挂，银装素裹，宛若冰雪王国。雪后初晴，蓝天白雪交相辉映，是摄影爱好者的最爱。</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin-top:30px;">
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>🚗 交通指南</h4>
+      <p>从麻阳县城出发，经岩门镇、谭家寨乡约40分钟车程可至山脚。建议自驾前往，山路弯多，需谨慎驾驶。</p>
+    </div>
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>🏠 住宿推荐</h4>
+      <p>山下有苗家民宿可住，也可在山顶露营（需自带装备）。麻阳县城有多家酒店，价格实惠。</p>
+    </div>
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>🍲 美食特产</h4>
+      <p>麻阳冰糖橙、苗家腊肉、酸鱼、社饭、山野菜。别忘了带几桶西晃山天然矿泉水回去！</p>
+    </div>
+    <div class="info-card" style="border-left-color:var(--gold);">
+      <h4>💡 贴心提示</h4>
+      <p>山上海拔高温差大，带件外套。穿防滑鞋。山顶无商店，自带干粮和水。保护环境，垃圾带走。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 生态保护 -->
+<section class="section" id="eco">
+  <h2 class="section-title">🌿 生态保护</h2>
+  <p class="section-subtitle">守护绿水青山 · 造福子孙后代</p>
+  <div class="eco-stats">
+    <div class="eco-stat">
+      <div class="big">95%<span>+</span></div>
+      <p>森林覆盖率</p>
+    </div>
+    <div class="eco-stat">
+      <div class="big">1600<span>mm</span></div>
+      <p>年均降水量</p>
+    </div>
+    <div class="eco-stat">
+      <div class="big">200<span>+</span></div>
+      <p>珍稀动植物种类</p>
+    </div>
+  </div>
+  <div class="roll-wrap">
+    <div class="roll-title">🤝 保护行动倡议</div>
+    <p>西晃山是麻阳人民的母亲山，也是武陵山区重要的生态屏障。近年来，当地政府与村民共同努力，实施封山育林、水源保护区划定、退耕还林等举措，使西晃山的生态环境持续向好。</p>
+    <p>作为西晃山天然矿泉水的经营者，小财神始终坚持"取之于山，护之于山"的理念——每一桶水都来自严格保护的水源地，每一个塑料桶都回收循环使用。我们相信，只有保护好西晃山的一草一木，才能让这汪清泉世世代代流淌下去。</p>
+    <div class="signature">—— 西晃山守护者 · 小财神</div>
+  </div>
+</section>
+
+<!-- 页尾 -->
+<footer class="footer">
+  <div class="brand">⛰️ 西晃山 · <strong>天然矿泉水</strong></div>
+  <p>湖南麻阳苗族自治县 · 海拔1400m · 深层花岗岩裂隙山泉</p>
+  <p>配送热线：<strong>5元/桶 · 38斤</strong> 偏远地区另加2元</p>
+  <div style="margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.15);">
+    <p style="margin-bottom:4px;">📞 <strong>舒先生</strong>：<a href="tel:19269664548" style="color:var(--gold);">192-6966-4548</a></p>
+    <p style="margin-bottom:4px;">📱 微信号：<strong style="color:var(--gold);">舒先生</strong></p>
+    <p>🎵 抖音号：<strong style="color:var(--gold);">西晃山天然矿泉水</strong></p>
+    <div style="display:flex; justify-content:center; gap:24px; margin-top:16px; flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <img src="xihuanshan/images/wechat_qrcode.jpg" alt="微信二维码" style="width:140px; height:140px; border-radius:8px; border:2px solid rgba(255,255,255,0.2);">
+        <p style="font-size:12px; margin-top:4px; opacity:0.8;">📱 微信扫码联系</p>
+      </div>
+      <div style="text-align:center;">
+        <img src="xihuanshan/images/douyin_qrcode.jpg" alt="抖音二维码" style="width:140px; height:140px; border-radius:8px; border:2px solid rgba(255,255,255,0.2);">
+        <p style="font-size:12px; margin-top:4px; opacity:0.8;">🎵 抖音扫码关注</p>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:12px; font-size:12px; opacity:0.6;">© 2026 西晃山 · 小财神 · 守护每一滴山泉</p>
+</footer>
+
+<!-- 返回顶部 -->
+<button class="gotop" id="gotop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// 移动端菜单
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+// 点击导航链接后关闭菜单
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.getElementById('navLinks').classList.remove('open');
+  });
+});
+
+// 返回顶部按钮显示/隐藏
+window.addEventListener('scroll', function() {
+  const btn = document.getElementById('gotop');
+  if (window.scrollY > 300) {
+    btn.classList.add('show');
+  } else {
+    btn.classList.remove('show');
+  }
+});
+
+// 滚动导航高亮
+const sections = document.querySelectorAll('section[id], .hero');
+const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+window.addEventListener('scroll', function() {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 150;
+    if (window.scrollY >= top) {
+      current = section.getAttribute('id');
+    }
+  });
+  navLinks.forEach(link => {
+    link.style.color = link.getAttribute('href') === '#' + current
+      ? 'var(--gold)' : 'rgba(245,240,232,0.85)';
+  });
+});
+
+console.log('🏔️ 西晃山文旅网站加载完成！');
+console.log('💧 天然矿泉水 · 小财神出品');
+</script>
+</body>
+</html>

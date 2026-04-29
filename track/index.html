@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🚐 小财神轨迹</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f0f2f5;overflow:hidden;height:100dvh;width:100vw;-webkit-user-select:none;user-select:none}
+#app{display:flex;flex-direction:column;height:100dvh}
+.header{background:linear-gradient(135deg,#FF9843,#FF6B6B);color:#fff;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0;z-index:1001;box-shadow:0 2px 10px rgba(255,107,107,.3)}
+.header-text{flex:1;min-width:0}
+.header-text h1{font-size:15px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.header-text p{font-size:10px;opacity:.9;margin-top:1px}
+.hbtn{background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 10px;border-radius:14px;font-size:11px;cursor:pointer;flex-shrink:0}
+.hbtn:active{background:rgba(255,255,255,.4)}
+#map{flex:1;min-height:0}
+/* 信息卡 */
+.icard{position:absolute;bottom:140px;left:10px;right:10px;z-index:999;background:rgba(255,255,255,.95);border-radius:16px;padding:12px 14px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:none}
+.icard.show{display:block}
+.icard .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.icard .av{width:40px;height:40px;background:linear-gradient(135deg,#FF9843,#FF6B6B);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.icard .nm{font-size:14px;font-weight:700;color:#333}
+.icard .nm .tag{display:inline-block;background:#07c160;color:#fff;font-size:8px;padding:2px 6px;border-radius:6px;margin-left:4px;vertical-align:middle}
+.icard .info{font-size:11px;color:#666;line-height:1.6}
+/* 管理按钮 */
+.ab{position:absolute;top:50px;right:8px;z-index:1000;display:none;flex-direction:column;gap:4px}
+.ab.show{display:flex}
+.ab button{background:#fff;border:none;padding:6px 14px;border-radius:10px;font-size:12px;color:#333;box-shadow:0 2px 10px rgba(0,0,0,.12);cursor:pointer;font-weight:500}
+.ab button.g{color:#07c160}.ab button.r{color:#FF6B6B}.ab button:active{transform:scale(.95)}
+/* 回放控制条 */
+.playback{position:absolute;bottom:175px;left:10px;right:10px;z-index:999;background:#fff;border-radius:16px;padding:10px 14px;box-shadow:0 4px 20px rgba(0,0,0,.12);display:none}
+.playback.show{display:block}
+.pb-row{display:flex;align-items:center;gap:8px}
+.pb-btn{width:36px;height:36px;border-radius:50%;border:none;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#FF6B6B;color:#fff;box-shadow:0 2px 6px rgba(255,107,107,.3)}
+.pb-btn:active{transform:scale(.9)}
+.pb-btn.s{background:#f5f5f5;color:#666;font-size:12px;box-shadow:none}
+.pb-bar{flex:1;height:4px;background:#eee;border-radius:2px;position:relative;overflow:hidden}
+.pb-bar-fill{height:100%;background:#FF6B6B;border-radius:2px;width:0%;transition:width .3s}
+.pb-info{font-size:9px;color:#999;margin-top:4px;display:flex;justify-content:space-between}
+/* 日期栏 */
+.dbar{background:#fff;padding:6px 10px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));border-top:1px solid #f0f0f0;flex-shrink:0}
+.dnav{display:flex;align-items:center;gap:6px}
+.dnav button{background:#f5f5f5;border:none;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#666}
+.di{flex:1;text-align:center}
+.di .d{font-size:14px;font-weight:600;color:#333}
+.di .sub{font-size:10px;color:#999;margin-top:1px}
+.di .sub .hl{color:#FF6B6B;font-weight:500}
+.ddots{display:flex;justify-content:center;gap:3px;margin-top:4px}
+.ddot{width:18px;height:18px;border-radius:50%;font-size:7px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;border:none;flex-shrink:0}
+.ddot.active{transform:scale(1.15);box-shadow:0 0 0 2px #fff,0 0 0 3px #FF6B6B}
+.ddot.hd{background:#FF6B6B}.ddot.nd{background:#ddd;color:#999}
+.ts{display:flex;gap:4px;margin-top:4px;justify-content:center}
+.ts .s{padding:2px 8px;background:#f5f5f5;border-radius:10px;font-size:9px;color:#888}
+.ts .s .n{font-weight:600;color:#FF6B6B}
+/* 弹窗 */
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:99999;display:none;align-items:center;justify-content:center}
+.overlay.active{display:flex}
+.obox{background:#fff;border-radius:20px;padding:24px 20px;width:280px;max-width:85vw;box-shadow:0 10px 50px rgba(0,0,0,.2)}
+.obox h2{text-align:center;font-size:16px;margin-bottom:2px}
+.obox .sub{text-align:center;font-size:10px;color:#999;margin-bottom:14px}
+.obox input{width:100%;padding:10px 14px;border:2px solid #f0f0f0;border-radius:12px;font-size:15px;outline:none;margin-bottom:10px}
+.obox input:focus{border-color:#FF6B6B}
+.obox button{width:100%;padding:11px;background:linear-gradient(135deg,#FF9843,#FF6B6B);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(255,107,107,.3)}
+.obox .tip{text-align:center;font-size:9px;color:#bbb;margin-top:8px}
+.ms{width:16px;height:16px;background:#07c160;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #07c160}
+.me{width:16px;height:16px;background:#FF6B6B;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #FF6B6B}
+.mc{width:32px;height:32px;background:linear-gradient(135deg,#FF9843,#FF6B6B);border-radius:50%;border:3px solid #fff;box-shadow:0 3px 10px rgba(255,107,107,.4);display:flex;align-items:center;justify-content:center;font-size:16px}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:10px;font-size:12px;z-index:9999999;pointer-events:none;opacity:0;transition:all .3s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-text">
+      <h1>🚐 小财神的小车车</h1>
+      <p id="hdr">🍊 定位中...</p>
+    </div>
+    <button class="hbtn" onclick="reLocate()">📍</button>
+    <button class="hbtn" onclick="shareLink()">📤</button>
+    <button class="hbtn" onclick="switchMap()" id="mapBtn">🗺️ 卫星</button>
+    <button class="hbtn" onclick="showLogin()">⚙️</button>
+  </div>
+  <div id="map"></div>
+  <div class="icard" id="icard">
+    <div class="top"><div class="av">🚐</div><div><div class="nm">小财神矿泉水 <span class="tag">🟢 营业中</span></div><div style="font-size:10px;color:#999;margin-top:2px">西晃山天然矿泉水 · 5元/桶</div></div></div>
+    <div class="info"><div>📍 <span id="addr">定位中...</span></div><div>🕐 <span id="utime">--</span></div></div>
+  </div>
+  <!-- 回放控制 -->
+  <div class="playback" id="pb">
+    <div class="pb-row">
+      <button class="pb-btn" id="pbPlay" onclick="togglePlay()">▶</button>
+      <div class="pb-bar"><div class="pb-bar-fill" id="pbFill"></div></div>
+      <button class="pb-btn s" onclick="speedPlay()" id="pbSpeed">1x</button>
+      <button class="pb-btn s" onclick="pausePlay()" id="pbPause" style="display:none">⏸</button>
+    </div>
+    <div class="pb-info"><span id="pbTime">00:00</span><span id="pbTotal">00:00</span></div>
+  </div>
+  <!-- 管理按钮 -->
+  <div class="ab" id="ab">
+    <button class="g" id="btnT" onclick="toggleTrack()">▶ 开始记录</button>
+    <button onclick="showSetup()">🔧 设置</button>
+    <button onclick="clearToday()" class="r">🗑️</button>
+  </div>
+  <div class="dbar">
+    <div class="dnav">
+      <button onclick="prevDay()">◀</button>
+      <div class="di">
+        <div class="d" id="dateD">加载中</div>
+        <div class="sub" id="dateSub">0 km · 0分</div>
+        <div class="ddots" id="ddots"></div>
+      </div>
+      <button onclick="nextDay()">▶</button>
+    </div>
+    <div class="ts"><span>📅 <span class="n" id="mDays">0</span>天</span><span>📏 <span class="n" id="mKm">0</span></span><span id="st">⏸️ 待记录</span></div>
+  </div>
+</div>
+<div class="overlay" id="loginOverlay"><div class="obox"><h2>🔐 管理员</h2><p class="sub">仅你本人操作</p><input type="password" id="adminPass" placeholder="密码"><button onclick="verifyAdmin()">🚀 登录</button><p class="tip">顾客直接查看无需密码</p></div></div>
+<div class="overlay" id="setupOverlay"><div class="obox"><h2>🔧 设置</h2><p class="sub">GitHub Token（填了开启云端同步）</p><input type="password" id="tokenInput" placeholder="Token (选填)"><button onclick="saveToken()">💾 保存</button><p class="tip">Token只存手机本地</p><div style="margin-top:10px;font-size:9px;text-align:center"><span id="tsStatus" style="color:#999">🔴 云端未开启</span></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const CFG = { password:'xcaishen888', name:'小财神矿泉水', interval:10000, key:'xcaishen_v7',
+  ghOwner:'popmyshu', ghRepo:'water', ghPath:'track/data.json', ghBranch:'main',
+  get tk(){ return localStorage.getItem('_gh_token')||''; }
+};
+let map, trails={}, ad='', isAdmin=0, isTracking=0, tm=null, wid=null, ovs=[], tl=null, mp=null;
+// 回放
+let playing=0, playI=0, playTimer=null, playSpeed=1, playAnim=null, playMark=null;
+
+document.addEventListener('DOMContentLoaded',()=>{ initMap(); loadL(); loadC().then(()=>locate()); });
+
+function initMap(){
+  map=L.map('map',{center:[27.87,109.80],zoom:13,zoomControl:false,attributionControl:false});
+  // 默认普通地图（高德矢量，国内加载快）
+  window._tileLayer = L.tileLayer('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',{maxZoom:18,attribution:''}).addTo(map);
+  // 备用的卫星图（高德影像）
+  window._satLayer = L.tileLayer('https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',{maxZoom:18,attribution:''});
+  // 地图类型切换
+  window._mapMode = 'normal';
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  document.getElementById('hdr').textContent='🍊 加载中...';
+  map.on('click',function(e){if(!isAdmin)return;const la=e.latlng.lat.toFixed(5),lo=e.latlng.lng.toFixed(5);if(confirm(`校正到 ${la},${lo} ?`)){setP(la,lo);document.getElementById('hdr').textContent=`📍 ${la},${lo} (校正)`;showT('✅ 已校正');}});
+}
+// 切换地图类型
+function switchMap(){
+  if(window._mapMode==='normal'){
+    map.removeLayer(window._tileLayer);
+    window._satLayer.addTo(map);
+    window._mapMode='satellite';
+    document.getElementById('mapBtn').textContent='🗺️ 普通';
+    showT('🛰️ 已切换到卫星地图');
+  } else {
+    map.removeLayer(window._satLayer);
+    window._tileLayer.addTo(map);
+    window._mapMode='normal';
+    document.getElementById('mapBtn').textContent='🗺️ 卫星';
+    showT('🗺️ 已切换到普通地图');
+  }
+}
+
+function locate(){
+  if(!navigator.geolocation){document.getElementById('hdr').textContent='不支持定位';showTdy();return;}
+  document.getElementById('hdr').textContent='🍊 定位...';tryL(0);
+}
+function tryL(n){
+  if(n>3){document.getElementById('hdr').textContent='⚠️ 超时，点地图校正';showTdy();return;}
+  navigator.geolocation.getCurrentPosition(p=>{const la=p.coords.latitude,lo=p.coords.longitude,ac=p.coords.accuracy;if(ac>500&&n<3){setTimeout(()=>tryL(n+1),500);document.getElementById('hdr').textContent=`🍊 信号弱(${ac}m)...`;return;}setP(la,lo);document.getElementById('hdr').textContent=`📍 ${la.toFixed(5)},${lo.toFixed(5)} (${ac}m)`;showTdy();},
+  e=>{if(e.code==3&&n<3){setTimeout(()=>tryL(n+1),1000);document.getElementById('hdr').textContent=`🍊 超时重试${n+2}/3...`;return;}document.getElementById('hdr').textContent=e.code==1?'权限拒绝':e.code==2?'信号弱':e.code==3?'超时':'失败';showTdy();},
+  {enableHighAccuracy:1,timeout:8000,maximumAge:3000});
+}
+function reLocate(){
+  if(!navigator.geolocation){showT('不支持');return;}
+  document.getElementById('hdr').textContent='📍 重新定位...';
+  navigator.geolocation.getCurrentPosition(p=>{setP(p.coords.latitude,p.coords.longitude);showT(`✅ ${p.coords.accuracy}m`);},e=>showT(e.code==1?'拒绝':e.code==2?'信号弱':'超时'),{enableHighAccuracy:1,timeout:10000,maximumAge:0});
+}
+function setP(la,lo){map.setView([la,lo],16);if(mp)map.removeLayer(mp);mp=L.circleMarker([la,lo],{radius:7,color:'#FF6B6B',fillColor:'#FF6B6B',fillOpacity:.7,weight:2}).addTo(map);document.getElementById('addr').textContent=`${la.toFixed(5)},${lo.toFixed(5)}`;}
+
+function loadL(){try{const r=localStorage.getItem(CFG.key);if(r){const d=JSON.parse(r);trails=d.trails||{};}}catch(e){}}
+function saveL(){try{localStorage.setItem(CFG.key,JSON.stringify({trails,updatedAt:new Date().toISOString()}));}catch(e){}}
+function ts(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+
+async function loadC(){
+  const t=CFG.tk;if(!t)return;
+  try{
+    const r=await fetch(`https://api.github.com/repos/${CFG.ghOwner}/${CFG.ghRepo}/contents/${CFG.ghPath}`,{headers:{'Authorization':`token ${t}`,'User-Agent':'Mozilla/5.0'}});
+    if(!r.ok)return;const d=await r.json();const c=decodeURIComponent(escape(atob(d.content)));const cl=JSON.parse(c);
+    if(cl&&cl.trails){let cnt=0;Object.keys(cl.trails).forEach(d=>{if(!trails[d]||cl.trails[d].length>(trails[d]||[]).length){trails[d]=cl.trails[d];cnt++;}});if(cnt>0)saveL();}
+  }catch(e){}
+}
+async function pushC(){
+  const t=CFG.tk;if(!t)return;
+  try{
+    const url=`https://api.github.com/repos/${CFG.ghOwner}/${CFG.ghRepo}/contents/${CFG.ghPath}`;let sha=null;
+    try{const r=await fetch(url,{headers:{'Authorization':`token ${t}`,'User-Agent':'Mozilla/5.0'}});if(r.ok)sha=(await r.json()).sha;}catch(e){}
+    const js=JSON.stringify({trails,updatedAt:new Date().toISOString()});const ct=btoa(unescape(encodeURIComponent(js)));
+    const b={message:`🔄 轨迹更新 ${new Date().toLocaleString('zh-CN')}`,content:ct,branch:CFG.ghBranch};if(sha)b.sha=sha;
+    await fetch(url,{method:'PUT',headers:{'Authorization':`token ${t}`,'Content-Type':'application/json','User-Agent':'Mozilla/5.0'},body:JSON.stringify(b)});
+  }catch(e){}
+}
+function sync(){saveL();setTimeout(pushC,100);}
+
+function getP(d){return trails[d]||[];}
+function addP(p){const d=ts(new Date());if(!trails[d])trails[d]=[];trails[d].push(p);sync();}
+function clrO(){ovs.forEach(o=>map.removeLayer(o));ovs=[];if(tl){map.removeLayer(tl);tl=null;}}
+
+function switchDate(ds){
+  ad=ds;clrO();
+  const pts=getP(ds),today=ts(new Date()),isT=ds===today;
+  const wk=['周日','周一','周二','周三','周四','周五','周六'];const d=new Date(ds);
+  document.getElementById('dateD').textContent=(isT?'📅 今天':ds)+' '+wk[d.getDay()];
+  document.querySelectorAll('.ddot').forEach(el=>el.classList.toggle('active',el.dataset.date===ds));
+  // 隐藏回放
+  stopPlay();document.getElementById('pb').classList.remove('show');
+  
+  if(pts.length===0){
+    document.getElementById('dateSub').textContent='暂无轨迹';document.getElementById('utime').textContent='--';
+    if(isT&&mp)map.setView(mp.getLatLng(),15);return;
+  }
+  const latlngs=pts.map(p=>[p.lat,p.lng]);
+  if(pts.length>1){tl=L.polyline(latlngs,{color:'#FF6B6B',weight:4,opacity:.7,smoothFactor:1}).addTo(map);ovs.push(tl);}
+  const f=pts[0];ovs.push(L.marker([f.lat,f.lng],{icon:L.divIcon({className:'',html:'<div class="ms"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).bindTooltip('🟢 '+fmt(f.t),{direction:'top',offset:[0,-6]}).addTo(map));
+  const l=pts[pts.length-1];
+  const ei=L.divIcon({className:'',html:isT&&isTracking?'<div class="mc">🚐</div>':'<div class="me"></div>',iconSize:isT&&isTracking?[32,32]:[16,16],iconAnchor:isT&&isTracking?[16,16]:[8,8]});
+  ovs.push(L.marker([l.lat,l.lng],{icon:ei}).bindTooltip(isT&&isTracking?'🟢 现在 '+fmt(l.t):'🔴 '+fmt(l.t),{direction:'top',offset:[0,-8]}).addTo(map));
+  if(pts.length>3){const st=Math.max(1,Math.floor(pts.length/5));for(let i=st;i<pts.length-1;i+=st){const p=pts[i];ovs.push(L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:`<div style="background:rgba(255,255,255,.85);padding:1px 4px;border-radius:2px;font-size:9px;border:1px solid #eee;color:#888">${fmt(p.t)}</div>`,iconSize:[0,0],iconAnchor:[0,-8]})}).addTo(map));}}
+  const di=calD(pts),du=calDur(pts);
+  document.getElementById('dateSub').textContent=(di>1000?(di/1000).toFixed(1)+' km':Math.round(di)+' m')+' · '+du;
+  document.getElementById('utime').textContent=fmt(l.t);document.getElementById('addr').textContent=`${l.lat.toFixed(5)},${l.lng.toFixed(5)}`;
+  if(pts.length>1)map.fitBounds(L.latLngBounds(latlngs),{padding:[40,40],maxZoom:15});else map.setView([l.lat,l.lng],15);
+  // 如果轨迹点大于3个，显示回放按钮
+  if(pts.length>3){document.getElementById('pb').classList.add('show');document.getElementById('pbTotal').textContent=fmt(l.t);}
+}
+
+function showTdy(){const t=ts(new Date());switchDate(t);renderD(t);updateM();}
+function fmt(iso){try{const d=new Date(iso);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}catch(e){return '--:--';}}
+function calD(p){if(p.length<2)return 0;let t=0;for(let i=1;i<p.length;i++)t+=dist(p[i-1].lat,p[i-1].lng,p[i].lat,p[i].lng);return t;}
+function dist(l1,n1,l2,n2){const R=6371000,dL=(l2-l1)*Math.PI/180,dN=(n2-n1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function calDur(p){if(p.length<2)return'0';const m=Math.floor((new Date(p[p.length-1].t).getTime()-new Date(p[0].t).getTime())/60000);return m<60?m+'分':Math.floor(m/60)+'时'+(m%60)+'分';}
+function prevDay(){const d=new Date(ad);d.setDate(d.getDate()-1);switchDate(ts(d));renderD(ts(d));}
+function nextDay(){const d=new Date(ad);d.setDate(d.getDate()+1);const ds=ts(d);if(ds>ts(new Date()))return;switchDate(ds);renderD(ds);}
+function renderD(ad){const c=document.getElementById('ddots');c.innerHTML='';const dates=Object.keys(trails).filter(d=>trails[d]&&trails[d].length>0);for(let i=6;i>=0;i--){const d=new Date(Date.now()-i*86400000),ds=ts(d);const el=document.createElement('div');el.className='ddot '+(dates.includes(ds)?'hd':'nd')+(ds===ad?' active':'');el.dataset.date=ds;el.textContent=String(d.getDate());el.onclick=()=>switchDate(ds);c.appendChild(el);}}
+function updateM(){const t=ts(new Date()),m=t.substring(0,7);const mD=Object.keys(trails).filter(d=>d.startsWith(m)&&trails[d].length>0);document.getElementById('mDays').textContent=mD.length;let km=0;mD.forEach(d=>{km+=calD(trails[d]);});document.getElementById('mKm').textContent=km>1000?(km/1000).toFixed(1)+'km':Math.round(km)+'m';}
+
+// ========== 回放功能 ==========
+function togglePlay(){if(!playing)startPlay();else pausePlay();}
+function startPlay(){
+  const pts=getP(ad);if(pts.length<3){showT('轨迹点太少');return;}
+  playing=1;playI=0;document.getElementById('pbPlay').textContent='⏸';
+  if(playAnim)cancelAnimationFrame(playAnim);
+  // 清除旧回放标记
+  if(playMark){map.removeLayer(playMark);playMark=null;}
+  doPlayStep(pts);
+}
+function doPlayStep(pts){
+  if(!playing||playI>=pts.length-1){stopPlay();return;}
+  const p=pts[playI];
+  // 移动地图
+  map.setView([p.lat,p.lng],16,{animate:true,duration:.3});
+  // 更新回放标记
+  if(playMark)map.removeLayer(playMark);
+  playMark=L.marker([p.lat,p.lng],{icon:L.divIcon({className:'',html:'<div class="mc">🚐</div>',iconSize:[32,32],iconAnchor:[16,16]})}).addTo(map);
+  // 更新进度
+  const pct=((playI+1)/pts.length*100).toFixed(0);
+  document.getElementById('pbFill').style.width=pct+'%';
+  document.getElementById('pbTime').textContent=fmt(p.t);
+  
+  playI++;
+  // 根据速度计算延迟（默认每帧100ms，加速时缩短）
+  const delay=Math.max(50,100/playSpeed);
+  playTimer=setTimeout(()=>doPlayStep(pts),delay);
+}
+function pausePlay(){playing=0;if(playTimer){clearTimeout(playTimer);playTimer=null;}document.getElementById('pbPlay').textContent='▶';}
+function stopPlay(){playing=0;if(playTimer){clearTimeout(playTimer);playTimer=null;}if(playAnim){cancelAnimationFrame(playAnim);playAnim=null;}document.getElementById('pbPlay').textContent='▶';}
+function speedPlay(){
+  const speeds=[1,2,5,10,20];let idx=speeds.indexOf(playSpeed);
+  if(idx<speeds.length-1)idx++;else idx=0;
+  playSpeed=speeds[idx];document.getElementById('pbSpeed').textContent=playSpeed+'x';
+  // 如果正在播放，重新开始加速
+  if(playing){const pts=getP(ad);if(playTimer){clearTimeout(playTimer);doPlayStep(pts);}}
+}
+
+// ========== 管理员 ==========
+function showSetup(){document.getElementById('tokenInput').value=localStorage.getItem('_gh_token')||'';const h=!!localStorage.getItem('_gh_token');document.getElementById('tsStatus').textContent=h?'🟢 云端已开启':'🔴 云端未开启';document.getElementById('tsStatus').style.color=h?'#07c160':'#999';document.getElementById('setupOverlay').classList.add('active');}
+function saveToken(){const t=document.getElementById('tokenInput').value.trim();localStorage.setItem('_gh_token',t);document.getElementById('setupOverlay').classList.remove('active');if(t){showT('✅ 云端已开启');pushC();}else showT('⚠️ 已关闭云端');}
+function showLogin(){document.getElementById('loginOverlay').classList.add('active');document.getElementById('adminPass').value='';document.getElementById('adminPass').focus();}
+function verifyAdmin(){if(document.getElementById('adminPass').value===CFG.password){document.getElementById('loginOverlay').classList.remove('active');isAdmin=1;document.getElementById('ab').classList.add('show');document.getElementById('icard').classList.add('show');document.getElementById('hdr').textContent='✅ 已登录';showT('✅ 已登录');}else{alert('❌ 密码错误');document.getElementById('loginOverlay').classList.remove('active');}}
+function toggleTrack(){if(!isTracking)startT();else stopT();}
+function startT(){if(!navigator.geolocation){alert('不支持GPS');return;}isTracking=1;document.getElementById('btnT').textContent='⏹ 停止';document.getElementById('btnT').className='r';document.getElementById('st').textContent='🟢 记录中';document.getElementById('st').style.color='#07c160';document.getElementById('hdr').textContent='🚐 记录中...';getP2();tm=setInterval(getP2,CFG.interval);wid=navigator.geolocation.watchPosition(p=>{},e=>console.warn(e.message),{enableHighAccuracy:1,timeout:10000,maximumAge:3000});if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>window._wl=w).catch(()=>{});}
+function stopT(){isTracking=0;if(tm){clearInterval(tm);tm=null;}if(wid){navigator.geolocation.clearWatch(wid);wid=null;}if(window._wl){window._wl.release();window._wl=null;}document.getElementById('btnT').textContent='▶ 开始记录';document.getElementById('btnT').className='g';document.getElementById('st').textContent='⏸️ 已停止';document.getElementById('st').style.color='#999';const tn=ts(new Date());switchDate(tn);renderD(tn);updateM();sync();}
+function getP2(){navigator.geolocation.getCurrentPosition(p=>{addP({lat:p.coords.latitude,lng:p.coords.longitude,a:Math.round(p.coords.accuracy),t:new Date().toISOString()});const tn=ts(new Date());if(ad===tn)switchDate(tn);},e=>{let m='定位失败';if(e.code==1)m='权限拒绝';else if(e.code==2)m='信号弱';else if(e.code==3)m='超时';document.getElementById('st').textContent=m;document.getElementById('st').style.color='#FF6B6B';},{enableHighAccuracy:1,timeout:15000,maximumAge:5000});}
+function clearToday(){const tn=ts(new Date());if(!trails[tn]||trails[tn].length===0){showT('暂无数据');return;}if(!confirm('清空今天？'))return;delete trails[tn];sync();switchDate(tn);renderD(tn);updateM();showT('✅ 已清空');}
+function shareLink(){const url=window.location.href.split('?')[0].split('#')[0];const txt=`🚐 小财神矿泉水\n📍 查看实时位置和行车轨迹\n${url}`;if(navigator.share){navigator.share({title:CFG.name,text:txt,url}).catch(()=>{});}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>showT('✅ 已复制'));}else{const ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showT('✅ 已复制');}}
+function showT(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');if(window._tt)clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2000);}
+window.addEventListener('beforeunload',()=>{if(isTracking)stopT();});
+</script>
+</body>
+</html>

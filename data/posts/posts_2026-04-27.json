@@ -1,0 +1,67 @@
+[
+  {
+    "id": "5807118daae1",
+    "category": "租房",
+    "content": "岩门镇房东直租，一室一厅59平米，600/月，低层，有有WiFi，电话：18774556611",
+    "area": "岩门镇",
+    "phone": "18774556611",
+    "created_at": "2026-04-27T22:34:54.344780",
+    "status": "待审核",
+    "is_paid": false,
+    "is_top": false,
+    "views": 149,
+    "filter_reason": ""
+  },
+  {
+    "id": "355492a37f4c",
+    "category": "二手",
+    "content": "出电动车，用了两年，七成新，2096元，麻阳和平溪乡自提。联系微信同号：18774559895",
+    "area": "和平溪乡",
+    "phone": "18774559895",
+    "created_at": "2026-04-27T22:34:54.344828",
+    "status": "待审核",
+    "is_paid": false,
+    "is_top": false,
+    "views": 80,
+    "filter_reason": ""
+  },
+  {
+    "id": "8938f0e3f9cb",
+    "category": "拼车",
+    "content": "【麻阳拼车】04月29日从麻阳到芷江，4座，30元/人，面包车，电话：18774557937",
+    "area": "隆家堡乡",
+    "phone": "18774557937",
+    "created_at": "2026-04-27T22:34:54.344856",
+    "status": "待审核",
+    "is_paid": false,
+    "is_top": false,
+    "views": 134,
+    "filter_reason": ""
+  },
+  {
+    "id": "7c70cf4a9046",
+    "category": "拼车",
+    "content": "【麻阳拼车】04月27日从麻阳到铜仁，1座，50元/人，小轿车，电话：18774551544",
+    "area": "石羊哨乡",
+    "phone": "18774551544",
+    "created_at": "2026-04-27T22:34:54.344879",
+    "status": "待审核",
+    "is_paid": false,
+    "is_top": false,
+    "views": 132,
+    "filter_reason": ""
+  },
+  {
+    "id": "224d27a9a34b",
+    "category": "招聘",
+    "content": "【麻阳招聘】麻阳电商服务中心招人了！仓管员，工资2000元/月，要求吃苦耐劳。联系电话：18774551191",
+    "area": "和平溪乡",
+    "phone": "18774551191",
+    "created_at": "2026-04-27T22:34:54.344904",
+    "status": "待审核",
+    "is_paid": false,
+    "is_top": false,
+    "views": 49,
+    "filter_reason": ""
+  }
+]
