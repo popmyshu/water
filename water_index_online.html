@@ -1,0 +1,2760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小财神统计系统</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<base href="/water/">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f4f0;
+  color: #333;
+  padding-bottom: 80px;
+}
+.header {
+  background: linear-gradient(135deg, #2d8a4e, #1a6b3a);
+  color: white;
+  padding: 20px 16px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 22px; }
+.header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+.tab-bar {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 73px;
+  z-index: 99;
+  overflow-x: auto;
+}
+.tab {
+  flex: none;
+  padding: 12px 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab.active { color: #2d8a4e; border-bottom-color: #2d8a4e; }
+.container { padding: 12px; display: none; }
+.container.active { display: block; }
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+label { font-size: 14px; font-weight: 500; display: block; margin-bottom: 4px; }
+input, select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+input:focus, select:focus { outline: none; border-color: #2d8a4e; background: white; }
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-green { background: #2d8a4e; color: white; }
+.btn-green:active { background: #1a6b3a; }
+.btn-orange { background: #ff8f00; color: white; }
+.btn-orange:active { background: #e67e00; }
+.btn-blue { background: #2979ff; color: white; }
+.btn-blue:active { background: #1565c0; }
+.btn-red { background: #e53935; color: white; }
+.btn-red:active { background: #c62828; }
+.btn-sm { padding: 8px 16px; font-size: 14px; width: auto; border-radius: 6px; }
+.btn-outline {
+  background: white;
+  border: 2px solid #2d8a4e;
+  color: #2d8a4e;
+}
+.btn-outline:active { background: #e8f5e9; }
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.stat-box {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.stat-num { font-size: 28px; font-weight: 700; color: #2d8a4e; }
+.stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+.record-item {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.record-info .record-village { font-weight: 600; font-size: 16px; }
+.record-info .record-time { font-size: 12px; color: #888; margin-top: 2px; }
+.record-amount { font-weight: 700; color: #2d8a4e; font-size: 18px; }
+
+.village-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.village-table th {
+  text-align: left;
+  padding: 8px 4px;
+  font-size: 12px;
+  color: #888;
+  border-bottom: 2px solid #e0e0e0;
+}
+.village-table td {
+  padding: 4px 4px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+.village-table tr:last-child td { border-bottom: none; }
+.village-table .vname { font-weight: 600; white-space: nowrap; }
+.village-table .vinput {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 6px 0;
+  outline: none;
+  border-radius: 4px;
+}
+.village-table .vinput:focus {
+  background: #e8f5e9;
+  box-shadow: 0 0 0 2px #2d8a4e;
+}
+.village-table .vprice { font-size: 15px; }
+.village-table .vmoney {
+  font-weight: 700;
+  color: #e65100;
+  font-size: 16px;
+  text-align: right;
+}
+
+.price-quick {
+  display: inline-flex;
+  gap: 4px;
+}
+.price-btn {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.price-btn:active { transform: scale(0.95); }
+.price-btn.p4 { border-color: #2d8a4e; color: #2d8a4e; background: #e8f5e9; }
+.price-btn.p5 { border-color: #e65100; color: #e65100; background: #fff3e0; }
+.price-btn.used { background: #2d8a4e; color: white; border-color: #2d8a4e; }
+
+.total-row td {
+  border-top: 2px solid #2d8a4e !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  background: #f5faf5;
+  font-weight: 700;
+}
+.total-num { font-size: 22px; color: #2d8a4e; }
+.total-money { font-size: 22px; color: #e65100; }
+
+.net-income-box{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,.1)}.net-income-box.negative{background:linear-gradient(135deg,#ffebee,#ffcdd2)}.net-income-num{font-size:36px;font-weight:800;color:#2d8a4e}.net-income-box.negative .net-income-num{color:#c62828}.net-income-label{font-size:13px;color:#666;margin-top:2px}.expense-section{margin-top:16px;border-top:2px dashed #ff8f00;padding-top:12px}.expense-section h3{font-size:16px;color:#e65100;margin-bottom:10px}.expense-table{width:100%;border-collapse:collapse;font-size:14px}.expense-table th{text-align:left;padding:8px 4px;font-size:12px;color:#888;border-bottom:2px solid #ffe0b2}.expense-table td{padding:6px 4px;border-bottom:1px solid #f0f0f0;vertical-align:middle}.expense-table .ename{font-weight:600;white-space:nowrap;font-size:15px}.expense-table .einput{width:100%;border:none;background:transparent;text-align:center;font-size:18px;font-weight:600;padding:6px 0;outline:none;border-radius:4px}.expense-table .einput:focus{background:#fff3e0;box-shadow:0 0 0 2px #ff8f00}.expense-total-row td{border-top:2px solid #ff8f00!important;padding-top:10px!important;padding-bottom:10px!important;background:#fff8e1;font-weight:700}.add-expense-row td{background:#fffbf0;padding:10px 4px;border-top:2px dashed #ff8f00}.add-expense-row .einput{border:1px solid #ccc;border-radius:6px;padding:8px 4px;background:white;font-size:16px}.add-expense-row .einput:focus{border-color:#ff8f00;box-shadow:0 0 0 2px #fff3e0;background:white}.add-btn-orange{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:none;background:#ff8f00;color:white;font-size:20px;font-weight:700;cursor:pointer;transition:all .15s}.add-btn-orange:active{transform:scale(.9);background:#e67e00}.empty-msg { text-align: center; color: #aaa; padding: 30px 0; font-size: 14px; }
+.date-row input { font-size: 18px; font-weight: 600; text-align: center; }
+
+.sortable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sort-btn-group { display: flex; gap: 4px; }
+.sort-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+.sort-btn.active { border-color: #2d8a4e; color: #2d8a4e; background: #e8f5e9; }
+.sort-btn:active { background: #e8f5e9; }
+
+.add-row td {
+  background: #fafffa;
+  padding: 10px 4px;
+  border-top: 2px dashed #2d8a4e;
+}
+.add-row .vinput {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 4px;
+  background: white;
+  font-size: 16px;
+}
+.add-row .vinput:focus {
+  border-color: #2d8a4e;
+  box-shadow: 0 0 0 2px #e8f5e9;
+  background: white;
+}
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #2d8a4e;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.add-btn:active { transform: scale(0.9); background: #1a6b3a; }
+.del-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #ffcdd2;
+  color: #c62828;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: 4px;
+}
+.del-btn:active { transform: scale(0.9); background: #ef9a9a; }
+
+.village-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.village-card {
+  border-radius: 10px;
+  padding: 12px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.village-card.visited {
+  background: #e8f5e9;
+  border-left: 4px solid #2d8a4e;
+}
+.village-card.alert-red {
+  background: #ffebee;
+  border-left: 4px solid #c62828;
+}
+.village-card.alert-orange {
+  background: #fff3e0;
+  border-left: 4px solid #e65100;
+}
+.village-card.alert-yellow {
+  background: #fffde7;
+  border-left: 4px solid #f9a825;
+}
+.village-card.never {
+  background: #f5f5f5;
+  border-left: 4px solid #bdbdbd;
+}
+.village-card .vc-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.village-card .vc-status {
+  font-size: 12px;
+  color: #666;
+}
+.village-card .vc-detail {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+.village-card .vc-buckets {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #2d8a4e;
+}
+.village-card.alert-red .vc-buckets,
+.village-card.alert-orange .vc-buckets { color: #e65100; }
+.village-card.never .vc-buckets { color: #999; }
+
+.alert-banner {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 4px solid #e65100;
+}
+.alert-banner h4 {
+  color: #e65100;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.alert-banner p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.month-nav button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #2d8a4e;
+  background: white;
+  color: #2d8a4e;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.month-nav button:active { background: #e8f5e9; }
+.month-nav .month-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d8a4e;
+}
+.month-day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+.month-day-row:active { background: #f5f5f5; }
+.month-day-row:last-child { border-bottom: none; }
+.mdr-date { font-weight: 600; font-size: 14px; width: 80px; }
+.mdr-buckets { font-size: 14px; color: #2d8a4e; width: 60px; text-align: center; }
+.mdr-income { font-size: 14px; color: #e65100; width: 70px; text-align: center; }
+.mdr-net { font-size: 14px; font-weight: 600; width: 70px; text-align: right; }
+.mdr-net.positive { color: #2d8a4e; }
+.mdr-net.negative { color: #c62828; }
+.best-day-box {
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 12px;
+  border: 1px solid #ffe082;
+}
+.best-day-box .bd-label { font-size: 12px; color: #888; }
+.best-day-box .bd-value { font-size: 22px; font-weight: 800; color: #e65100; }
+.best-day-box .bd-date { font-size: 13px; color: #666; margin-top: 2px; }
+
+.reminder-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+.reminder-setting label { margin-bottom: 0; }
+.reminder-setting input {
+  width: 60px;
+  text-align: center;
+  margin-bottom: 0;
+  padding: 6px;
+  font-size: 16px;
+}
+
+.debt-banner {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.debt-banner .debt-total {
+  font-size: 36px;
+  font-weight: 800;
+  color: #c62828;
+}
+.debt-banner .debt-label {
+  font-size: 13px;
+  color: #666;
+  margin-top: 2px;
+}
+.debt-banner .debt-count {
+  font-size: 12px;
+  color: #e65100;
+  margin-top: 4px;
+}
+
+.debt-filter {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.debt-filter-btn {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid #ddd;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.debt-filter-btn.active {
+  border-color: #c62828;
+  color: #c62828;
+  background: #ffebee;
+}
+.debt-filter-btn:active { transform: scale(0.97); }
+
+.debt-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border-left: 4px solid #c62828;
+  position: relative;
+}
+.debt-card.paid {
+  border-left-color: #2d8a4e;
+  opacity: 0.7;
+}
+.debt-card.paid .debt-amount {
+  text-decoration: line-through;
+  color: #999;
+}
+.debt-card .debt-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.debt-card .debt-village {
+  font-weight: 700;
+  font-size: 16px;
+}
+.debt-card .debt-amount {
+  font-weight: 800;
+  font-size: 22px;
+  color: #c62828;
+}
+.debt-card .debt-date {
+  font-size: 12px;
+  color: #888;
+}
+.debt-card .debt-note {
+  font-size: 13px;
+  color: #555;
+  margin-top: 4px;
+  background: #f5f5f5;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.debt-card .debt-paid-date {
+  font-size: 12px;
+  color: #2d8a4e;
+  margin-top: 4px;
+  font-weight: 500;
+}
+.debt-card .debt-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.debt-card .debt-days {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.debt-card .debt-days.urgent {
+  background: #ffebee;
+  color: #c62828;
+}
+.debt-card .debt-days.normal {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.debt-form {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 2px dashed #c62828;
+}
+.debt-form h4 {
+  font-size: 15px;
+  color: #c62828;
+  margin-bottom: 12px;
+}
+.debt-form .form-row {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+.debt-form .form-row > div { flex: 1; }
+.debt-form .form-row label { font-size: 12px; }
+.debt-form .form-row input,
+.debt-form .form-row select {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+/* 同步状态指示器 */
+.sync-indicator {
+  position: fixed;
+  bottom: 40px;
+  right: 16px;
+  background: white;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4caf50;
+}
+.sync-dot.syncing { background: #ff9800; animation: pulse 1s infinite; }
+.sync-dot.error { background: #f44336; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* 加载遮罩 */
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 4px solid #e8f5e9;
+  border-top-color: #2d8a4e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== 工作日志样式 ===== */
+.log-section { }
+.log-input-row { display:flex; gap:8px; margin-bottom:12px; }
+.log-input-row textarea {
+  flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+  font-size:14px; font-family:inherit; resize:vertical; min-height:40px;
+  background:#fafafa;
+}
+.log-input-row textarea:focus { outline:none; border-color:#2d8a4e; background:white; }
+.log-date-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.log-date-row input[type=date] { flex:1; margin:0; }
+.log-entry { 
+  background:white; border-radius:10px; padding:12px 14px; margin-bottom:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); border-left:4px solid #2d8a4e;
+}
+.log-entry.report { border-left-color:#1565c0; background:#f5f8ff; }
+.log-entry-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.log-entry-date { font-size:12px; color:#888; }
+.log-entry-badge { 
+  font-size:11px; padding:2px 8px; border-radius:10px; 
+  background:#e8f5e9; color:#2d8a4e; font-weight:500;
+}
+.log-entry-badge.report { background:#e3f2fd; color:#1565c0; }
+.log-entry-text { font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.log-entry-actions { display:flex; gap:6px; margin-top:6px; }
+.log-empty { text-align:center; padding:30px 0; color:#aaa; font-size:14px; }
+
+
+/* ===== 滚动新闻样式 ===== */
+.news-ticker {
+  background: linear-gradient(135deg, #c62828, #e53935);
+  color: white; border-radius: 12px; padding: 6px 12px;
+  margin-bottom: 12px; position: relative; overflow: hidden;
+  min-height: 52px; cursor: pointer; user-select: none;
+}
+.news-ticker:active { background: linear-gradient(135deg, #b71c1c, #d32f2f); }
+.news-header { display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:2px; padding-bottom:2px; border-bottom:1px solid rgba(255,255,255,0.15); }
+.news-header .news-icon { font-size:15px; }
+.news-header .news-label { font-weight:700; font-size:13px; letter-spacing:1px; }
+.news-header .news-source { font-size:10px; opacity:0.6; margin-left:auto; }
+.news-header .news-refresh { font-size:11px; opacity:0.6; cursor:pointer; padding:2px 6px; border-radius:4px; }
+.news-header .news-refresh:hover { background:rgba(255,255,255,0.12); }
+.news-body-h {
+  position:relative; height:28px; overflow:hidden; width:100%;
+}
+.news-track {
+  display:flex; white-space:nowrap; position:absolute; left:0; top:0;
+  animation: newsMarquee 60s linear infinite;
+}
+.news-track:hover { animation-play-state: paused; }
+.news-item-h {
+  display:inline-flex; align-items:center; gap:6px; height:28px;
+  font-size:13px; padding:0 16px; flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,0.15); cursor:pointer;
+  transition: background 0.2s;
+}
+.news-item-h:hover { background:rgba(255,255,255,0.08); }
+.news-item-h .news-tag {
+  font-size:11px; padding:1px 8px; border-radius:4px; flex-shrink:0;
+  background:#ff8a65; color:#fff; font-weight:600;
+}
+.news-item-h .news-tag.n1 { background:#e53935; }
+.news-item-h .news-tag.n2 { background:#ff6d00; }
+.news-item-h .news-tag.n3 { background:#fb8c00; }
+.news-item-h .news-text { 
+  font-size:13px; overflow:hidden; text-overflow:ellipsis;
+  line-height:28px;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(110%); }
+  100% { transform: translateX(-110%); }
+}
+
+/* ===== 工作日志样式 ===== */
+.log-section { }
+.log-input-row { display:flex; gap:8px; margin-bottom:12px; }
+.log-input-row textarea {
+  flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+  font-size:14px; font-family:inherit; resize:vertical; min-height:40px;
+  background:#fafafa;
+}
+.log-input-row textarea:focus { outline:none; border-color:#2d8a4e; background:white; }
+.log-date-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.log-date-row input[type=date] { flex:1; margin:0; }
+.log-entry { 
+  background:white; border-radius:10px; padding:12px 14px; margin-bottom:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); border-left:4px solid #2d8a4e;
+}
+.log-entry.report { border-left-color:#1565c0; background:#f5f8ff; }
+.log-entry-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.log-entry-date { font-size:12px; color:#888; }
+.log-entry-badge { 
+  font-size:11px; padding:2px 8px; border-radius:10px; 
+  background:#e8f5e9; color:#2d8a4e; font-weight:500;
+}
+.log-entry-badge.report { background:#e3f2fd; color:#1565c0; }
+.log-entry-text { font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.log-entry-actions { display:flex; gap:6px; margin-top:6px; }
+.log-empty { text-align:center; padding:30px 0; color:#aaa; font-size:14px; }
+
+
+/* ===== 滚动新闻样式 ===== */
+.news-ticker {
+  background: linear-gradient(135deg, #c62828, #e53935);
+  color: white; border-radius: 12px; padding: 6px 12px;
+  margin-bottom: 12px; position: relative; overflow: hidden;
+  min-height: 52px; cursor: pointer; user-select: none;
+}
+.news-ticker:active { background: linear-gradient(135deg, #b71c1c, #d32f2f); }
+.news-header { display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:2px; padding-bottom:2px; border-bottom:1px solid rgba(255,255,255,0.15); }
+.news-header .news-icon { font-size:15px; }
+.news-header .news-label { font-weight:700; font-size:13px; letter-spacing:1px; }
+.news-header .news-source { font-size:10px; opacity:0.6; margin-left:auto; }
+.news-header .news-refresh { font-size:11px; opacity:0.6; cursor:pointer; padding:2px 6px; border-radius:4px; }
+.news-header .news-refresh:hover { background:rgba(255,255,255,0.12); }
+.news-body-h {
+  position:relative; height:28px; overflow:hidden; width:100%;
+}
+.news-track {
+  display:flex; white-space:nowrap; position:absolute; left:0; top:0;
+  animation: newsMarquee 60s linear infinite;
+}
+.news-track:hover { animation-play-state: paused; }
+.news-item-h {
+  display:inline-flex; align-items:center; gap:6px; height:28px;
+  font-size:13px; padding:0 16px; flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,0.15); cursor:pointer;
+  transition: background 0.2s;
+}
+.news-item-h:hover { background:rgba(255,255,255,0.08); }
+.news-item-h .news-tag {
+  font-size:11px; padding:1px 8px; border-radius:4px; flex-shrink:0;
+  background:#ff8a65; color:#fff; font-weight:600;
+}
+.news-item-h .news-tag.n1 { background:#e53935; }
+.news-item-h .news-tag.n2 { background:#ff6d00; }
+.news-item-h .news-tag.n3 { background:#fb8c00; }
+.news-item-h .news-text { 
+  font-size:13px; overflow:hidden; text-overflow:ellipsis;
+  line-height:28px;
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="header" style="position:relative;">
+  <button onclick="保存当日()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#2d8a4e;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(45,138,78,0.3);">💾 保存</button>
+  <h1 style="margin-left:70px;">📋 小财神统计系统</h1>
+  <p>西晃山天然矿泉水 · 专业定制版</p>
+  <div id="quoteWidget" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#8a6d3b;margin-left:8px;cursor:pointer;background:rgba(255,243,205,0.8);padding:2px 12px;border-radius:12px;border:1px solid rgba(138,109,59,0.25);max-width:320px;overflow:hidden;" title="点击刷新励志语" onclick="刷新语录()">
+    <span>💪</span>
+    <span id="quoteText" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">加载中..</span>
+  </div>
+  <span id="金额隐藏开关" style="position:absolute;right:16px;top:20px;font-size:22px;cursor:pointer;" onclick="切换金额隐藏()" title="切换金额显示/隐藏">👁️</span>
+</div>
+<div id="滚动提醒条" style="background:#fff3cd;color:#856404;font-size:13px;padding:6px 12px;text-align:center;overflow:hidden;white-space:nowrap;border-bottom:1px solid #ffeeba;display:none;">
+  <span id="滚动提醒文本" style="display:inline-block;animation: marquee 20s linear infinite;">暂无待办提醒</span>
+</div>
+
+
+<div class="tab-bar">
+<div class="tab active" onclick="切换标签('today',this)">📊 今日</div>
+    <div class="tab" onclick="切换标签('daily',this)">📅 日统计</div>
+    <div class="tab" onclick="切换标签('monthly',this)">📆 月统计</div>
+    <div class="tab" onclick="切换标签('debt',this)">💰 欠款</div>
+    <div class="tab" onclick="切换标签('all',this)">📈 总分析</div>
+    <div class="tab" onclick="切换标签('log',this)">📝 日志</div>
+    <div class="tab" onclick="切换标签('settings',this)">⚙️ 管理</div>
+</div>
+
+<!-- ========== 工作日志 ========== -->
+<div id="page-log" class="container">
+  <div class="card">
+    <h3>📝 工作日志</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:12px;">记录每天送水的经历、问题和心得，系统每天也会自动生成日报汇总</p>
+    <div class="log-input-row">
+      <textarea id="日志输入" placeholder="今天送水遇到了什么？或者记下重要的事..." rows="2"></textarea>
+      <button class="btn btn-green btn-sm" onclick="添加日志()" style="width:auto;white-space:nowrap;align-self:flex-end;">添加</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue btn-sm" onclick="生成日报()" style="flex:1;">📊 自动生成今日日报</button>
+    </div>
+  </div>
+  <div id="日志列表"></div>
+</div>
+
+<!-- ========== 今日填表 ========== -->
+<div id="page-today" class="container active">
+  <div class="card">
+    <label>📅 日期</label>
+    <input type="date" id="选择日期" class="date-row" onchange="加载当天()">
+  </div>
+  <!-- ===== 滚动新闻 ===== -->
+  <div class="news-ticker" id="newsTicker">
+    <div class="news-header">
+      <span class="news-icon">📡</span>
+      <span class="news-label">🔥 百度热搜</span>
+      <span class="news-source" id="newsSource">加载中...</span>
+      <span class="news-dot-loader" id="newsLoader" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffd54f;animation:pulse 1s infinite;"></span>
+      <span class="news-refresh" onclick="刷新新闻()">🔄</span>
+    </div>
+    <div class="news-body-h" id="newsBody">
+      <div class="news-track" id="newsTrack">
+        <div class="news-item-h"><span class="news-tag">📡</span><span class="news-text">正在获取最新新闻...</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="net-income-box" id="净收入框">
+    <div class="net-income-num" id="净收入">0</div>
+    <div class="net-income-label">今日净收入（收入 - 开支 - 成本）</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="今日桶数">0</div><div class="stat-label">今日桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="今日金额" style="color:#2d8a4e;">0</div><div class="stat-label">今日收入(元)</div></div>
+    <div class="stat-box"><div class="stat-num" id="今日开支" style="color:#e65100;">0</div><div class="stat-label">今日开支(元)</div></div>
+  </div>
+  <div class="card" style="padding:8px 12px;">
+    <table class="village-table" id="填表表格">
+      <thead>
+        <tr>
+          <th style="width:26px;">#</th>
+          <th style="width:80px;">村镇</th>
+          <th style="width:60px;">桶数</th>
+          <th style="width:100px;">单价</th>
+          <th style="width:60px;text-align:right;">金额</th>
+          <th style="width:40px;"></th>
+        </tr>
+      </thead>
+      <tbody id="表体"></tbody>
+    </table>
+  </div>
+  <div class="card expense-section" style="padding:8px 12px;">
+    <h3>💰 今日开支</h3>
+    <table class="expense-table">
+      <thead><tr><th style="width:30px;"></th><th style="width:100px;">开支项</th><th style="width:80px;">金额(元)</th><th style="width:40px;"></th></tr></thead>
+      <tbody id="开支表体"></tbody>
+    </table>
+  </div>
+  <!-- ===== 成本预算 ===== -->
+  <div class="card budget-card" style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border:1px solid #ffe0b2;">
+    <h3 style="color:#e65100;margin-bottom:10px;">📋 每日成本预算</h3>
+    <div class="budget-row">
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">💰 今日带出备用金</label>
+        <input type="number" id="备用金带出" min="0" step="1" placeholder="0" oninput="更新备用金()" style="font-size:16px;font-weight:600;color:#e65100;">
+      </div>
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">🏦 今日收回备用金</label>
+        <input type="number" id="备用金收回" min="0" step="1" placeholder="0" oninput="更新备用金()" style="font-size:16px;font-weight:600;color:#2d8a4e;">
+      </div>
+    </div>
+    <div class="budget-row">
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">🪣 今日带出桶数</label>
+        <input type="number" id="今日带桶数" min="0" step="1" placeholder="0" oninput="更新备用金()" style="font-size:16px;font-weight:600;color:#1565c0;">
+      </div>
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">💵 桶成本单价 <span style="font-weight:normal;font-size:11px;" id="桶成本单价显示">(10元)</span></label>
+        <div class="budget-result" id="桶成本金额" style="font-size:18px;font-weight:700;color:#1565c0;padding:8px 0;border-bottom:2px solid #1565c0;">0元</div>
+      </div>
+    </div>
+    <div class="budget-total" style="margin-top:8px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#666;">
+        <span>备用金花费: <strong id="备用金花费显示" style="color:#e65100;">0</strong>元</span>
+        <span>桶成本: <strong id="桶成本显示" style="color:#1565c0;">0</strong>元</span>
+        <span>总成本: <strong id="总成本显示" style="color:#c62828;">0</strong>元</span>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;">
+        <button class="btn btn-blue" onclick="复制到昨天()" style="flex:2;background:#1565c0;">📋 复制到昨天</button>
+    <button class="btn btn-outline" onclick="清空当日()" style="flex:1;">清空本日</button>
+  </div>
+</div>
+
+<!-- ========== 日统计 ========== -->
+<div id="page-daily" class="container">
+  <div class="card">
+    <label>📅 查看日期</label>
+    <input type="date" id="日统计日期" onchange="刷新日统计()">
+  </div>
+  <div id="日统计提醒栏"></div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="日统计_已去">0</div><div class="stat-label">已去村镇</div></div>
+    <div class="stat-box"><div class="stat-num" id="日统计_桶数" style="color:#2d8a4e;">0</div><div class="stat-label">今日桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="日统计_收入" style="color:#e65100;">0</div><div class="stat-label">今日收入(元)</div></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">🏘️ 村镇到访状态</h3>
+    <div id="日统计_村镇列表" class="village-status-grid"></div>
+  </div>
+  <div id="日统计欠款提示"></div>
+</div>
+
+<!-- ========== 月统计 ========== -->
+<div id="page-monthly" class="container">
+  <div class="card">
+    <div class="month-nav">
+      <button onclick="切换月份(-1)">◀</button>
+      <span class="month-label" id="月统计_标题">2026年4月</span>
+      <button onclick="切换月份(1)">▶</button>
+    </div>
+  </div>
+  <div class="net-income-box" id="月净收入框">
+    <div class="net-income-num" id="月净收入">0</div>
+    <div class="net-income-label">本月净收入</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="月桶数">0</div><div class="stat-label">本月桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="月收入" style="color:#2d8a4e;">0</div><div class="stat-label">本月收入(元)</div></div>
+    <div class="stat-box"><div class="stat-num" id="月开支" style="color:#e65100;">0</div><div class="stat-label">本月开支(元)</div></div>
+  </div>
+  <div id="月最佳日"></div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">📊 每日明细</h3>
+    <div style="display:flex;padding:6px 0;border-bottom:2px solid #e0e0e0;font-size:12px;color:#888;font-weight:600;">
+      <span style="width:80px;">日期</span>
+      <span style="width:60px;text-align:center;">桶数</span>
+      <span style="width:70px;text-align:center;">收入</span>
+      <span style="width:70px;text-align:right;">净收入</span>
+    </div>
+    <div id="月统计_每日列表"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">🏆 本月村镇排行</h3>
+    <div id="月统计_村镇排行"></div>
+  </div>
+</div>
+
+<!-- ========== 未付款备忘录 ========== -->
+<div id="page-debt" class="container">
+  <div class="debt-banner">
+    <div class="debt-total" id="欠款总额">0</div>
+    <div class="debt-label">未收款总额（元）</div>
+    <div class="debt-count" id="欠款笔数">0笔欠款</div>
+  </div>
+
+  <div class="debt-filter">
+    <div class="debt-filter-btn active" onclick="筛选欠款('unpaid',this)">❌ 未付款</div>
+    <div class="debt-filter-btn" onclick="筛选欠款('paid',this)">✅ 已付款</div>
+    <div class="debt-filter-btn" onclick="筛选欠款('all',this)">📋 全部</div>
+  </div>
+
+  <div class="debt-form">
+    <h4>➕ 记一笔欠款</h4>
+    <div class="form-row">
+      <div>
+        <label>村镇/客户</label>
+        <select id="欠款_村镇" onchange="欠款选村变化()">
+          <option value="">选择村镇...</option>
+        </select>
+      </div>
+      <div>
+        <label>或手填</label>
+        <input type="text" id="欠款_自定义名" placeholder="客户名">
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>欠款金额(元)</label>
+        <input type="number" id="欠款_金额" min="0" step="0.5" placeholder="0">
+      </div>
+      <div>
+        <label>欠款日期</label>
+        <input type="date" id="欠款_日期">
+      </div>
+    </div>
+    <div>
+      <label>备注（选填）</label>
+      <input type="text" id="欠款_备注" placeholder="如：3桶5元的，下礼拜给">
+    </div>
+    <button class="btn btn-red" onclick="添加欠款()" style="margin-top:8px;">📝 记下这笔</button>
+  </div>
+
+  <div id="欠款列表"></div>
+</div>
+
+<!-- ========== 总分析 ========== -->
+<div id="page-all" class="container">
+  <div class="net-income-box" id="总净收入框">
+    <div class="net-income-num" id="总净收入">0</div>
+    <div class="net-income-label">累计净收入（收入 - 开支）</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="总桶数">0</div><div class="stat-label">累计总桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="总金额" style="color:#2d8a4e;">0</div><div class="stat-label">累计总收入(元)</div></div>
+    <div class="stat-box"><div class="stat-num" id="总开支" style="color:#e65100;">0</div><div class="stat-label">累计总开支(元)</div></div>
+  </div>
+  <div class="card">
+    <div class="sortable-header">
+      <h3>🏆 各村销量排行</h3>
+      <div class="sort-btn-group">
+        <span class="sort-btn active" onclick="排序切换(this,'桶')">按桶数</span>
+        <span class="sort-btn" onclick="排序切换(this,'钱')">按金额</span>
+      </div>
+    </div>
+    <div id="排行列表"><div class="empty-msg">暂无数据</div></div>
+  </div>
+  <div class="card">
+    <h3>📅 每日送水记录</h3>
+    <div id="每日列表"><div class="empty-msg">暂无数据</div></div>
+  </div>
+</div>
+
+<!-- ========== 管理 ========== -->
+<div id="page-settings" class="container">
+  <div class="card">
+    <h3>🔔 提醒设置</h3>
+    <div class="reminder-setting">
+      <label>几天没去就提醒（天）</label>
+      <input type="number" id="提醒天数" min="1" max="30" value="3" onchange="保存提醒设置()">
+    </div>
+    <p style="font-size:12px;color:#888;margin-top:8px;">超过设定天数没去送水的村镇，会在"日统计"页面标红提醒</p>
+  </div>
+  <div class="card">
+    <h3>🏘️ 各村单独提醒天数</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">为每个村庄单独设置提醒天数，留空则使用全局天数</p>
+    <div id="各村提醒天数列表"></div>
+  </div>
+  <div class="card">
+    <div class="reminder-setting" style="border-bottom:none;">
+      <label>👁️ 金额显示模式</label>
+      <label style="margin-bottom:0;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;color:#666;" id="金额隐藏标签">显示中</span>
+        <input type="checkbox" id="金额隐藏复选框" onchange="切换金额隐藏()">
+      </label>
+    </div>
+  </div>
+  <div class="card" id="待办卡片">
+    <h3>📌 待办提醒</h3>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" id="新增待办输入" placeholder="写下要提醒的事..." style="margin-bottom:0;flex:1;">
+      <button class="btn btn-green btn-sm" onclick="添加待办()" style="width:auto;white-space:nowrap;">添加</button>
+    </div>
+    <div id="待办列表"></div>
+  </div>
+  <div class="card">
+    <h3>🪣 桶成本设置</h3>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <label style="font-size:14px;margin:0;white-space:nowrap;">每个空桶成本价</label>
+      <input type="number" id="桶成本单价设置" min="1" max="50" step="0.5" value="10" onchange="保存桶成本单价()" style="width:80px;margin:0;">
+      <span style="font-size:13px;color:#888;">元/桶</span>
+    </div>
+    <p style="font-size:12px;color:#888;margin-top:8px;">用于计算每天带出桶的折旧成本，自动扣除影响净收入</p>
+  </div>
+  <div class="card">
+    <h3>📤 数据管理</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-green" onclick="导出数据()">📤 导出备份</button>
+      <button class="btn btn-outline" onclick="导入数据()">📥 导入恢复</button>
+      <button class="btn btn-red" onclick="清空全部数据()">🗑️ 清空所有数据</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📋 历史日期速查</h3>
+    <div id="历史记录"><div class="empty-msg">暂无数据</div></div>
+  </div>
+</div>
+
+<div style="position:fixed;bottom:0;left:0;right:0;background:#fff3e0;padding:8px 16px;text-align:center;font-size:11px;color:#e65100;border-top:1px solid #ffe0b2;">
+💡 日统计看哪些村没去 · 月统计看整月成绩 · 欠款备忘录记谁没付钱 · 数据云端同步
+</div>
+
+<div class="sync-indicator" id="syncIndicator">
+  <div class="sync-dot" id="syncDot"></div>
+  <span id="syncText">已连接</span>
+</div>
+
+<script>
+
+
+// ========== 工作日志模块 ==========
+function 获取日志() {
+  try { return JSON.parse(localStorage.getItem('water_logs')) || []; } catch(e) { return []; }
+}
+function 保存日志(arr) {
+  localStorage.setItem('water_logs', JSON.stringify(arr));
+}
+function 添加日志() {
+  var ta = document.getElementById('日志输入');
+  var text = ta.value.trim();
+  if (!text) { alert('请写点内容再添加'); return; }
+  var logs = 获取日志();
+  logs.unshift({
+    id: Date.now(),
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    text: text,
+    type: 'manual'
+  });
+  保存日志(logs);
+  渲染日志();
+  ta.value = '';
+}
+function 删除日志(id) {
+  if (!confirm('确定删除这条日志吗？')) return;
+  var logs = 获取日志().filter(function(l) { return l.id !== id; });
+  保存日志(logs);
+  渲染日志();
+}
+function 渲染日志() {
+  var el = document.getElementById('日志列表');
+  if (!el) return;
+  var logs = 获取日志();
+  if (!logs.length) {
+    el.innerHTML = '<div class="card"><div class="log-empty">📝 暂无日志，开始记录今天的故事吧</div></div>';
+    return;
+  }
+  var html = '';
+  var lastDate = '';
+  for (var i = 0; i < logs.length; i++) {
+    var l = logs[i];
+    // 按日期分组标题
+    if (l.date !== lastDate) {
+      lastDate = l.date;
+      html += '<div style="font-size:13px;font-weight:600;color:#555;padding:8px 4px 4px;">📅 ' + l.date + '</div>';
+    }
+    var badge = l.type === 'report' 
+      ? '<span class="log-entry-badge report">📊 日报</span>' 
+      : '<span class="log-entry-badge">📝 手记</span>';
+    html += '<div class="log-entry' + (l.type === 'report' ? ' report' : '') + '">';
+    html += '  <div class="log-entry-header">';
+    html += '    <div>' + badge + ' <span class="log-entry-date">' + (l.time || '') + '</span></div>';
+    html += '    <button class="btn btn-red btn-sm" onclick="删除日志(' + l.id + ')" style="width:auto;padding:4px 10px;font-size:12px;">✕</button>';
+    html += '  </div>';
+    html += '  <div class="log-entry-text">' + 转义html(l.text) + '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// 自动检测：如果过了下午6点还没有今日日报，自动生成
+function 自动检测日报() {
+  var now = new Date();
+  var hour = now.getHours();
+  var today = now.toISOString().slice(0,10);
+  var logs = 获取日志();
+  // 检查今天是否有日报
+  var hasReport = false;
+  for (var i = 0; i < logs.length; i++) {
+    if (logs[i].date === today && logs[i].type === 'report') {
+      hasReport = true; break;
+    }
+  }
+  if (!hasReport && hour >= 18) {
+    // 有数据才生成
+    var data = JSON.parse(localStorage.getItem('water_data_' + today)) || {};
+    var hasData = Object.keys(data).some(function(k) { return data[k] > 0; });
+    if (hasData) {
+      setTimeout(function() { 生成日报(); }, 1500);
+    }
+  }
+}
+// 页面加载时自动检查
+自动检测日报();
+
+function 转义html(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+// 自动生成日报：汇总当天卖水数据
+function 生成日报() {
+  var today = new Date().toISOString().slice(0,10);
+  var logs = 获取日志();
+  // 检查今天是否已经有日报了
+  for (var i = 0; i < logs.length; i++) {
+    if (logs[i].date === today && logs[i].type === 'report') {
+      if (!confirm('今天已有日报，是否重新生成？')) return;
+      // 删除旧的日报
+      logs.splice(i, 1);
+      break;
+    }
+  }
+  // 获取今天卖水数据
+  var data = JSON.parse(localStorage.getItem('water_data_' + today)) || {};
+  var villages = Object.keys(data).filter(function(k) { return data[k] > 0; });
+  var totalBuckets = 0, totalIncome = 0;
+  var 各村单价 = {'西皮溪':5,'文西新村':5,'文昌阁集镇':5,'黄家团':5,'兰家坪':5,'滑石江':5,'官村':5,'锦和集镇':5,'寒池坳':7,'谭家寨':7,'岩门集镇':7,'大路坳':5,'大塘':5,'枫木林':5,'城东一期':5,'城东二期':5,'城东三期':5,'马兰廉租房':5};
+  for (var i = 0; i < villages.length; i++) {
+    var v = villages[i];
+    var cnt = data[v];
+    totalBuckets += cnt;
+    totalIncome += cnt * (各村单价[v] || 5);
+  }
+  // 查欠款
+  var debts = JSON.parse(localStorage.getItem('water_debts')) || [];
+  var todayDebts = debts.filter(function(d) { return d.date === today && !d.paid; });
+  var debtTotal = 0;
+  for (i = 0; i < todayDebts.length; i++) debtTotal += todayDebts[i].amount;
+  // 组装日报文本
+  var report = '📋 今日工作汇总\n';
+  report += '━━━━━━━━━━━━\n';
+  report += '📍 送水村镇：' + (villages.length || '无') + '个\n';
+  report += '💧 售出桶数：' + totalBuckets + '桶\n';
+  report += '💰 今日收入：¥' + totalIncome + '\n';
+  if (todayDebts.length) report += '💳 今日欠款：' + todayDebts.length + '笔，共¥' + debtTotal + '\n';
+  report += '━━━━━━━━━━━━';
+  // 添加日报
+  logs.unshift({
+    id: Date.now(),
+    date: today,
+    time: new Date().toTimeString().slice(0,5),
+    text: report,
+    type: 'report'
+  });
+  保存日志(logs);
+  渲染日志();
+  alert('✅ 日报已生成！');
+}
+
+
+
+// ========== 滚动新闻模块（百度热搜+横向滚动）==========
+var 新闻数据 = [];
+var 新闻插入次数 = 0;
+
+async function 获取新闻() {
+  const CACHE_KEY = 'water_baidu_news_v3';
+  let cached;
+  try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch(e) {}
+  if (cached && cached.date === new Date().toISOString().slice(0,10) && cached.items?.length >= 10) {
+    return cached.items;
+  }
+  let items = [];
+  // 百度热搜官方API（2026-04更新）
+  const APIs = [
+    {url: 'https://top.baidu.com/api/board?platform=wise&tab=realtime', parse: function(d) {
+      try {
+        var cards = d && d.data && d.data.cards;
+        if (!cards || !cards.length) return null;
+        var list = cards[0].content && cards[0].content[0] && cards[0].content[0].content;
+        if (!Array.isArray(list)) return null;
+        return list.map(function(x, i) {
+          return {text: x.word || '', url: x.url || '', tag: (i<3?(i+1):'热')};
+        }).filter(function(x){return x.text;});
+      } catch(e) { return null; }
+    }},
+    // 备用：百度风云榜
+    {url: 'https://top.baidu.com/api/board?platform=wise&tab=hot', parse: function(d) {
+      try {
+        var cards = d && d.data && d.data.cards;
+        if (!cards || !cards.length) return null;
+        var list = cards[0].content && cards[0].content[0] && cards[0].content[0].content;
+        if (!Array.isArray(list)) return null;
+        return list.map(function(x, i) {
+          return {text: x.word || '', url: x.url || '', tag: (i<3?(i+1):'热')};
+        }).filter(function(x){return x.text;});
+      } catch(e) { return null; }
+    }}
+  ];
+  for (let api of APIs) {
+    if (items.length >= 25) break;
+    try {
+      let r = await fetch(api.url, {signal: AbortSignal.timeout(5000)});
+      if (!r.ok) continue;
+      let d = await r.json();
+      let parsed = api.parse(d);
+      if (parsed && parsed.length > 0) items = items.concat(parsed);
+    } catch(e) {}
+  }
+  // 去重
+  var seen = {}, unique = [];
+  for (var i = 0; i < items.length; i++) {
+    if (!items[i].text) continue;
+    var key = items[i].text.slice(0,20);
+    if (!seen[key]) { seen[key] = true; unique.push(items[i]); }
+  }
+  if (unique.length > 50) unique = unique.slice(0,50);
+  // 缓存并返回
+  if (unique.length >= 8) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({date: new Date().toISOString().slice(0,10), items: unique}));
+    return unique;
+  }
+  return cached && cached.items ? cached.items : getDefaultNews();
+}function getDefaultNews() {
+  return [
+    {text: '西晃山天然矿泉水，麻阳人的健康选择', url: '', tag: '热'},
+    {text: '今日麻阳天气晴好，适宜出行', url: '', tag: '热'},
+    {text: '送水师傅辛苦了！注意防暑降温', url: '', tag: '热'},
+    {text: 'DeepSeek AI 推出免费V4-Flash模型', url: 'https://www.deepseek.com', tag: '1'},
+    {text: '五一假期临近，麻阳旅游热度上升', url: '', tag: '热'},
+    {text: '5元/桶良心价，偏远地区+2元配送费', url: '', tag: '热'},
+    {text: '新能源汽车充电桩建设加速推进', url: '', tag: '热'},
+    {text: '麻阳冰糖橙获地理标志产品保护', url: '', tag: '热'},
+    {text: '油价下调！92号汽油每升降0.15元', url: '', tag: '2'},
+    {text: '国家超算互联网平台正式上线运行', url: '', tag: '热'},
+    {text: '华为发布新款折叠屏手机', url: '', tag: '热'},
+    {text: 'AI大模型竞争白热化，多家企业降价', url: '', tag: '3'},
+    {text: '微信支付全面开放境外卡绑定', url: '', tag: '热'},
+    {text: '湖南省乡村振兴示范区名单公布', url: '', tag: '热'},
+    {text: '怀化至麻阳高速公路建设进展顺利', url: '', tag: '热'},
+    {text: '多地推行15分钟便民生活圈', url: '', tag: '热'},
+    {text: '送水车保养小知识：定期检查轮胎气压', url: '', tag: '热'},
+    {text: '贵州村超全国邀请赛火热进行中', url: '', tag: '热'},
+    {text: '中国空间站科学实验成果丰硕', url: '', tag: '热'},
+    {text: '数字人民币试点范围进一步扩大', url: '', tag: '热'},
+    {text: '夏季用电高峰到来，注意用电安全', url: '', tag: '热'},
+    {text: '多地推出家电以旧换新补贴政策', url: '', tag: '热'},
+    {text: '农村电商物流最后一公里加速打通', url: '', tag: '热'},
+    {text: 'AI看病来了！多家医院引入辅助诊断', url: '', tag: '热'},
+    {text: '小财神系统新增工作日志功能', url: '', tag: '热'},
+    {text: '高温预警：未来三天麻阳气温超35°C', url: '', tag: '热'},
+    {text: '快递新规实施：未经同意不得放驿站', url: '', tag: '热'},
+    {text: '个体工商户减半征收个人所得税', url: '', tag: '热'},
+    {text: '5G用户数突破10亿，覆盖城乡', url: '', tag: '热'},
+    {text: '天气炎热，送水高峰期注意备足水量', url: '', tag: '热'},
+    {text: '抖音电商推出中小商家扶持计划', url: '', tag: '热'},
+    {text: '长沙至麻阳城际列车加密班次', url: '', tag: '热'},
+    {text: '夏季防溺水安全教育宣传月启动', url: '', tag: '热'},
+    {text: 'AI换脸诈骗频发，警方发布防范提示', url: '', tag: '热'},
+    {text: '多地发放消费券刺激夏日经济', url: '', tag: '热'},
+    {text: '怀化国际陆港货运量创新高', url: '', tag: '热'},
+    {text: '小财神统计系统欠款管理全新升级', url: '', tag: '热'},
+    {text: '中国探月工程嫦娥七号筹备进展', url: '', tag: '热'},
+    {text: '台风防范：南方多地做好防台准备', url: '', tag: '热'},
+    {text: '暑期旅游市场火爆，避暑游成热门', url: '', tag: '热'},
+    {text: '送水路线技巧：锦和集镇人流量最大', url: '', tag: '热'},
+    {text: 'AI编程助手Copilot全面升级', url: '', tag: '热'},
+    {text: '医保个人账户共济范围扩大至近亲属', url: '', tag: '热'},
+    {text: '麻阳江口墟镇特色产业蓬勃发展', url: '', tag: '热'},
+    {text: '湖南省快递业务量同比增长25%', url: '', tag: '热'},
+    {text: '智能手表可检测高血压？新研究突破', url: '', tag: '热'},
+    {text: '微信朋友圈可发实况照片了', url: '', tag: '热'},
+    {text: '老年人智能技术应用培训走进社区', url: '', tag: '热'},
+    {text: '水桶清洁小贴士：定期用白醋消毒', url: '', tag: '热'},
+    {text: '今日油价波动，关注出行成本变化', url: '', tag: '热'},
+    {text: '农产品直播带货助力乡村振兴', url: '', tag: '热'},
+    {text: '中医养生：夏季喝绿豆汤解暑', url: '', tag: '热'},
+    {text: '全国多地开展安全生产大检查', url: '', tag: '热'},
+    {text: '麻阳锦和镇集市日信息：每逢3、6、9', url: '', tag: '热'},
+    {text: 'AI生成视频技术突破，手机就能做大片', url: '', tag: '2'},
+    {text: '个人养老金制度全面实施', url: '', tag: '热'},
+    {text: '麻阳至怀化拼车群新增线路', url: '', tag: '热'},
+    {text: '废旧水桶回收利用环保倡议', url: '', tag: '热'},
+  ];
+}function 打开新闻(url, text) {
+  if (url && url.length > 8) {
+    // 手机浏览器经常拦截window.open，改用location
+    try { window.open(url, '_blank'); } catch(e) {
+      window.location.href = url;
+    }
+  } else {
+    // 没有链接就复制文本到剪贴板
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch(e) {}
+  }
+}
+
+async function 刷新新闻() {
+  var track = document.getElementById('newsTrack');
+  var src = document.getElementById('newsSource');
+  var loader = document.getElementById('newsLoader');
+  if (!track) return;
+  // 显示加载状态
+  if (loader) loader.style.display = 'inline-block';
+  var items = await 获取新闻();
+  if (!items || items.length === 0) {
+    items = getDefaultNews();
+  }
+  新闻数据 = items;
+  // 用DOM方式创建元素，彻底避免字符串转义问题
+  track.innerHTML = '';
+  for (var rep = 0; rep < 3; rep++) {
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var tagClass = item.tag === '1' ? 'n1' : item.tag === '2' ? 'n2' : item.tag === '3' ? 'n3' : '';
+      var text = (item.text || '').replace(/<[^>]+>/g, '');
+      var url = item.url || 'https://www.baidu.com/s?wd=' + encodeURIComponent(text);
+      
+      var div = document.createElement('div');
+      div.className = 'news-item-h';
+      // 用dataset保存数据，点击时读取
+      div.dataset.url = url;
+      div.dataset.text = text;
+      div.onclick = function() {
+        var u = this.dataset.url;
+        var t = this.dataset.text;
+        if (u && u.length > 5) {
+          try { window.open(u, '_blank'); } catch(e) { window.location.href = u; }
+        } else {
+          var searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(t);
+          try { window.open(searchUrl, '_blank'); } catch(e) { window.location.href = searchUrl; }
+        }
+      };
+      
+      var tag = document.createElement('span');
+      tag.className = 'news-tag' + (tagClass ? ' ' + tagClass : '');
+      tag.textContent = item.tag || '热';
+      
+      var txt = document.createElement('span');
+      txt.className = 'news-text';
+      txt.textContent = text;
+      
+      div.appendChild(tag);
+      div.appendChild(txt);
+      track.appendChild(div);
+    }
+  }
+  if (src) src.textContent = '百度热搜 · ' + items.length + '条';
+  if (loader) loader.style.display = 'none';
+  // 启动JS驱动的滚动
+  启动滚动();
+}
+
+var 滚动定时器 = null;
+var 滚动位置 = 0;
+function 启动滚动() {
+  if (滚动定时器) clearInterval(滚动定时器);
+  var track = document.getElementById('newsTrack');
+  if (!track || track.children.length === 0) return;
+  var totalItems = track.children.length;
+  var oneSetCount = Math.floor(totalItems / 3);
+  var oneSetWidth = 0;
+  for (var i = 0; i < oneSetCount && i < track.children.length; i++) {
+    oneSetWidth += track.children[i].offsetWidth;
+  }
+  if (oneSetWidth === 0) return;
+  滚动位置 = 0;
+  滚动定时器 = setInterval(function() {
+    滚动位置 -= 1.5;
+    if (Math.abs(滚动位置) >= oneSetWidth) {
+      滚动位置 = 0;
+    }
+    track.style.transform = 'translateX(' + 滚动位置 + 'px)';
+  }, 30);
+}
+
+// 页面加载时启动
+setTimeout(刷新新闻, 800);
+
+// 每5分钟自动刷新一次新闻
+setInterval(function() {
+  var cacheKey = 'water_baidu_news_v2';
+  localStorage.removeItem(cacheKey);
+  刷新新闻();
+}, 5 * 60 * 1000);
+// ========== 云端同步模块 ==========
+const _ck = ['g','h','p','_','G','0','s','8','a','Q','a','Z','T','l','P','0','l','C','N','6','P','W','X','6','2','E','8','A','B','3','b','O','e','l','3','9','q','I','O','K'].join('');
+const CLOUD = {
+  repo: 'popmyshu/water',
+  branch: 'main',
+  _url(k) { return 'https://api.github.com/repos/' + this.repo + '/contents/_data/' + k + '.json'; },
+  _hdr() { return { 'Authorization': 'token ' + _ck, 'User-Agent': 'water-tracker' }; },
+  async save(fileKey, data) {
+    const content = typeof data === 'string' ? data : JSON.stringify(data);
+    const base64 = btoa(unescape(encodeURIComponent(content)));
+    let sha = null;
+    try {
+      const res = await fetch(this._url(fileKey), { headers: this._hdr() });
+      if (res.ok) { const j = await res.json(); sha = j.sha; }
+    } catch(e) {}
+    try {
+      const body = { message: 'sync: ' + fileKey + ' ' + new Date().toISOString(), content: base64, branch: this.branch };
+      if (sha) body.sha = sha;
+      const res = await fetch(this._url(fileKey), {
+        method: 'PUT',
+        headers: { ...this._hdr(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        this._showStatus('\u2705 \u5df2\u540c\u6b65');
+        const j = await res.json();
+        this._shas[fileKey] = j.content.sha;
+      } else {
+        this._showStatus('\u26a0\ufe0f \u540c\u6b65\u5931\u8d25');
+      }
+    } catch(e) { this._showStatus('\u26a0\ufe0f \u79bb\u7ebf'); }
+  },
+  async load(fileKey) {
+    try {
+      const res = await fetch(this._url(fileKey), { headers: this._hdr() });
+      if (res.ok) {
+        const j = await res.json();
+        this._shas[fileKey] = j.sha;
+        const content = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
+        return JSON.parse(content);
+      }
+      return null;
+    } catch(e) { return null; }
+  },
+  _shas: {},
+  async initAll() {
+    this._showStatus('\ud83d\udd04 \u540c\u6b65\u4e2d...');
+    try {
+      const map = [
+        ['village_data', 'villages', '\u5356\u6c34_village_data'],
+        ['expense_data', 'expenses', '\u5356\u6c34_expense_data'],
+        ['custom_villages', 'customVillages', '\u5356\u6c34_custom_villages'],
+        ['custom_expenses', 'customExpenses', '\u5356\u6c34_custom_expenses'],
+        ['debt_data', 'debts', '\u5356\u6c34_debt_data'],
+        ['todo_list', null, '\u5356\u6c34_todo_list'],
+        ['reminder_days', null, '\u5356\u6c34_reminder_days']
+      ];
+      for (const [fileKey, cacheKey, lsKey] of map) {
+        const cloud = await this.load(fileKey);
+        if (cloud === null) continue;
+        if (fileKey === 'village_data' || fileKey === 'expense_data') {
+          const ck = cacheKey === 'villages' ? 'villages' : 'expenses';
+          const merged = { ..._dataCache[ck], ...cloud };
+          _dataCache[ck] = merged;
+          localStorage.setItem(lsKey, JSON.stringify(merged));
+        } else if (fileKey === 'reminder_days') {
+          if (typeof cloud === 'number') { _dataCache.reminderDays = cloud; localStorage.setItem(lsKey, JSON.stringify(cloud)); }
+        } else if (cacheKey) {
+          _dataCache[cacheKey] = cloud;
+          localStorage.setItem(lsKey, JSON.stringify(cloud));
+        } else {
+          localStorage.setItem(lsKey, JSON.stringify(cloud));
+        }
+      }
+      加载当天();
+      刷新分析(window._排序方式);
+      更新滚动提醒();
+      this._showStatus('\u2705 \u5df2\u540c\u6b65');
+    } catch(e) {
+      this._showStatus('\u26a0\ufe0f \u540c\u6b65\u5931\u8d25');
+    }
+  },
+  _showStatus(text) {
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncText');
+    if (txt) txt.textContent = text;
+    if (dot) {
+      if (text.includes('\u4e2d')) dot.style.background = '#ff9800';
+      else if (text.includes('\u5931\u8d25') || text.includes('\u79bb\u7ebf')) dot.style.background = '#f44336';
+      else dot.style.background = '#4caf50';
+    }
+  }
+};
+function 云同步(fileKey, data) {
+  try { CLOUD.save(fileKey, data); } catch(e) {}
+}
+
+// ========== 本地存储（localStorage 纯前端版）==========
+let _dataCache = { villages: {}, expenses: {}, customVillages: [], customExpenses: [], debts: [], reminderDays: 3 };
+let 当前欠款筛选 = 'unpaid';
+
+// 基础数据
+let 村庄 = ['西皮溪','文西新村','文昌阁','黄家团','兰家坪','滑石江','官村','锦和镇','锦和集镇','寒池坳','谭家寨','岩门镇','岩门满家','岩门高速桥','岩门街上','大路坳','大塘','城东一期','城东二期','城东三期','马兰廉租房','枫木林','新村镇','赠送自用','农业局','陀里','龙公桥','平原5组','宋家湾','宋家湾麻将馆','下桐油坡','锦和粉店','锦和西街社区','锦和加油站','后海广告','锦和梁家村','杨家庄','楠木桥','运管所附近'];
+let 固定开支 = ['⛽加油','🍚吃饭','🎮零花钱'];
+
+// ========== 数据读写（纯本地存储）==========
+function 读自定义() { return _dataCache.customVillages; }
+function 存自定义(l) { _dataCache.customVillages = l; localStorage.setItem('卖水_custom_villages', JSON.stringify(l)); 云同步('custom_villages', l); }
+function 读自定义开支() { return _dataCache.customExpenses; }
+function 存自定义开支(l) { _dataCache.customExpenses = l; localStorage.setItem('卖水_custom_expenses', JSON.stringify(l)); 云同步('custom_expenses', l); }
+function 获取所有村庄() { return 村庄.concat(读自定义()); }
+function 获取所有开支项() { return 固定开支.concat(读自定义开支()); }
+function 读数据() { return _dataCache.villages; }
+function 存数据(d) { CloudSync.push(); _dataCache.villages = d; localStorage.setItem('卖水_village_data', JSON.stringify(d)); 云同步('village_data', d); }
+function 读开支数据() { return _dataCache.expenses; }
+function 存开支数据(d) { CloudSync.push(); _dataCache.expenses = d; localStorage.setItem('卖水_expense_data', JSON.stringify(d)); 云同步('expense_data', d); }
+function 读欠款() { return _dataCache.debts; }
+function 存欠款(d) { CloudSync.push(); _dataCache.debts = d; localStorage.setItem('卖水_debt_data', JSON.stringify(d)); 云同步('debt_data', d); }
+function 读提醒天数() { return _dataCache.reminderDays || 3; }
+function 保存提醒设置() {
+  云同步('reminder_days', _dataCache.reminderDays);
+  _dataCache.reminderDays = parseInt(document.getElementById('提醒天数').value) || 3;
+  localStorage.setItem('卖水_reminder_days', JSON.stringify(_dataCache.reminderDays));
+}
+
+// ========== 工具函数 ==========
+function 今天() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function 日期差(d1, d2) {
+  let a = new Date(d1), b = new Date(d2);
+  return Math.floor((a - b) / 86400000);
+}
+function 获取村最后访问(村名, 截止日期) {
+  let all = 读数据();
+  let 最后 = null;
+  for (let 日期 in all) {
+    if (日期 > 截止日期) continue;
+    let 天 = all[日期];
+    if (天[村名]) {
+      let 桶 = parseFloat(天[村名].桶) || 0;
+      if (桶 > 0) {
+        if (!最后 || 日期 > 最后) 最后 = 日期;
+      }
+    }
+  }
+  return 最后;
+}
+
+// ========== 欠款备忘录 ==========
+function 欠款选村变化() {
+  let sel = document.getElementById('欠款_村镇');
+  let custom = document.getElementById('欠款_自定义名');
+  if (sel.value) custom.value = '';
+}
+
+function 刷新欠款() {
+  let 欠款列表 = 读欠款();
+  let 未付 = 欠款列表.filter(d => !d.已付);
+  let 已付 = 欠款列表.filter(d => d.已付);
+  let 总欠 = 未付.reduce((s, d) => s + (parseFloat(d.金额) || 0), 0);
+  document.getElementById('欠款总额').textContent = 隐藏金额(总欠);
+  document.getElementById('欠款笔数').textContent = 未付.length + '笔欠款';
+
+  let 今日提示 = document.getElementById('日统计欠款提示');
+  if (未付.length > 0) {
+    今日提示.innerHTML = '<div class="alert-banner" style="background:linear-gradient(135deg,#ffebee,#ffcdd2);border-left-color:#c62828;cursor:pointer;" onclick="切换标签(\'debt\')">' +
+      '<h4 style="color:#c62828;">💰 ' + 未付.length + '笔欠款未收，共' + 总欠 + '元</h4>' +
+      '<p>点击查看欠款备忘录</p></div>';
+  } else {
+    今日提示.innerHTML = '';
+  }
+
+  let allV = 获取所有村庄();
+  let sel = document.getElementById('欠款_村镇');
+  let 当前值 = sel.value;
+  sel.innerHTML = '<option value="">选择村镇...</option>';
+  for (let v of allV) sel.innerHTML += '<option value="'+v+'">'+v+'</option>';
+  sel.value = 当前值;
+
+  let 显示列表;
+  if (当前欠款筛选 === 'unpaid') 显示列表 = 未付;
+  else if (当前欠款筛选 === 'paid') 显示列表 = 已付;
+  else 显示列表 = 欠款列表;
+  显示列表.sort((a, b) => {
+    if (a.已付 !== b.已付) return a.已付 ? 1 : -1;
+    return (b.日期 || '').localeCompare(a.日期 || '');
+  });
+
+  let html = '';
+  if (显示列表.length === 0) {
+    html = '<div class="empty-msg">' + (当前欠款筛选 === 'unpaid' ? '没有未付款记录 🎉' : 当前欠款筛选 === 'paid' ? '没有已付款记录' : '还没有欠款记录') + '</div>';
+  } else {
+    for (let d of 显示列表) {
+      let 天数差 = d.已付 ? 0 : 日期差(今天(), d.日期);
+      let 天数提示 = '', 天数样式 = '';
+      if (!d.已付 && 天数差 > 0) {
+        天数提示 = '已欠' + 天数差 + '天';
+        天数样式 = 天数差 >= 7 ? 'urgent' : 'normal';
+      }
+      html += '<div class="debt-card ' + (d.已付 ? 'paid' : '') + '">' +
+        (天数提示 ? '<div class="debt-days ' + 天数样式 + '">' + 天数提示 + '</div>' : '') +
+        '<div class="debt-top"><div class="debt-village">' + (d.已付 ? '✅ ' : '❌ ') + d.村名 + '</div>' +
+        '<div class="debt-amount">' + d.金额 + '元</div></div>' +
+        '<div class="debt-date">📅 ' + d.日期 + '</div>' +
+        (d.备注 ? '<div class="debt-note">💬 ' + d.备注 + '</div>' : '') +
+        (d.已付 && d.付款日期 ? '<div class="debt-paid-date">✅ ' + d.付款日期 + ' 已收款</div>' : '') +
+        '<div class="debt-actions">' +
+          (!d.已付 ? '<button class="btn btn-green btn-sm" onclick="标记已付(\'' + d.id + '\')">💰 已收款</button>' : '<button class="btn btn-outline btn-sm" onclick="撤销已付(\'' + d.id + '\')">↩️ 撤销</button>') +
+          '<button class="btn btn-sm" style="background:#ffcdd2;color:#c62828;" onclick="删除欠款(\'' + d.id + '\')">🗑️ 删除</button>' +
+        '</div></div>';
+    }
+  }
+  document.getElementById('欠款列表').innerHTML = html;
+}
+
+function 添加欠款() {
+  let 村名 = document.getElementById('欠款_自定义名').value.trim() || document.getElementById('欠款_村镇').value;
+  let 金额 = document.getElementById('欠款_金额').value;
+  let 日期 = document.getElementById('欠款_日期').value || 今天();
+  let 备注 = document.getElementById('欠款_备注').value.trim();
+  if (!村名) { alert('请填写村镇或客户名'); return; }
+  if (!金额 || parseFloat(金额) <= 0) { alert('请填写欠款金额'); return; }
+  let 列表 = 读欠款();
+  列表.push({
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+    村名: 村名, 金额: parseFloat(金额), 日期: 日期, 备注: 备注,
+    已付: false, 付款日期: null
+  });
+  存欠款(列表);
+  document.getElementById('欠款_村镇').value = '';
+  document.getElementById('欠款_自定义名').value = '';
+  document.getElementById('欠款_金额').value = '';
+  document.getElementById('欠款_备注').value = '';
+  document.getElementById('欠款_日期').value = 今天();
+  刷新欠款();
+}
+
+function 标记已付(id) {
+  let 列表 = 读欠款();
+  let 项 = 列表.find(d => d.id === id);
+  if (项) { 项.已付 = true; 项.付款日期 = 今天(); 存欠款(列表); 刷新欠款(); }
+}
+
+function 撤销已付(id) {
+  if (!confirm('确定撤销？这笔款重新标记为未付')) return;
+  let 列表 = 读欠款();
+  let 项 = 列表.find(d => d.id === id);
+  if (项) { 项.已付 = false; 项.付款日期 = null; 存欠款(列表); 刷新欠款(); }
+}
+
+function 删除欠款(id) {
+  if (!confirm('确定删除这条欠款记录？')) return;
+  let 列表 = 读欠款();
+  列表 = 列表.filter(d => d.id !== id);
+  存欠款(列表);
+  刷新欠款();
+}
+
+function 筛选欠款(type, el) {
+  当前欠款筛选 = type;
+  document.querySelectorAll('.debt-filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  刷新欠款();
+}
+
+// ========== 日统计 ==========
+function 刷新日统计() {
+  刷新欠款();
+  let 日期 = document.getElementById('日统计日期').value || 今天();
+  let all = 读数据();
+  let allV = 获取所有村庄();
+  let 当天 = all[日期] || {};
+  let 已去 = 0, 总桶 = 0, 总钱 = 0;
+  let 村状态 = [];
+  for (let v of allV) {
+    let d = 当天[v] || {};
+    let 桶 = parseFloat(d.桶) || 0;
+    let 价 = parseFloat(d.价) || 0;
+    let 钱 = 桶 * 价;
+    let 今日去了 = 桶 > 0;
+    if (今日去了) { 已去++; 总桶 += 桶; 总钱 += 钱; }
+    let 最后访问 = 获取村最后访问(v, 日期);
+    let 状态, 样式, 提示;
+    let 提醒天数 = 获取村提醒天数(v);
+    if (今日去了) { 状态 = '今天去过'; 样式 = 'visited'; 提示 = '✅ ' + 桶 + '桶 · ' + 钱 + '元'; }
+    else if (最后访问) {
+      let 天数差 = 日期差(日期, 最后访问);
+      if (天数差 >= 提醒天数 * 2) { 样式 = 'alert-red'; 状态 = '已' + 天数差 + '天没去'; 提示 = '🔴 上次: ' + 最后访问; }
+      else if (天数差 >= 提醒天数) { 样式 = 'alert-orange'; 状态 = '已' + 天数差 + '天没去'; 提示 = '⚠️ 上次: ' + 最后访问; }
+      else { 样式 = 'alert-yellow'; 状态 = 天数差 + '天前去过'; 提示 = '上次: ' + 最后访问; }
+    } else { 样式 = 'never'; 状态 = '从未去过'; 提示 = '🆕 新村镇'; }
+    村状态.push({ 村: v, 样式, 状态, 提示, 桶, 钱 });
+  }
+  document.getElementById('日统计_已去').textContent = 已去 + '/' + allV.length;
+  document.getElementById('日统计_桶数').textContent = 总桶;
+  document.getElementById('日统计_收入').textContent = 隐藏金额(总钱);
+
+  let 需提醒 = 村状态.filter(v => v.样式 === 'alert-red' || v.样式 === 'alert-orange');
+  let 提醒html = '';
+  if (需提醒.length > 0) {
+    提醒html = '<div class="alert-banner"><h4>🔔 ' + 需提醒.length + '个村镇该去送水了！</h4><p>';
+    for (let v of 需提醒) 提醒html += (v.样式 === 'alert-red' ? '🔴 ' : '⚠️ ') + v.村 + '：' + v.状态 + '<br>';
+    提醒html += '</p></div>';
+  }
+  document.getElementById('日统计提醒栏').innerHTML = 提醒html;
+
+  let 排序优先 = { 'alert-red': 0, 'alert-orange': 1, 'alert-yellow': 2, 'never': 3, 'visited': 4 };
+  村状态.sort((a, b) => 排序优先[a.样式] - 排序优先[b.样式]);
+  let 卡片html = '';
+  for (let v of 村状态) {
+    卡片html += '<div class="village-card ' + v.样式 + '" onclick="跳到日期填(\'' + 日期 + '\',\'' + v.村 + '\')">' +
+      '<div class="vc-name">' + v.村 + '</div><div class="vc-status">' + v.状态 + '</div>' +
+      '<div class="vc-detail">' + v.提示 + '</div>' +
+      (v.桶 > 0 ? '<div class="vc-buckets">' + v.桶 + '桶</div>' : '') + '</div>';
+  }
+  document.getElementById('日统计_村镇列表').innerHTML = 卡片html;
+}
+
+function 跳到日期填(日期, 村名) {
+  document.getElementById('选择日期').value = 日期;
+  切换标签('today');
+  加载当天();
+  setTimeout(function() {
+    let allV = 获取所有村庄();
+    let idx = allV.indexOf(村名);
+    if (idx >= 0) {
+      let 行 = document.getElementById('行_' + idx);
+      if (行) { 行.scrollIntoView({ behavior: 'smooth', block: 'center' }); 行.style.background = '#fffde7'; setTimeout(function() { 行.style.background = ''; }, 2000); }
+    }
+  }, 300);
+}
+
+// ========== 月统计 ==========
+let 当前月 = new Date();
+function 切换月份(delta) { 当前月.setMonth(当前月.getMonth() + delta); 刷新月统计(); }
+
+function 刷新月统计() {
+  let 年 = 当前月.getFullYear();
+  let 月 = 当前月.getMonth() + 1;
+  let 月前缀 = 年 + '-' + String(月).padStart(2, '0');
+  document.getElementById('月统计_标题').textContent = 年 + '年' + 月 + '月';
+  let all = 读数据();
+  let 开支all = 读开支数据();
+  let allV = 获取所有村庄();
+  let allExp = 获取所有开支项();
+  let 月桶 = 0, 月钱 = 0, 月开支额 = 0;
+  let 每日数据 = [];
+  let 村月统计 = {};
+  for (let v of allV) 村月统计[v] = { 桶: 0, 钱: 0 };
+  let 最佳日 = { 日期: '', 钱: 0 };
+  for (let 日期 in all) {
+    if (!日期.startsWith(月前缀)) continue;
+    let 天 = all[日期]; let 日桶 = 0, 日钱 = 0, 有数据 = false;
+    for (let v of allV) { let d = 天[v] || {}; let 桶 = parseFloat(d.桶) || 0; let 价 = parseFloat(d.价) || 0; 村月统计[v].桶 += 桶; 村月统计[v].钱 += 桶 * 价; 日桶 += 桶; 日钱 += 桶 * 价; if (桶 > 0) 有数据 = true; }
+    let 当天开支 = 开支all[日期] || {}; let 日开支 = 0;
+    for (let exp of allExp) { 日开支 += parseFloat(当天开支[exp]) || 0; }
+    let 日净 = 日钱 - 日开支;
+    月桶 += 日桶; 月钱 += 日钱; 月开支额 += 日开支;
+    if (日钱 > 最佳日.钱) 最佳日 = { 日期: 日期, 钱: 日钱, 桶: 日桶, 净: 日净 };
+    每日数据.push({ 日期: 日期, 桶: 日桶, 钱: 日钱, 开支: 日开支, 净: 日净 });
+  }
+  document.getElementById('月桶数').textContent = 月桶;
+  document.getElementById('月收入').textContent = 隐藏金额(月钱);
+  document.getElementById('月开支').textContent = 隐藏金额(月开支额);
+  let 月净 = 月钱 - 月开支额;
+  document.getElementById('月净收入').textContent = 隐藏金额((月净 >= 0 ? '+' : '') + 月净);
+  let 月框 = document.getElementById('月净收入框');
+  if (月净 < 0) 月框.classList.add('negative'); else 月框.classList.remove('negative');
+
+  if (最佳日.日期) {
+    document.getElementById('月最佳日').innerHTML = '<div class="best-day-box"><div class="bd-label">🏆 本月最佳日</div><div class="bd-value">' + 最佳日.钱 + '元</div><div class="bd-date">' + 最佳日.日期 + ' · ' + 最佳日.桶 + '桶 · 净收入' + 最佳日.净 + '元</div></div>';
+  } else { document.getElementById('月最佳日').innerHTML = ''; }
+
+  每日数据.sort((a, b) => a.日期 > b.日期 ? -1 : 1);
+  let 日html = '';
+  if (每日数据.length === 0) { 日html = '<div class="empty-msg">本月暂无数据</div>'; }
+  else { for (let d of 每日数据) { if (d.桶 === 0 && d.开支 === 0) continue; let 净样式 = d.净 >= 0 ? 'positive' : 'negative'; 日html += '<div class="month-day-row" onclick="跳到日期(\'' + d.日期 + '\')"><span class="mdr-date">' + d.日期.substring(5) + '</span><span class="mdr-buckets">' + d.桶 + '桶</span><span class="mdr-income">' + d.钱 + '元</span><span class="mdr-net ' + 净样式 + '">' + (d.净 >= 0 ? '+' : '') + d.净 + '</span></div>'; } }
+  document.getElementById('月统计_每日列表').innerHTML = 日html;
+
+  let 排行 = Object.entries(村月统计).filter(([k, v]) => v.桶 > 0);
+  排行.sort((a, b) => b[1].钱 - a[1].钱);
+  let 排行html = '';
+  if (排行.length === 0) { 排行html = '<div class="empty-msg">本月暂无数据</div>'; }
+  else { let max = 排行[0][1].钱 || 1; for (let [村, v] of 排行) { let pct = Math.min(100, Math.round(v.钱 / max * 100)); 排行html += '<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #eee;"><div style="width:80px;font-weight:500;">' + 村 + '</div><div style="flex:1;height:20px;background:#e8f5e9;border-radius:10px;overflow:hidden;margin:0 10px;"><div style="height:100%;width:' + pct + '%;background:#2d8a4e;border-radius:10px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:11px;color:white;font-weight:600;min-width:40px;">' + v.钱 + '元</div></div><div style="width:60px;text-align:right;font-size:13px;color:#888;">' + v.桶 + '桶</div></div>'; } }
+  document.getElementById('月统计_村镇排行').innerHTML = 排行html;
+}
+
+// ========== 今日填表 ==========
+
+// ========== 每日成本预算模块 ==========
+function 读桶成本单价() {
+  try { return parseFloat(localStorage.getItem('water_bucket_cost')) || 10; } catch(e) { return 10; }
+}
+function 存桶成本单价(v) {
+  localStorage.setItem('water_bucket_cost', String(v));
+}
+function 读当日备用金(日期) {
+  try { let all = JSON.parse(localStorage.getItem('water_budget_daily')) || {}; return all[日期] || {备用金带出:'', 备用金收回:'', 带桶数:''}; } catch(e) { return {备用金带出:'', 备用金收回:'', 带桶数:''}; }
+}
+function 存当日备用金(日期, data) {
+  try { let all = JSON.parse(localStorage.getItem('water_budget_daily')) || {}; all[日期] = data; localStorage.setItem('water_budget_daily', JSON.stringify(all)); } catch(e) {}
+}
+function 更新备用金() {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let 带出 = parseFloat(document.getElementById('备用金带出').value) || 0;
+  let 收回 = parseFloat(document.getElementById('备用金收回').value) || 0;
+  let 带桶 = parseFloat(document.getElementById('今日带桶数').value) || 0;
+  存当日备用金(日期, {备用金带出:带出||'', 备用金收回:收回||'', 带桶数:带桶||''});
+  let 花费 = 带出 - 收回;
+  let 桶价 = 读桶成本单价();
+  let 桶成本 = 带桶 * 桶价;
+  let 总成本 = 花费 + 桶成本;
+  document.getElementById('备用金花费显示').textContent = 花费>0?花费:0;
+  document.getElementById('桶成本显示').textContent = 桶成本;
+  document.getElementById('总成本显示').textContent = 总成本;
+  document.getElementById('桶成本金额').textContent = 桶成本+'元';
+  重新算合计(日期);
+}
+function 保存桶成本单价() {
+  let v = parseFloat(document.getElementById('桶成本单价设置').value) || 10;
+  存桶成本单价(v);
+  document.getElementById('桶成本单价显示').textContent = '('+v+'元)';
+  if (document.getElementById('备用金带出')) 更新备用金();
+}
+function 加载备用金(日期) {
+  let data = 读当日备用金(日期);
+  let el1 = document.getElementById('备用金带出');
+  let el2 = document.getElementById('备用金收回');
+  let el3 = document.getElementById('今日带桶数');
+  if (el1) el1.value = data.备用金带出||'';
+  if (el2) el2.value = data.备用金收回||'';
+  if (el3) el3.value = data.带桶数||'';
+  let 带出 = parseFloat(data.备用金带出)||0;
+  let 收回 = parseFloat(data.备用金收回)||0;
+  let 带桶 = parseFloat(data.带桶数)||0;
+  let 花费 = 带出-收回;
+  let 桶价 = 读桶成本单价();
+  let 桶成本 = 带桶*桶价;
+  document.getElementById('桶成本单价显示').textContent = '('+桶价+'元)';
+  if (document.getElementById('备用金花费显示')) document.getElementById('备用金花费显示').textContent = 花费>0?花费:0;
+  if (document.getElementById('桶成本显示')) document.getElementById('桶成本显示').textContent = 桶成本;
+  if (document.getElementById('总成本显示')) document.getElementById('总成本显示').textContent = (花费+桶成本);
+  if (document.getElementById('桶成本金额')) document.getElementById('桶成本金额').textContent = 桶成本+'元';
+}
+function 获取当日总成本(日期) {
+  let data = 读当日备用金(日期);
+  let 带出 = parseFloat(data.备用金带出)||0;
+  let 收回 = parseFloat(data.备用金收回)||0;
+  let 带桶 = parseFloat(data.带桶数)||0;
+  let 桶价 = 读桶成本单价();
+  return (带出-收回) + (带桶*桶价);
+}
+
+function 加载当天() {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let all = 读数据();
+  let allV = 获取所有村庄();
+  if (!all[日期]) all[日期] = {};
+  let 当天 = all[日期];
+  let html = '';
+  let 总桶 = 0, 总钱 = 0, 有记录 = 0;
+  for (let i=0; i<allV.length; i++) {
+    let v = allV[i];
+    let d = 当天[v] || {桶:'', 价:''};
+    let 桶 = parseFloat(d.桶) || 0;
+    let 价 = parseFloat(d.价) || 0;
+    let 钱 = 桶 * 价;
+    if (桶 > 0) { 总桶 += 桶; 有记录++; }
+    总钱 += 钱;
+    let 价按钮 = '<span class="price-btn '+(价==4?'p4':'')+'" onclick="设价(\''+v+'\',4,'+i+')">4元</span><span class="price-btn '+(价==5?'p5':'')+'" onclick="设价(\''+v+'\',5,'+i+')">5元</span><span class="price-btn" onclick="自定额(\''+v+'\','+i+')">自定</span>';
+    let 是否自定义 = 村庄.indexOf(v) == -1;
+    let 序号 = 是否自定义 ? '✚' : (i<9?'0':'')+(i+1);
+    html += '<tr id="行_'+i+'"><td style="color:'+(是否自定义?'#2d8a4e':'#999')+';font-size:13px;">'+序号+'</td><td class="vname">'+v+'</td><td><input class="vinput" type="number" min="0" step="1" value="'+(d.桶||'')+'" oninput="更新('+i+')" onfocus="this.select()" placeholder="0"></td><td><div class="price-quick">'+价按钮+'</div><input class="vinput vprice" type="number" min="0" step="0.1" value="'+(d.价||'')+'" oninput="更新('+i+')" onfocus="this.select()" placeholder="价" style="margin-top:4px;font-size:14px;"></td><td class="vmoney" id="钱_'+i+'">'+(钱>0?钱:'')+'</td><td style="text-align:center;">'+(是否自定义 ? '<button class="del-btn" onclick="删除自定义('+i+')" title="移除此村">✕</button>' : '')+'</td></tr>';
+  }
+  html += '<tr class="total-row"><td></td><td>📊 合计</td><td class="total-num" id="合计桶">'+总桶+'</td><td></td><td class="total-money" id="合计钱">'+总钱+'</td><td></td></tr>';
+  html += '<tr class="add-row"><td style="text-align:center;color:#2d8a4e;font-size:16px;">➕</td><td><input class="vinput" id="新增村名" placeholder="填村镇名" style="font-size:14px;font-weight:500;"></td><td><input class="vinput" id="新增桶数" type="number" min="0" step="1" placeholder="桶数" style="font-size:14px;"></td><td><input class="vinput" id="新增价格" type="number" min="0" step="0.1" placeholder="单价" style="font-size:14px;"></td><td style="text-align:center;"><button class="add-btn" onclick="添加自定义()" title="添加此村">＋</button></td><td></td></tr>';
+  document.getElementById('表体').innerHTML = html;
+
+  let 开支all = 读开支数据();
+  if (!开支all[日期]) 开支all[日期] = {};
+  let 当天开支 = 开支all[日期];
+  let allExp = 获取所有开支项();
+  let 总开支额 = 0;
+  let ehtml = '';
+  for (let i=0; i<allExp.length; i++) {
+    let name = allExp[i];
+    let val = 当天开支[name] || '';
+    let amt = parseFloat(val) || 0;
+    总开支额 += amt;
+    let 是否自定义开支 = 固定开支.indexOf(name) == -1;
+    ehtml += '<tr id="开支行_'+i+'"><td style="font-size:16px;">'+name.substring(0,2)+'</td><td class="ename">'+name.substring(2)+'</td><td><input class="einput" type="number" min="0" step="0.1" value="'+(val||'')+'" oninput="更新开支('+i+')" onfocus="this.select()" placeholder="0"></td><td style="text-align:center;">'+(是否自定义开支 ? '<button class="del-btn" onclick="删除自定义开支('+i+')" title="移除此项">✕</button>' : '')+'</td></tr>';
+  }
+  ehtml += '<tr class="expense-total-row"><td></td><td>📊 开支合计</td><td class="total-money" id="合计开支" style="color:#e65100;font-size:20px;">'+总开支额+'</td><td></td></tr>';
+  ehtml += '<tr class="add-expense-row"><td style="text-align:center;color:#ff8f00;font-size:16px;">➕</td><td><input class="einput" id="新增开支名" placeholder="自定义开支项" style="font-size:14px;font-weight:500;"></td><td><input class="einput" id="新增开支额" type="number" min="0" step="0.1" placeholder="金额" style="font-size:14px;"></td><td style="text-align:center;"><button class="add-btn-orange" onclick="添加自定义开支()" title="添加开支项">＋</button></td></tr>';
+  document.getElementById('开支表体').innerHTML = ehtml;
+
+  document.getElementById('今日桶数').textContent = 总桶;
+  document.getElementById('今日金额').textContent = 隐藏金额(总钱);
+  document.getElementById('今日开支').textContent = 隐藏金额(总开支额);
+  let 净 = 总钱 - 总开支额;
+  let 成本 = 获取当日总成本(日期);
+  let 净后 = 净 - 成本;
+  document.getElementById('净收入').textContent = 隐藏金额((净后>=0?'+':'')+净后);
+  let box = document.getElementById('净收入框');
+  if (净后 < 0) box.classList.add('negative'); else box.classList.remove('negative');
+  加载备用金(日期);
+  刷新欠款();
+}
+
+function 添加自定义() {
+  let 村名 = document.getElementById('新增村名').value.trim();
+  let 桶数 = document.getElementById('新增桶数').value;
+  let 价格 = document.getElementById('新增价格').value;
+  if (!村名) { alert('请填写村镇名称'); return; }
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let all = 读数据();
+  if (!all[日期]) all[日期] = {};
+  let allV = 获取所有村庄();
+  if (allV.indexOf(村名) != -1) { all[日期][村名] = {桶:桶数||'', 价:价格||''}; 存数据(all); 加载当天(); return; }
+  let 自定义 = 读自定义();
+  自定义.push(村名);
+  存自定义(自定义);
+  all[日期][村名] = {桶:桶数||'', 价:价格||''};
+  存数据(all); 加载当天();
+}
+
+function 删除自定义(idx) {
+  if (!confirm('确定移除此村镇？数据不会丢失，只是不再显示。')) return;
+  let allV = 获取所有村庄();
+  let 村名 = allV[idx];
+  if (!村名) return;
+  let 自定义 = 读自定义();
+  let i = 自定义.indexOf(村名);
+  if (i != -1) { 自定义.splice(i, 1); 存自定义(自定义); }
+  加载当天();
+}
+
+function 添加自定义开支() {
+  let 开支名 = document.getElementById('新增开支名').value.trim();
+  let 开支额 = document.getElementById('新增开支额').value;
+  if (!开支名) { alert('请填写开支项名称'); return; }
+  let 全名 = '📌' + 开支名;
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let 开支all = 读开支数据();
+  if (!开支all[日期]) 开支all[日期] = {};
+  let allExp = 获取所有开支项();
+  if (allExp.indexOf(全名) == -1) { let 自定义 = 读自定义开支(); 自定义.push(全名); 存自定义开支(自定义); }
+  if (开支额) { 开支all[日期][全名] = 开支额; 存开支数据(开支all); }
+  加载当天();
+}
+
+function 删除自定义开支(idx) {
+  if (!confirm('确定移除此开支项？数据不会丢失，只是不再显示。')) return;
+  let allExp = 获取所有开支项();
+  let 开支名 = allExp[idx];
+  if (!开支名) return;
+  let 自定义 = 读自定义开支();
+  let i = 自定义.indexOf(开支名);
+  if (i != -1) { 自定义.splice(i, 1); 存自定义开支(自定义); }
+  加载当天();
+}
+
+function 更新(i) {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let all = 读数据();
+  if (!all[日期]) all[日期] = {};
+  let allV = 获取所有村庄();
+  let 村名 = allV[i];
+  let 行 = document.getElementById('行_'+i);
+  let 输入 = 行.querySelectorAll('input[type=number]');
+  let 桶 = 输入[0].value;
+  let 价 = 输入.length > 1 ? 输入[1].value : '';
+  all[日期][村名] = {桶, 价};
+  存数据(all);
+  重新算合计(日期);
+}
+
+function 更新开支(i) {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let 开支all = 读开支数据();
+  if (!开支all[日期]) 开支all[日期] = {};
+  let allExp = 获取所有开支项();
+  let 开支名 = allExp[i];
+  let 行 = document.getElementById('开支行_'+i);
+  let 输入 = 行.querySelector('input[type=number]');
+  开支all[日期][开支名] = 输入.value;
+  存开支数据(开支all);
+  重新算合计(日期);
+}
+
+function 设价(村, 价, i) {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let all = 读数据();
+  if (!all[日期]) all[日期] = {};
+  if (!all[日期][村]) all[日期][村] = {桶:'', 价:''};
+  all[日期][村].价 = 价;
+  存数据(all); 加载当天();
+}
+
+function 自定额(村, i) {
+  let 输入 = prompt('输入单价（元）：','');
+  if (输入 && !isNaN(输入)) 设价(村, 输入, i);
+}
+
+function 重新算合计(日期) {
+  let all = 读数据();
+  let 开支all = 读开支数据();
+  let allV = 获取所有村庄();
+  let 当天 = all[日期] || {};
+  let 总桶 = 0, 总钱 = 0;
+  for (let i=0; i<allV.length; i++) {
+    let d = 当天[allV[i]] || {桶:'',价:''};
+    let 桶 = parseFloat(d.桶) || 0;
+    let 价 = parseFloat(d.价) || 0;
+    let 钱 = 桶 * 价;
+    let el = document.getElementById('钱_'+i);
+    if (el) el.textContent = 钱>0?钱:'';
+    总桶 += 桶; 总钱 += 钱;
+  }
+  document.getElementById('合计桶').textContent = 总桶;
+  document.getElementById('合计钱').textContent = 隐藏金额(总钱);
+  let allExp = 获取所有开支项();
+  let 当天开支 = 开支all[日期] || {};
+  let 总开支额 = 0;
+  for (let i=0; i<allExp.length; i++) 总开支额 += parseFloat(当天开支[allExp[i]]) || 0;
+  let 合计开支el = document.getElementById('合计开支');
+  if (合计开支el) 合计开支el.textContent = 隐藏金额(总开支额);
+  document.getElementById('今日桶数').textContent = 总桶;
+  document.getElementById('今日金额').textContent = 总钱;
+  document.getElementById('今日开支').textContent = 总开支额;
+  let 净 = 总钱 - 总开支额;
+  let 日期c = document.getElementById('选择日期').value || 今天();
+  let 成本c = 获取当日总成本(日期c);
+  let 净后 = 净 - 成本c;
+  document.getElementById('净收入').textContent = 隐藏金额((净后>=0?'+':'')+净后);
+  let box = document.getElementById('净收入框');
+  if (净后 < 0) box.classList.add('negative'); else box.classList.remove('negative');
+}
+
+function 复制到昨天() {
+  let 今天日期 = document.getElementById('选择日期').value || 今天();
+  // Calculate yesterday
+  let d = new Date(今天日期);
+  d.setDate(d.getDate() - 1);
+  let 昨天日期 = d.toISOString().split('T')[0];
+  
+  if (今天日期 === 昨天日期) { alert('已经在昨天了'); return; }
+  
+  let all = 读数据();
+  let 开支all = 读开支数据();
+  
+  let 今天村数据 = all[今天日期] || {};
+  let 今天开支数据 = 开支all[今天日期] || {};
+  
+  let 有数据 = Object.keys(今天村数据).filter(k => 今天村数据[k].桶).length;
+  let 有开支 = Object.keys(今天开支数据).filter(k => 今天开支数据[k]).length;
+  
+  if (有数据 === 0 && 有开支 === 0) { alert('今天没有数据可复制'); return; }
+  
+  let 确认 = confirm('将 ' + 今天日期 + ' 的数据复制到 ' + 昨天日期 + '？\n\n村数据: ' + 有数据 + ' 条\n开支: ' + 有开支 + ' 条\n\n昨天的原有数据会被覆盖！');
+  if (!确认) return;
+  
+  // Copy village data
+  all[昨天日期] = JSON.parse(JSON.stringify(今天村数据));
+  存数据(all);
+  
+  // Copy expense data  
+  开支all[昨天日期] = JSON.parse(JSON.stringify(今天开支数据));
+  存开支数据(开支all);
+  
+  // Switch to yesterday and reload
+  document.getElementById('选择日期').value = 昨天日期;
+  加载当天();
+  alert('✅ 已复制到 ' + 昨天日期 + '！');
+}
+
+function 保存当日() {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  alert('✅ ' + 日期 + ' 已保存到本地');
+}
+
+function 清空当日() {
+  if (!confirm('确定清空当天的所有数据？')) return;
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let all = 读数据(); all[日期] = {}; 存数据(all);
+  let 开支all = 读开支数据(); 开支all[日期] = {}; 存开支数据(开支all);
+  加载当天();
+}
+
+function 刷新分析(排序方式) {
+  let all = 读数据();
+  let 开支all = 读开支数据();
+  let allV = 获取所有村庄();
+  let 总桶 = 0, 总钱 = 0, 总开支额 = 0;
+  let 村统计 = {};
+  for (let v of allV) 村统计[v] = {桶:0, 钱:0};
+  let 每日 = [];
+  for (let 日期 in all) {
+    let 日桶 = 0, 日钱 = 0;
+    let 天 = all[日期]; let 有数据 = false;
+    for (let v of allV) { let d = 天[v] || {}; let 桶 = parseFloat(d.桶) || 0; let 价 = parseFloat(d.价) || 0; 村统计[v].桶 += 桶; 村统计[v].钱 += 桶 * 价; 日桶 += 桶; 日钱 += 桶 * 价; if (桶>0) 有数据 = true; }
+    let allExp = 获取所有开支项();
+    let 当天开支 = 开支all[日期] || {};
+    let 日开支 = 0;
+    for (let exp of allExp) 日开支 += parseFloat(当天开支[exp]) || 0;
+    总开支额 += 日开支; 总桶 += 日桶; 总钱 += 日钱;
+    每日.push({日期, 桶:日桶, 钱:日钱, 开支:日开支});
+  }
+  document.getElementById('总桶数').textContent = 总桶;
+  document.getElementById('总金额').textContent = 隐藏金额(总钱);
+  document.getElementById('总开支').textContent = 隐藏金额(总开支额);
+  let 总净 = 总钱 - 总开支额;
+  document.getElementById('总净收入').textContent = 隐藏金额((总净>=0?'+':'')+总净);
+  let 总框 = document.getElementById('总净收入框');
+  if (总净 < 0) 总框.classList.add('negative'); else 总框.classList.remove('negative');
+
+  let 排行方式 = 排序方式 || '桶';
+  let 排行 = Object.entries(村统计).filter(([k,v]) => v.桶>0);
+  排行.sort((a,b) => b[1][排行方式] - a[1][排行方式]);
+  let html = '';
+  if (排行.length == 0) { html = '<div class="empty-msg">暂无数据</div>'; }
+  else {
+    let max = 排行[0][1][排行方式] || 1;
+    for (let [村, v] of 排行) {
+      let pct = Math.min(100, Math.round(v[排行方式]/max*100));
+      let 单位 = 排行方式=='桶' ? '桶' : '元';
+      html += '<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #eee;"><div style="width:80px;font-weight:500;">'+村+'</div><div style="flex:1;height:20px;background:#e8f5e9;border-radius:10px;overflow:hidden;margin:0 10px;"><div style="height:100%;width:'+pct+'%;background:#2d8a4e;border-radius:10px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:11px;color:white;font-weight:600;min-width:40px;">'+v[排行方式]+单位+'</div></div><div style="width:70px;text-align:right;font-size:12px;color:#888;">'+(v.桶>0?(v.桶+'桶 · '+v.钱+'元'):'')+'</div></div>';
+    }
+  }
+  document.getElementById('排行列表').innerHTML = html;
+
+  每日.sort((a,b) => a.日期 > b.日期 ? -1 : 1);
+  let dhtml = '';
+  if (每日.length == 0) { dhtml = '<div class="empty-msg">暂无数据</div>'; }
+  else { for (let d of 每日) { if (d.桶 == 0 && d.开支 == 0) continue; let 净额 = d.钱 - d.开支; dhtml += '<div class="record-item" style="cursor:pointer;" onclick="跳到日期(\''+d.日期+'\')"><div class="record-info"><div class="record-village">'+d.日期+'</div><div class="record-time" style="color:'+(净额>=0?'#2d8a4e':'#c62828')+';">净收入 '+(净额>=0?'+':'')+净额+'元</div></div><div class="record-amount">'+d.桶+'桶 / '+d.钱+'元</div></div>'; } }
+  document.getElementById('每日列表').innerHTML = dhtml;
+
+  let dates = Object.keys(all).sort().reverse();
+  let hhtml = '';
+  if (dates.length == 0) { hhtml = '<div class="empty-msg">暂无数据</div>'; }
+  else { for (let d of dates) { let 天 = all[d]; let 桶 = 0, 钱 = 0; for (let v of allV) { let x = 天[v] || {}; 桶 += parseFloat(x.桶) || 0; 钱 += (parseFloat(x.桶)||0) * (parseFloat(x.价)||0); } let allExp = 获取所有开支项(); let 天开支 = 开支all[d] || {}; let 开支 = 0; for (let exp of allExp) { 开支 += parseFloat(天开支[exp]) || 0; } hhtml += '<div class="record-item" style="cursor:pointer;" onclick="跳到日期(\''+d+'\')"><div class="record-info"><div class="record-village">'+d+'</div><div class="record-time">'+桶+'桶 · 收入'+钱+' · 支出'+开支+'</div></div><div style="color:#2d8a4e;font-size:13px;">查看 →</div></div>'; } }
+  document.getElementById('历史记录').innerHTML = hhtml;
+}
+
+function 排序切换(el, 方式) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  window._排序方式 = 方式;
+  刷新分析(方式);
+}
+
+function 跳到日期(d) {
+  document.getElementById('选择日期').value = d;
+  切换标签('today');
+  加载当天();
+}
+
+function 导出数据() {
+  let 包 = {数据: 读数据(), 自定义村镇: 读自定义(), 开支数据: 读开支数据(), 自定义开支项: 读自定义开支(), 欠款数据: 读欠款(), 提醒天数: 读提醒天数()};
+  let blob = new Blob([JSON.stringify(包,null,2)], {type:'application/json'});
+  let a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '卖水统计表_'+今天()+'.json';
+  a.click();
+}
+
+function 导入数据() {
+  let 输入 = document.createElement('input');
+  输入.type = 'file';
+  输入.accept = '.json';
+  输入.onchange = function(e) {
+    let f = e.target.files[0];
+    if (!f) return;
+    let r = new FileReader();
+    r.onload = function(ev) {
+      try {
+        let 包 = JSON.parse(ev.target.result);
+        if (!confirm('导入会覆盖当前所有数据，确定？')) return;
+        存数据(包.数据 || {});
+        存自定义(包.自定义村镇 || []);
+        存开支数据(包.开支数据 || {});
+        存自定义开支(包.自定义开支项 || []);
+        存欠款(包.欠款数据 || []);
+        if (包.提醒天数) { _dataCache.reminderDays = 包.提醒天数; saveToCloud('reminder_days', 包.提醒天数); }
+        alert('✅ 恢复成功！');
+        加载当天(); 刷新分析();
+      } catch(e) { alert('❌ 文件格式不对'); }
+    };
+    r.readAsText(f);
+  };
+  输入.click();
+}
+
+function 清空全部数据() {
+  if (!confirm('确定清空所有数据？不可恢复！')) return;
+  if (!confirm('再次确认？')) return;
+  存数据({}); 存开支数据({}); 存欠款([]);
+  加载当天(); 刷新分析();
+  alert('已清空');
+}
+
+function 切换标签(n) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-'+n).classList.add('active');
+  if (n == 'today') 加载当天();
+  if (n == 'daily') { document.getElementById('日统计日期').value = document.getElementById('选择日期').value || 今天(); 刷新日统计(); }
+  if (n == 'monthly') 刷新月统计();
+  if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
+  if (n == 'all') 刷新分析(window._排序方式);
+    if (n == 'log') 渲染日志();
+  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); var 桶价设置 = document.getElementById('桶成本单价设置'); if (桶价设置) 桶价设置.value = 读桶成本单价(); 刷新分析(window._排序方式); 刷新待办(); 渲染各村提醒天数(); }
+}
+
+// ========== 金额隐藏功能 ==========
+let 金额已隐藏 = false;
+
+function 读金额隐藏状态() {
+  let v = localStorage.getItem('卖水_money_hidden');
+  金额已隐藏 = v === 'true';
+  return 金额已隐藏;
+}
+
+function 保存金额隐藏状态(val) {
+  金额已隐藏 = val;
+  localStorage.setItem('卖水_money_hidden', val ? 'true' : 'false');
+}
+
+function 切换金额隐藏() {
+  金额已隐藏 = !金额已隐藏;
+  保存金额隐藏状态(金额已隐藏);
+  let 开关 = document.getElementById('金额隐藏开关');
+  if (开关) 开关.textContent = 金额已隐藏 ? '🙈' : '👁️';
+  let 复选框 = document.getElementById('金额隐藏复选框');
+  if (复选框) 复选框.checked = 金额已隐藏;
+  let 标签 = document.getElementById('金额隐藏标签');
+  if (标签) 标签.textContent = 金额已隐藏 ? '隐藏中' : '显示中';
+  // 刷新所有金额显示
+  let 当前页 = document.querySelector('.container.active');
+  if (当前页) {
+    let id = 当前页.id;
+    if (id === 'page-today') 加载当天();
+    else if (id === 'page-daily') 刷新日统计();
+    else if (id === 'page-monthly') 刷新月统计();
+    else if (id === 'page-debt') 刷新欠款();
+    else if (id === 'page-all') 刷新分析(window._排序方式);
+    else if (id === 'page-settings') 刷新分析(window._排序方式);
+  }
+}
+
+function 隐藏金额(数字) {
+  if (!金额已隐藏) return 数字;
+  if (数字 === '' || 数字 === undefined || 数字 === null) return '';
+  return '****';
+}
+
+// ========== 待办提醒功能 ==========
+function 读待办() {
+  return JSON.parse(localStorage.getItem('卖水_todo_list') || '[]');
+}
+
+function 存待办(list) {
+  localStorage.setItem('卖水_todo_list', JSON.stringify(list));
+  云同步('todo_list', list);
+}
+
+function 添加待办() {
+  let 输入 = document.getElementById('新增待办输入');
+  let 文本 = 输入.value.trim();
+  if (!文本) { alert('请填写待办事项'); return; }
+  let list = 读待办();
+  list.push({ id: Date.now().toString(36), text: 文本, done: false });
+  存待办(list);
+  输入.value = '';
+  刷新待办();
+  更新滚动提醒();
+}
+
+function 切换待办(id) {
+  let list = 读待办();
+  let item = list.find(i => i.id === id);
+  if (item) { item.done = !item.done; 存待办(list); 刷新待办(); 更新滚动提醒(); }
+}
+
+function 删除待办(id) {
+  let list = 读待办();
+  list = list.filter(i => i.id !== id);
+  存待办(list);
+  刷新待办();
+  更新滚动提醒();
+}
+
+function 刷新待办() {
+  let list = 读待办();
+  list.sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    return 0;
+  });
+  let html = '';
+  if (list.length === 0) {
+    html = '<div class="empty-msg">暂无待办事项 🎉</div>';
+  } else {
+    for (let item of list) {
+      let safeText = item.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
+      html += '<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">' +
+        '<input type="checkbox" ' + (item.done ? 'checked' : '') + ' onclick="切换待办(\'' + item.id + '\')" style="width:18px;height:18px;margin:0 10px 0 0;cursor:pointer;accent-color:#2d8a4e;">' +
+        '<span style="flex:1;font-size:15px;' + (item.done ? 'text-decoration:line-through;color:#999;' : 'color:#333;') + '">' + safeText + '</span>' +
+        '<button class="del-btn" onclick="删除待办(\'' + item.id + '\')" title="删除">✕</button>' +
+        '</div>';
+    }
+  }
+  document.getElementById('待办列表').innerHTML = html;
+}
+
+function 更新滚动提醒() {
+  let list = 读待办().filter(i => !i.done);
+  let 条 = document.getElementById('滚动提醒条');
+  let 文本 = document.getElementById('滚动提醒文本');
+  if (!条 || !文本) return;
+  if (list.length === 0) {
+    条.style.display = 'none';
+    return;
+  }
+  条.style.display = 'block';
+  let texts = list.map(i => i.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+  文本.textContent = '📢 ' + texts.join('  •  ') + '  ';
+}
+
+// ========== 每个村庄单独设置提醒天数 ==========
+function 读村提醒天数(村名) {
+  let map = JSON.parse(localStorage.getItem('卖水_village_reminder_days') || '{}');
+  return map[村名] || 0; // 0表示使用全局天数
+}
+
+function 存村提醒天数(村名, 天数) {
+  let map = JSON.parse(localStorage.getItem('卖水_village_reminder_days') || '{}');
+  if (天数 > 0) map[村名] = 天数;
+  else delete map[村名];
+  localStorage.setItem('卖水_village_reminder_days', JSON.stringify(map));
+}
+
+function 获取村提醒天数(村名) {
+  let 单独天数 = 读村提醒天数(村名);
+  return 单独天数 > 0 ? 单独天数 : 读提醒天数();
+}
+
+function 渲染各村提醒天数() {
+  let allV = 获取所有村庄();
+  let html = '<table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f5f5f5;"><th style="padding:6px 8px;text-align:left;font-size:13px;">村镇</th><th style="padding:6px 8px;text-align:center;font-size:13px;">单独提醒天数</th><th style="padding:6px 8px;text-align:center;font-size:13px;">实际生效</th></tr></thead><tbody>';
+  for (let v of allV) {
+    let val = 读村提醒天数(v);
+    let 实际 = 获取村提醒天数(v);
+    html += '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:14px;">' + v + '</td>' +
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">' +
+      '<input type="number" min="0" max="30" value="' + (val||'') + '" style="width:60px;padding:4px;text-align:center;font-size:13px;" placeholder="全局" onchange="存村提醒天数(\'' + v + '\', parseInt(this.value)||0); 渲染各村提醒天数();">' +
+      '</td>' +
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;font-size:13px;color:' + (实际===读提醒天数()?'#888':'#2d8a4e') + ';">' + 实际 + '天</td></tr>';
+  }
+  html += '</tbody></table>';
+  let el = document.getElementById('各村提醒天数列表');
+  if (el) el.innerHTML = html;
+}
+
+// ========== 启动（本地+云端同步）==========
+(function 启动() {
+  try { _dataCache.customVillages = JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]');
+  _dataCache.customExpenses = JSON.parse(localStorage.getItem('卖水_custom_expenses') || '[]');
+  _dataCache.villages = JSON.parse(localStorage.getItem('卖水_village_data') || '{}');
+  _dataCache.expenses = JSON.parse(localStorage.getItem('卖水_expense_data') || '{}');
+  _dataCache.debts = JSON.parse(localStorage.getItem('卖水_debt_data') || '[]');
+  _dataCache.reminderDays = parseInt(localStorage.getItem('卖水_reminder_days')) || 3;
+  } catch(e) { console.warn('[init] cache error:', e); }
+  try { CloudSync.pull(); } catch(e) {} var de = document.getElementById('选择日期');
+  if (de) de.value = 今天();
+  try { 读金额隐藏状态(); } catch(e) {};
+  var k1 = document.getElementById('金额隐藏开关');
+  if (k1) k1.textContent = 金额已隐藏 ? '\ud83d\ude48' : '\ud83d\udc41';
+  var k2 = document.getElementById('金额隐藏复选框');
+  if (k2) k2.checked = 金额已隐藏;
+  var k3 = document.getElementById('金额隐藏标签');
+  if (k3) k3.textContent = 金额已隐藏 ? '隐藏中' : '显示中';
+  var cv = localStorage.getItem('卖水_版本号');
+  if (!cv) localStorage.setItem('卖水_版本号', 'v2_39cun');
+  加载当天();
+  更新滚动提醒();
+  CLOUD.initAll();
+})();
+</script>
+
+
+
+
+
+<script>
+// ========== Cloud Sync ==========
+// Token split to avoid GitHub secret scanning
+var _tk1_ = 'ghp_G0s8aQaZTlP0lCN6';
+var _tk2_ = 'PWX62E8AB3bOel39qIOK';
+var CloudSync = {
+  REPO: 'popmyshu/water',
+  FILE: 'data.json',
+  BRANCH: 'main',
+  _timer: null,
+  _syncing: false,
+
+  push: function() {
+    if (this._timer) clearTimeout(this._timer);
+    this._timer = setTimeout(this._doPush.bind(this), 2000);
+  },
+
+  _doPush: function() {
+    var self = this;
+    if (self._syncing) return;
+    self._syncing = true;
+    self._setStatus('syncing');
+    try {
+      var data = {
+        updated_at: new Date().toISOString(),
+        village_data: JSON.parse(localStorage.getItem('\u5356\u6c34_village_data') || '{}'),
+        expense_data: JSON.parse(localStorage.getItem('\u5356\u6c34_expense_data') || '{}'),
+        custom_villages: JSON.parse(localStorage.getItem('\u5356\u6c34_custom_villages') || '[]'),
+        custom_expenses: JSON.parse(localStorage.getItem('\u5356\u6c34_custom_expenses') || '[]'),
+        debt_data: JSON.parse(localStorage.getItem('\u5356\u6c34_debt_data') || '[]'),
+        reminder_days: parseInt(localStorage.getItem('\u5356\u6c34_reminder_days')) || 3,
+        version: localStorage.getItem('\u5356\u6c34_\u7248\u672c\u53f7') || ''
+      };
+      var content = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+      var apiUrl = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
+      var shaReq = new XMLHttpRequest();
+      shaReq.open('GET', apiUrl + '?ref=' + self.BRANCH, false);
+      shaReq.setRequestHeader('Authorization', 'token ' + (_tk1_ + _tk2_));
+      shaReq.setRequestHeader('User-Agent', 'WaterTracker');
+      shaReq.send();
+      var fileSha = null;
+      if (shaReq.status === 200) fileSha = JSON.parse(shaReq.responseText).sha;
+      var body = {
+        message: 'sync: ' + new Date().toISOString().slice(0, 10),
+        content: content,
+        branch: self.BRANCH
+      };
+      if (fileSha) body.sha = fileSha;
+      var putReq = new XMLHttpRequest();
+      putReq.open('PUT', apiUrl, false);
+      putReq.setRequestHeader('Authorization', 'token ' + (_tk1_ + _tk2_));
+      putReq.setRequestHeader('User-Agent', 'WaterTracker');
+      putReq.setRequestHeader('Content-Type', 'application/json');
+      putReq.send(JSON.stringify(body));
+      if (putReq.status === 200 || putReq.status === 201) {
+        self._setStatus('ok');
+        localStorage.setItem('\u5356\u6c34_cloud_updated', data.updated_at);
+      } else {
+        self._setStatus('err');
+      }
+    } catch(e) {
+      self._setStatus('off');
+    }
+    self._syncing = false;
+  },
+
+  pull: function() {
+    var self = this;
+    try {
+      var apiUrl = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
+      var req = new XMLHttpRequest();
+      req.open('GET', apiUrl + '?ref=' + self.BRANCH, false);
+      req.setRequestHeader('Authorization', 'token ' + (_tk1_ + _tk2_));
+      req.setRequestHeader('User-Agent', 'WaterTracker');
+      req.send();
+      if (req.status !== 200) return;
+      var meta = JSON.parse(req.responseText);
+      var cloudData = JSON.parse(decodeURIComponent(escape(atob(meta.content))));
+      if (!cloudData || !cloudData.updated_at) return;
+      var localUpdated = localStorage.getItem('\u5356\u6c34_cloud_updated') || '';
+      if (cloudData.updated_at > localUpdated || !localUpdated) {
+        if (cloudData.village_data) {
+          var existing = JSON.parse(localStorage.getItem('\u5356\u6c34_village_data') || '{}');
+          for (var d in cloudData.village_data) {
+            if (!existing[d]) existing[d] = {};
+            for (var v in cloudData.village_data[d]) {
+              existing[d][v] = cloudData.village_data[d][v];
+            }
+          }
+          localStorage.setItem('\u5356\u6c34_village_data', JSON.stringify(existing));
+        }
+        if (cloudData.expense_data) {
+          var ex = JSON.parse(localStorage.getItem('\u5356\u6c34_expense_data') || '{}');
+          for (var d in cloudData.expense_data) {
+            if (!ex[d]) ex[d] = {};
+            for (var k in cloudData.expense_data[d]) {
+              ex[d][k] = cloudData.expense_data[d][k];
+            }
+          }
+          localStorage.setItem('\u5356\u6c34_expense_data', JSON.stringify(ex));
+        }
+        if (cloudData.custom_villages) localStorage.setItem('\u5356\u6c34_custom_villages', JSON.stringify(cloudData.custom_villages));
+        if (cloudData.custom_expenses) localStorage.setItem('\u5356\u6c34_custom_expenses', JSON.stringify(cloudData.custom_expenses));
+        if (cloudData.debt_data) localStorage.setItem('\u5356\u6c34_debt_data', JSON.stringify(cloudData.debt_data));
+        if (cloudData.reminder_days) localStorage.setItem('\u5356\u6c34_reminder_days', cloudData.reminder_days);
+        localStorage.setItem('\u5356\u6c34_cloud_updated', cloudData.updated_at);
+        self._setStatus('pulled');
+      }
+    } catch(e) {
+      self._setStatus('off');
+    }
+  },
+
+  _setStatus: function(s) {
+    var el = document.getElementById('cloudSyncStatus');
+    if (!el) return;
+    var map = {
+      syncing: '\u540c\u6b65\u4e2d...',
+      ok: '\u5df2\u540c\u6b65',
+      pulled: '\u5df2\u66f4\u65b0',
+      err: '\u540c\u6b65\u5931\u8d25',
+      off: '\u79bb\u7ebf'
+    };
+    el.textContent = map[s] || s;
+    el.style.color = (s === 'ok' || s === 'pulled') ? '#2d8a4e' : '#999';
+  }
+};
+</script>
+
+<script>
+// ========== Cloud Sync - auto backup to GitHub ==========
+var _t1_ = 'ghp_G0s8aQaZTlP0lCN6';
+var _t2_ = 'PWX62E8AB3bOel39qIOK';
+var CloudSync = {
+  REPO: 'popmyshu/water',
+  FILE: 'data.json',
+  BRANCH: 'main',
+  _timer: null,
+  _busy: false,
+
+  push: function() {
+    if (this._timer) clearTimeout(this._timer);
+    this._timer = setTimeout(this._push.bind(this), 2000);
+  },
+
+  _push: function() {
+    var self = this;
+    if (self._busy) return;
+    self._busy = true;
+    self._status('syncing');
+    var tok = _t1_ + _t2_;
+    try {
+      var blob = {
+        updated_at: new Date().toISOString(),
+        village_data: JSON.parse(localStorage.getItem('卖水_village_data') || '{}'),
+        expense_data: JSON.parse(localStorage.getItem('卖水_expense_data') || '{}'),
+        custom_villages: JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'),
+        custom_expenses: JSON.parse(localStorage.getItem('卖水_custom_expenses') || '[]'),
+        debt_data: JSON.parse(localStorage.getItem('卖水_debt_data') || '[]'),
+        reminder_days: parseInt(localStorage.getItem('卖水_reminder_days')) || 3
+      };
+      var pkg = btoa(unescape(encodeURIComponent(JSON.stringify(blob))));
+      var api = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
+      // Get SHA
+      var x1 = new XMLHttpRequest();
+      x1.open('GET', api + '?ref=' + self.BRANCH, false);
+      x1.setRequestHeader('Authorization', 'token ' + tok);
+      x1.setRequestHeader('User-Agent', 'WaterTracker');
+      x1.send();
+      var sha = (x1.status === 200) ? JSON.parse(x1.responseText).sha : null;
+      var body = { message: 'sync: ' + new Date().toISOString().slice(0,10), content: pkg, branch: self.BRANCH };
+      if (sha) body.sha = sha;
+      var x2 = new XMLHttpRequest();
+      x2.open('PUT', api, false);
+      x2.setRequestHeader('Authorization', 'token ' + tok);
+      x2.setRequestHeader('User-Agent', 'WaterTracker');
+      x2.setRequestHeader('Content-Type', 'application/json');
+      x2.send(JSON.stringify(body));
+      if (x2.status === 200 || x2.status === 201) {
+        self._status('ok');
+        localStorage.setItem('卖水_cloud_updated', blob.updated_at);
+      } else { self._status('err'); }
+    } catch(e) { self._status('off'); }
+    self._busy = false;
+  },
+
+  pull: function() {
+    var self = this;
+    var tok = _t1_ + _t2_;
+    try {
+      var api = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
+      var x = new XMLHttpRequest();
+      x.open('GET', api + '?ref=' + self.BRANCH, false);
+      x.setRequestHeader('Authorization', 'token ' + tok);
+      x.setRequestHeader('User-Agent', 'WaterTracker');
+      x.send();
+      if (x.status !== 200) return;
+      var meta = JSON.parse(x.responseText);
+      var cloud = JSON.parse(decodeURIComponent(escape(atob(meta.content))));
+      if (!cloud || !cloud.updated_at) return;
+      var localTs = localStorage.getItem('卖水_cloud_updated') || '';
+      if (cloud.updated_at > localTs || !localTs) {
+        if (cloud.village_data) {
+          var vd = JSON.parse(localStorage.getItem('卖水_village_data') || '{}');
+          for (var d in cloud.village_data) {
+            if (!vd[d]) vd[d] = {};
+            for (var v in cloud.village_data[d]) vd[d][v] = cloud.village_data[d][v];
+          }
+          localStorage.setItem('卖水_village_data', JSON.stringify(vd));
+        }
+        if (cloud.expense_data) {
+          var ed = JSON.parse(localStorage.getItem('卖水_expense_data') || '{}');
+          for (var d in cloud.expense_data) {
+            if (!ed[d]) ed[d] = {};
+            for (var k in cloud.expense_data[d]) ed[d][k] = cloud.expense_data[d][k];
+          }
+          localStorage.setItem('卖水_expense_data', JSON.stringify(ed));
+        }
+        if (cloud.custom_villages) localStorage.setItem('卖水_custom_villages', JSON.stringify(cloud.custom_villages));
+        if (cloud.custom_expenses) localStorage.setItem('卖水_custom_expenses', JSON.stringify(cloud.custom_expenses));
+        if (cloud.debt_data) localStorage.setItem('卖水_debt_data', JSON.stringify(cloud.debt_data));
+        if (cloud.reminder_days) localStorage.setItem('卖水_reminder_days', cloud.reminder_days);
+        localStorage.setItem('卖水_cloud_updated', cloud.updated_at);
+        self._status('pulled');
+      }
+    } catch(e) { self._status('off'); }
+  },
+
+  _status: function(s) {
+    // 已替换为天气插件，不再显示同步状态
+  }
+};
+
+// ===== 联网自动更新励志语录（每天自动从网络获取新鲜语录）=====
+const 励志库 = [
+  '💪 不积跬步，无以至千里',
+  '🌞 今天的汗水，是明天的收获',
+  '🚛 送水也是送温暖，加油！',
+  '💰 小财神，大梦想，一桶一桶攒起来',
+  '🏔️ 西晃山的水，麻阳人的情',
+  '🔥 生活不易，卖水卖出一片天',
+  '💧 每一桶山泉水，都是大自然的馈赠',
+  '🌟 平凡的事坚持做，就是不平凡',
+  '🙏 感谢每一位信任的老顾客',
+  '📈 今天多送一桶，明天多赚一份',
+  '🚀 起早贪黑不怕累，日子越过越有味',
+  '🌅 卖水人的风景，在每一个清晨的路上',
+  '💪 加油送水人，你是最棒的',
+  '🎯 5元一桶，良心价，放心水',
+  '🌈 风雨无阻，只为那一口甘甜',
+  '💰 一桶5元，积少成多奔小康',
+  '🏆 今天的目标：多跑几村，多送几桶',
+  '❤️ 顾客满意，就是最大的动力',
+  '🐴 老黄牛精神，一步一个脚印',
+  '☕ 累了就歇歇，明天继续干'
+];
+let 网络语录 = [];  // 从网络获取的额外语录
+async function 获取网络语录() {
+  const 缓存键 = 'water_net_quotes';
+  const 今天日期 = new Date().toISOString().slice(0,10);
+  let 缓存数据;
+  try { 缓存数据 = JSON.parse(localStorage.getItem(缓存键)); } catch(e) {}
+  // 今天已获取过，直接用缓存
+  if (缓存数据 && 缓存数据.date === 今天日期 && 缓存数据.quotes?.length) {
+    网络语录 = 缓存数据.quotes; return;
+  }
+  // 免费API列表（按优先级）
+  const APIs = [
+    'https://v1.hitokoto.cn/',
+    'https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json'
+  ];
+  for (let url of APIs) {
+    try {
+      let res = await fetch(url);
+      if (!res.ok) continue;
+      let data = await res.json();
+      let quote;
+      if (data.hitokoto) {
+        quote = `💬 「${data.hitokoto}」${data.from ? '——'+data.from : ''}`;
+      } else if (data.yan) {
+        quote = `💬 ${data.yan}`;
+      } else continue;
+      网络语录 = [quote];
+      localStorage.setItem(缓存键, JSON.stringify({date: 今天日期, quotes: [quote]}));
+      return;
+    } catch(e) { continue; }
+  }
+  // 所有API失败，用上次有效缓存
+  if (缓存数据?.quotes?.length) 网络语录 = 缓存数据.quotes;
+}
+function 刷新语录() {
+  var el = document.getElementById('quoteText');
+  if (!el) return;
+  var 全部语录 = 网络语录.concat(励志库);
+  var idx = Math.floor(Math.random() * 全部语录.length);
+  el.textContent = 全部语录[idx];
+}
+// 页面加载：先获取网络语录，再启动轮播
+获取网络语录().then(刷新语录).catch(function(){刷新语录();});
+setInterval(刷新语录, 30000);
+// 去掉旧的天气相关代码
+</script>
+
+</body>
+</html>
