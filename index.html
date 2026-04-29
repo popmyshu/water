@@ -844,6 +844,27 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     </div>
     <div id="待办列表"></div>
   </div>
+  <div class="card" id="商业日志卡片">
+    <h3>📓 商业日志</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">小财神的财富自由成长计划 — 每一步都记在这里</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" id="日志标题输入" placeholder="标题（如：第一步：建月卡体系）" style="margin-bottom:0;flex:1;font-size:14px;">
+      <button class="btn btn-green btn-sm" onclick="添加日志()" style="width:auto;white-space:nowrap;">添加</button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <textarea id="日志内容输入" placeholder="写下你的计划、思考、感悟..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:80px;background:#fafafa;resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:#888;padding:4px 0;">快捷标签：</span>
+      <span class="日志标签" onclick="填日志标签('💡 灵感')" style="font-size:12px;background:#e8f5e9;color:#2d8a4e;padding:3px 10px;border-radius:12px;cursor:pointer;">💡 灵感</span>
+      <span class="日志标签" onclick="填日志标签('📌 计划')" style="font-size:12px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;cursor:pointer;">📌 计划</span>
+      <span class="日志标签" onclick="填日志标签('✅ 行动')" style="font-size:12px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;cursor:pointer;">✅ 行动</span>
+      <span class="日志标签" onclick="填日志标签('🔁 复盘')" style="font-size:12px;background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:12px;cursor:pointer;">🔁 复盘</span>
+      <span class="日志标签" onclick="填日志标签('🏆 里程碑')" style="font-size:12px;background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:12px;cursor:pointer;">🏆 里程碑</span>
+      <span class="日志标签" onclick="填日志标签('🎯 目标')" style="font-size:12px;background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;cursor:pointer;">🎯 目标</span>
+    </div>
+    <div id="日志列表"></div>
+  </div>
   <div class="card">
     <h3>📤 数据管理</h3>
     <div style="display:flex;flex-direction:column;gap:10px;">
@@ -1610,7 +1631,7 @@ function 切换标签(n) {
   if (n == 'monthly') 刷新月统计();
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
   if (n == 'all') 刷新分析(window._排序方式);
-  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 渲染各村提醒天数(); }
+  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); }
 }
 
 // ========== 金额隐藏功能 ==========
@@ -1727,7 +1748,94 @@ function 更新滚动提醒() {
   文本.textContent = '📢 ' + texts.join('  •  ') + '  ';
 }
 
-// ========== 每个村庄单独设置提醒天数 ==========
+// ========== 📓 商业日志功能 ==========
+function 读日志() {
+  return JSON.parse(localStorage.getItem('卖水_business_log') || '[]');
+}
+function 存日志(list) {
+  localStorage.setItem('卖水_business_log', JSON.stringify(list));
+  云同步('business_log', list);
+}
+function 添加日志() {
+  let 标题输入 = document.getElementById('日志标题输入');
+  let 内容输入 = document.getElementById('日志内容输入');
+  let 标题 = 标题输入.value.trim();
+  let 内容 = 内容输入.value.trim();
+  if (!标题) { alert('请填写日志标题'); return; }
+  let list = 读日志();
+  let 现在 = new Date();
+  let 时间 = 现在.getFullYear()+'-'+String(现在.getMonth()+1).padStart(2,'0')+'-'+String(现在.getDate()).padStart(2,'0')+' '+String(现在.getHours()).padStart(2,'0')+':'+String(现在.getMinutes()).padStart(2,'0');
+  list.unshift({
+    id: Date.now().toString(36),
+    title: 标题,
+    content: 内容,
+    time: 时间,
+    date: 今天()
+  });
+  存日志(list);
+  标题输入.value = '';
+  内容输入.value = '';
+  刷新日志();
+  alert('📓 日志已记录！');
+}
+function 填日志标签(tag) {
+  let 输入 = document.getElementById('日志标题输入');
+  输入.value = tag + ' ' + 输入.value.replace(/^(💡|📌|✅|🔁|🏆|🎯)\s*/, '');
+  输入.focus();
+}
+function 删除日志(id) {
+  if (!confirm('确定删除这条日志？')) return;
+  let list = 读日志();
+  list = list.filter(i => i.id !== id);
+  存日志(list);
+  刷新日志();
+}
+function 刷新日志() {
+  let list = 读日志();
+  let html = '';
+  if (list.length === 0) {
+    html = '<div class="empty-msg">还没有日志，开始记录你的财富自由之旅吧 🚀</div>';
+  } else {
+    for (let item of list) {
+      let safeTitle = item.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
+      let safeContent = (item.content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      let safeTime = item.time || item.date || '';
+      // 把内容里的换行转成 <br>
+      safeContent = safeContent.replace(/\n/g, '<br>');
+      html += '<div style="padding:14px;margin-bottom:10px;background:#fafafa;border-radius:10px;border-left:4px solid #2d8a4e;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
+        '<strong style="font-size:15px;color:#333;">' + safeTitle + '</strong>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-size:11px;color:#aaa;">' + safeTime + '</span>' +
+        '<button onclick="删除日志(\'' + item.id + '\')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:2px 4px;" title="删除">✕</button>' +
+        '</div></div>';
+      if (safeContent) {
+        html += '<div style="font-size:13px;color:#555;line-height:1.6;">' + safeContent + '</div>';
+      }
+      html += '</div>';
+    }
+  }
+  document.getElementById('日志列表').innerHTML = html;
+}
+
+// ========== 更新云同步列表，包含日志 ==========
+// 在 CLOUD.initAll 的 map 数组中添加 'business_log' 条目
+// 扩展 CLOUD.initAll 函数
+const _origInitAll = CLOUD.initAll;
+CLOUD.initAll = async function() {
+  if (typeof _origInitAll === 'function') {
+    // 调用原始 initAll，但需要处理异步
+    await _origInitAll.call(this);
+  }
+  // 额外同步日志数据
+  try {
+    const logKey = 'business_log';
+    const cloudLog = await this.load(logKey);
+    if (cloudLog !== null && Array.isArray(cloudLog)) {
+      localStorage.setItem('卖水_business_log', JSON.stringify(cloudLog));
+    }
+  } catch(e) {}
+};
 function 读村提醒天数(村名) {
   let map = JSON.parse(localStorage.getItem('卖水_village_reminder_days') || '{}');
   return map[村名] || 0; // 0表示使用全局天数
