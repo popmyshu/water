@@ -1539,7 +1539,6 @@ function 云同步(key, data) {
 }
 function 读提醒天数() { return _dataCache.reminderDays || 3; }
 function 保存提醒设置() {
-  // 云同步('reminder_days', _dataCache.reminderDays); // 【已禁用】
   _dataCache.reminderDays = parseInt(document.getElementById('提醒天数').value) || 3;
   localStorage.setItem('卖水_reminder_days', JSON.stringify(_dataCache.reminderDays));
 }
@@ -2293,7 +2292,6 @@ function 读待办() {
 
 function 存待办(list) {
   localStorage.setItem('卖水_todo_list', JSON.stringify(list));
-  // 云同步('todo_list', list); // 【已禁用】
 }
 
 function 添加待办() {
@@ -2365,7 +2363,6 @@ function 读日志() {
 }
 function 存日志(list) {
   localStorage.setItem('卖水_business_log', JSON.stringify(list));
-  // 云同步('business_log', list); // 【已禁用】
 }
 function 添加日志() {
   let 标题输入 = document.getElementById('日志标题输入');
