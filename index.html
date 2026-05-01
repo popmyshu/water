@@ -561,32 +561,6 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   font-size: 14px;
 }
 
-/* 同步状态指示器 */
-.sync-indicator {
-  position: fixed;
-  bottom: 40px;
-  right: 16px;
-  background: white;
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 11px;
-  color: #666;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #4caf50;
-}
-.sync-dot.syncing { background: #ff9800; animation: pulse 1s infinite; }
-.sync-dot.error { background: #f44336; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-
 /* 加载遮罩 */
 .loading-overlay {
   position: fixed;
@@ -1151,12 +1125,7 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
 </div>
 
 <div style="position:fixed;bottom:0;left:0;right:0;background:#fff3e0;padding:8px 16px;text-align:center;font-size:11px;color:#e65100;border-top:1px solid #ffe0b2;">
-💡 日统计看哪些村没去 · 月统计看整月成绩 · 欠款备忘录记谁没付钱 · 数据云端同步
-</div>
-
-<div class="sync-indicator" id="syncIndicator">
-  <div class="sync-dot" id="syncDot"></div>
-  <span id="syncText">已连接</span>
+💡 日统计看哪些村没去 · 月统计看整月成绩 · 欠款备忘录记谁没付钱
 </div>
 
 <script>
