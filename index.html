@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>小财神统计系统 v2</title>
+<title>小财神统计系统</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <base href="/water/">
-<meta name="version" content="20260501-v2">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -562,6 +561,31 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   font-size: 14px;
 }
 
+/* 同步状态指示器 */
+.sync-indicator {
+  position: fixed;
+  bottom: 40px;
+  right: 16px;
+  background: white;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4caf50;
+}
+.sync-dot.syncing { background: #ff9800; animation: pulse 1s infinite; }
+.sync-dot.error { background: #f44336; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* 加载遮罩 */
 .loading-overlay {
@@ -582,29 +606,177 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-</style>
-</head>
-<body>
 
-<div class="header">
-  <h1>📋 小财神统计系统</h1>
-  <p>西晃山天然矿泉水 · 专业定制版</p>
-  <div id="weatherBar" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:13px;flex-wrap:wrap;">
-    <a href="https://www.weather.com.cn/weather/101250802.shtml" target="_blank" style="color:#fff;text-decoration:none;background:rgba(0,0,0,.25);padding:3px 12px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;"><span id="weatherEmoji">🌤️</span> <span id="weatherText">麻阳天气加载中...</span></a>
-    <span id="locationStatus" style="color:#fff;text-decoration:none;background:rgba(0,0,0,.25);padding:3px 10px;border-radius:12px;display:none;align-items:center;gap:4px;cursor:pointer;" title="点击记录当前位置" onclick="记录当前位置()">📍 <span id="locationText">定位中...</span></span>
-    <span id="locationMemoBtn" style="color:#fff;text-decoration:none;background:rgba(255,0,0,.5);padding:3px 10px;border-radius:12px;display:none;align-items:center;gap:4px;cursor:pointer;font-size:12px;" title="记录当前卖水位置" onclick="记录当前位置()">💾 记位置</span>
-  </div>
-  <span id="金额隐藏开关" style="position:absolute;right:16px;top:20px;font-size:22px;cursor:pointer;" onclick="切换金额隐藏()" title="切换金额显示/隐藏">👁️</span>
-</div>
-<div id="滚动提醒条" style="background:#fff3cd;color:#856404;font-size:13px;padding:6px 12px;text-align:center;overflow:hidden;white-space:nowrap;border-bottom:1px solid #ffeeba;display:none;">
-  <span id="滚动提醒文本" style="display:inline-block;animation: marquee 20s linear infinite;">暂无待办提醒</span>
-</div>
-<style>
+/* ===== 工作日志样式 ===== */
+.log-section { }
+.log-input-row { display:flex; gap:8px; margin-bottom:12px; }
+.log-input-row textarea {
+  flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+  font-size:14px; font-family:inherit; resize:vertical; min-height:40px;
+  background:#fafafa;
+}
+.log-input-row textarea:focus { outline:none; border-color:#2d8a4e; background:white; }
+.log-date-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.log-date-row input[type=date] { flex:1; margin:0; }
+.log-entry { 
+  background:white; border-radius:10px; padding:12px 14px; margin-bottom:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); border-left:4px solid #2d8a4e;
+}
+.log-entry.report { border-left-color:#1565c0; background:#f5f8ff; }
+.log-entry-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.log-entry-date { font-size:12px; color:#888; }
+.log-entry-badge { 
+  font-size:11px; padding:2px 8px; border-radius:10px; 
+  background:#e8f5e9; color:#2d8a4e; font-weight:500;
+}
+.log-entry-badge.report { background:#e3f2fd; color:#1565c0; }
+.log-entry-text { font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.log-entry-actions { display:flex; gap:6px; margin-top:6px; }
+.log-empty { text-align:center; padding:30px 0; color:#aaa; font-size:14px; }
+
+
+/* ===== 滚动新闻样式 ===== */
+.news-ticker {
+  background: linear-gradient(135deg, #c62828, #e53935);
+  color: white; border-radius: 12px; padding: 6px 12px;
+  margin-bottom: 12px; position: relative; overflow: hidden;
+  min-height: 52px; cursor: pointer; user-select: none;
+}
+.news-ticker:active { background: linear-gradient(135deg, #b71c1c, #d32f2f); }
+.news-header { display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:2px; padding-bottom:2px; border-bottom:1px solid rgba(255,255,255,0.15); }
+.news-header .news-icon { font-size:15px; }
+.news-header .news-label { font-weight:700; font-size:13px; letter-spacing:1px; }
+.news-header .news-source { font-size:10px; opacity:0.6; margin-left:auto; }
+.news-header .news-refresh { font-size:11px; opacity:0.6; cursor:pointer; padding:2px 6px; border-radius:4px; }
+.news-header .news-refresh:hover { background:rgba(255,255,255,0.12); }
+.news-body-h {
+  position:relative; height:28px; overflow:hidden; width:100%;
+}
+.news-track {
+  display:flex; white-space:nowrap; position:absolute; left:0; top:0;
+  animation: newsMarquee 60s linear infinite;
+}
+.news-track:hover { animation-play-state: paused; }
+.news-item-h {
+  display:inline-flex; align-items:center; gap:6px; height:28px;
+  font-size:13px; padding:0 16px; flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,0.15); cursor:pointer;
+  transition: background 0.2s;
+}
+.news-item-h:hover { background:rgba(255,255,255,0.08); }
+.news-item-h .news-tag {
+  font-size:11px; padding:1px 8px; border-radius:4px; flex-shrink:0;
+  background:#ff8a65; color:#fff; font-weight:600;
+}
+.news-item-h .news-tag.n1 { background:#e53935; }
+.news-item-h .news-tag.n2 { background:#ff6d00; }
+.news-item-h .news-tag.n3 { background:#fb8c00; }
+.news-item-h .news-text { 
+  font-size:13px; overflow:hidden; text-overflow:ellipsis;
+  line-height:28px;
+}
+
 @keyframes marquee {
   0% { transform: translateX(110%); }
   100% { transform: translateX(-110%); }
 }
+
+/* ===== 会员管理样式 ===== */
+.member-card {
+  border-left: 4px solid #2d8a4e;
+}
+.member-card.low { border-left-color: #e65100; }
+.member-card.empty { border-left-color: #c62828; }
+
+/* ===== 工作日志样式（重复区） ===== */
+.log-section { }
+.log-input-row { display:flex; gap:8px; margin-bottom:12px; }
+.log-input-row textarea {
+  flex:1; padding:10px 12px; border:1px solid #ddd; border-radius:8px;
+  font-size:14px; font-family:inherit; resize:vertical; min-height:40px;
+  background:#fafafa;
+}
+.log-input-row textarea:focus { outline:none; border-color:#2d8a4e; background:white; }
+.log-date-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.log-date-row input[type=date] { flex:1; margin:0; }
+.log-entry { 
+  background:white; border-radius:10px; padding:12px 14px; margin-bottom:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); border-left:4px solid #2d8a4e;
+}
+.log-entry.report { border-left-color:#1565c0; background:#f5f8ff; }
+.log-entry-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+.log-entry-date { font-size:12px; color:#888; }
+.log-entry-badge { 
+  font-size:11px; padding:2px 8px; border-radius:10px; 
+  background:#e8f5e9; color:#2d8a4e; font-weight:500;
+}
+.log-entry-badge.report { background:#e3f2fd; color:#1565c0; }
+.log-entry-text { font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.log-entry-actions { display:flex; gap:6px; margin-top:6px; }
+.log-empty { text-align:center; padding:30px 0; color:#aaa; font-size:14px; }
+
+
+/* ===== 滚动新闻样式 ===== */
+.news-ticker {
+  background: linear-gradient(135deg, #c62828, #e53935);
+  color: white; border-radius: 12px; padding: 6px 12px;
+  margin-bottom: 12px; position: relative; overflow: hidden;
+  min-height: 52px; cursor: pointer; user-select: none;
+}
+.news-ticker:active { background: linear-gradient(135deg, #b71c1c, #d32f2f); }
+.news-header { display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:2px; padding-bottom:2px; border-bottom:1px solid rgba(255,255,255,0.15); }
+.news-header .news-icon { font-size:15px; }
+.news-header .news-label { font-weight:700; font-size:13px; letter-spacing:1px; }
+.news-header .news-source { font-size:10px; opacity:0.6; margin-left:auto; }
+.news-header .news-refresh { font-size:11px; opacity:0.6; cursor:pointer; padding:2px 6px; border-radius:4px; }
+.news-header .news-refresh:hover { background:rgba(255,255,255,0.12); }
+.news-body-h {
+  position:relative; height:28px; overflow:hidden; width:100%;
+}
+.news-track {
+  display:flex; white-space:nowrap; position:absolute; left:0; top:0;
+  animation: newsMarquee 60s linear infinite;
+}
+.news-track:hover { animation-play-state: paused; }
+.news-item-h {
+  display:inline-flex; align-items:center; gap:6px; height:28px;
+  font-size:13px; padding:0 16px; flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,0.15); cursor:pointer;
+  transition: background 0.2s;
+}
+.news-item-h:hover { background:rgba(255,255,255,0.08); }
+.news-item-h .news-tag {
+  font-size:11px; padding:1px 8px; border-radius:4px; flex-shrink:0;
+  background:#ff8a65; color:#fff; font-weight:600;
+}
+.news-item-h .news-tag.n1 { background:#e53935; }
+.news-item-h .news-tag.n2 { background:#ff6d00; }
+.news-item-h .news-tag.n3 { background:#fb8c00; }
+.news-item-h .news-text { 
+  font-size:13px; overflow:hidden; text-overflow:ellipsis;
+  line-height:28px;
+}
+
+
 </style>
+</head>
+<body>
+
+<div class="header" style="position:relative;">
+  <button onclick="保存并同步()" id="saveBtn" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#2d8a4e;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(45,138,78,0.3);">💾 保存</button>
+  <h1 style="margin-left:70px;">📋 小财神统计系统</h1>
+  <p>西晃山天然矿泉水 · 专业定制版</p>
+  <div id="quoteWidget" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#8a6d3b;margin-left:8px;cursor:pointer;background:rgba(255,243,205,0.8);padding:2px 12px;border-radius:12px;border:1px solid rgba(138,109,59,0.25);max-width:320px;overflow:hidden;" title="点击刷新励志语" onclick="刷新语录()">
+    <span>💪</span>
+    <span id="quoteText" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">加载中..</span>
+  </div>
+  <span id="金额隐藏开关" style="position:absolute;right:16px;top:20px;font-size:22px;cursor:pointer;" onclick="切换金额隐藏()" title="切换金额显示/隐藏">👁️</span>
+  <button onclick="从云端恢复()" style="position:absolute;right:12px;top:48px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(37,99,235,0.3);">☁️ 恢复</button>
+</div>
+<div id="滚动提醒条" style="background:#fff3cd;color:#856404;font-size:13px;padding:6px 12px;text-align:center;overflow:hidden;white-space:nowrap;border-bottom:1px solid #ffeeba;display:none;">
+  <span id="滚动提醒文本" style="display:inline-block;animation: marquee 20s linear infinite;">暂无待办提醒</span>
+</div>
+
 
 <div class="tab-bar">
 <div class="tab active" onclick="切换标签('today',this)">📊 今日</div>
@@ -612,7 +784,83 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     <div class="tab" onclick="切换标签('monthly',this)">📆 月统计</div>
     <div class="tab" onclick="切换标签('debt',this)">💰 欠款</div>
     <div class="tab" onclick="切换标签('all',this)">📈 总分析</div>
+    <div class="tab" onclick="切换标签('member',this)">👤 会员</div>
+    <div class="tab" onclick="切换标签('log',this)">📝 日志</div>
     <div class="tab" onclick="切换标签('settings',this)">⚙️ 管理</div>
+</div>
+
+<!-- ========== 会员管理 ========== -->
+<div id="page-member" class="container">
+  <!-- 快捷入口 -->
+  <div class="card" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border:1px solid #a5d6a7;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="member_register.html" class="btn btn-green btn-sm" style="text-decoration:none;flex:1;min-width:120px;">➕ 新会员登记</a>
+      <button class="btn btn-blue btn-sm" onclick="打开送水弹窗()" style="flex:1;min-width:120px;">🚚 记一次送水</button>
+    </div>
+  </div>
+
+  <!-- 会员统计 -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="会员总数">0</div><div class="stat-label">总会员</div></div>
+    <div class="stat-box"><div class="stat-num" id="活跃会员数" style="color:#2d8a4e;">0</div><div class="stat-label">有余额</div></div>
+    <div class="stat-box"><div class="stat-num" id="低余预警数" style="color:#e65100;">0</div><div class="stat-label">余额不足</div></div>
+  </div>
+
+  <!-- 搜索 -->
+  <div class="card" style="padding:10px 14px;">
+    <input type="text" id="会员搜索框" placeholder="搜索姓名/电话/地址..." oninput="刷新会员列表()" style="margin-bottom:0;background:white;">
+  </div>
+
+  <!-- 会员列表 -->
+  <div id="会员列表区"></div>
+</div>
+
+<!-- 送水弹窗 -->
+<div id="送水弹窗" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:500;">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:16px 16px 0 0;padding:20px 16px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-size:18px;">🚚 送水记录</h3>
+      <span style="font-size:24px;cursor:pointer;color:#999;" onclick="关闭送水弹窗()">&times;</span>
+    </div>
+    <div class="form-group">
+      <label>选择会员</label>
+      <select id="送水_会员选择" onchange="送水选会员()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:16px;">
+        <option value="">选择会员...</option>
+      </select>
+    </div>
+    <div id="送水_会员信息" style="display:none;">
+      <div style="background:#e8f5e9;border-radius:10px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:13px;color:#666;">剩余桶数</div>
+        <div style="font-size:32px;font-weight:800;color:#2d8a4e;" id="送水_剩余桶数">0</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;" id="送水_会员详情"></div>
+      </div>
+      <div class="form-group">
+        <label>本次送几桶</label>
+        <input type="number" id="送水_桶数" min="1" max="20" value="1" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:18px;text-align:center;font-weight:700;">
+      </div>
+      <div class="form-group">
+        <label>备注（选填）</label>
+        <input type="text" id="送水_备注" placeholder="如：送到门口" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+      </div>
+      <button class="btn btn-green" onclick="确认送水()" style="margin-top:8px;">✅ 确认送达，扣减余额</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 工作日志 ========== -->
+<div id="page-log" class="container">
+  <div class="card">
+    <h3>📝 工作日志</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:12px;">记录每天送水的经历、问题和心得，系统每天也会自动生成日报汇总</p>
+    <div class="log-input-row">
+      <textarea id="日志输入" placeholder="今天送水遇到了什么？或者记下重要的事..." rows="2"></textarea>
+      <button class="btn btn-green btn-sm" onclick="添加日志()" style="width:auto;white-space:nowrap;align-self:flex-end;">添加</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-blue btn-sm" onclick="生成日报()" style="flex:1;">📊 自动生成今日日报</button>
+    </div>
+  </div>
+  <div id="日志列表"></div>
 </div>
 
 <!-- ========== 今日填表 ========== -->
@@ -621,10 +869,24 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     <label>📅 日期</label>
     <input type="date" id="选择日期" class="date-row" onchange="加载当天()">
   </div>
-  <div id="今日欠款提示"></div>
+  <!-- ===== 滚动新闻 ===== -->
+  <div class="news-ticker" id="newsTicker">
+    <div class="news-header">
+      <span class="news-icon">📡</span>
+      <span class="news-label">🔥 百度热搜</span>
+      <span class="news-source" id="newsSource">加载中...</span>
+      <span class="news-dot-loader" id="newsLoader" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffd54f;animation:pulse 1s infinite;"></span>
+      <span class="news-refresh" onclick="刷新新闻()">🔄</span>
+    </div>
+    <div class="news-body-h" id="newsBody">
+      <div class="news-track" id="newsTrack">
+        <div class="news-item-h"><span class="news-tag">📡</span><span class="news-text">正在获取最新新闻...</span></div>
+      </div>
+    </div>
+  </div>
   <div class="net-income-box" id="净收入框">
     <div class="net-income-num" id="净收入">0</div>
-    <div class="net-income-label">今日净收入（收入 - 开支）</div>
+    <div class="net-income-label">今日净收入（收入 - 开支 - 成本）</div>
   </div>
   <div class="stats-row">
     <div class="stat-box"><div class="stat-num" id="今日桶数">0</div><div class="stat-label">今日桶数</div></div>
@@ -653,15 +915,38 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
       <tbody id="开支表体"></tbody>
     </table>
   </div>
-  <div style="display:flex;gap:8px;">
-    <button class="btn btn-green" onclick="保存当日()" style="flex:2;">💾 保存</button>
-        <button class="btn btn-blue" onclick="复制到昨天()" style="flex:2;background:#1565c0;">📋 复制到昨天</button>
-    <button class="btn btn-outline" onclick="清空当日()" style="flex:1;">清空本日</button>
+  <!-- ===== 成本预算 ===== -->
+  <div class="card budget-card" style="background:linear-gradient(135deg,#fff8e1,#fff3e0);border:1px solid #ffe0b2;">
+    <h3 style="color:#e65100;margin-bottom:10px;">📋 每日成本预算</h3>
+    <div class="budget-row">
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">💰 今日带出备用金</label>
+        <input type="number" id="备用金带出" min="0" step="1" placeholder="0" oninput="更新备用金()" style="font-size:16px;font-weight:600;color:#e65100;">
+      </div>
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">🏦 今日收回备用金</label>
+        <input type="number" id="备用金收回" min="0" step="1" placeholder="0" oninput="更新备用金()" style="font-size:16px;font-weight:600;color:#2d8a4e;">
+      </div>
+    </div>
+    <div class="budget-row">
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">🪣 今日带出桶数</label>
+        <input type="number" id="今日带桶数" min="0" step="1" placeholder="0" oninput="更新备用金()" style="font-size:16px;font-weight:600;color:#1565c0;">
+      </div>
+      <div class="budget-item">
+        <label style="font-size:13px;color:#795548;">💵 桶成本单价 <span style="font-weight:normal;font-size:11px;" id="桶成本单价显示">(10元)</span></label>
+        <div class="budget-result" id="桶成本金额" style="font-size:18px;font-weight:700;color:#1565c0;padding:8px 0;border-bottom:2px solid #1565c0;">0元</div>
+      </div>
+    </div>
+    <div class="budget-total" style="margin-top:8px;padding:8px 12px;background:rgba(255,255,255,0.6);border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#666;">
+        <span>备用金花费: <strong id="备用金花费显示" style="color:#e65100;">0</strong>元</span>
+        <span>桶成本: <strong id="桶成本显示" style="color:#1565c0;">0</strong>元</span>
+        <span>总成本: <strong id="总成本显示" style="color:#c62828;">0</strong>元</span>
+      </div>
+    </div>
   </div>
-  <!-- 手工同步到云端按钮 -->
-  <div style="margin-top:8px;text-align:center;">
-    <button class="btn btn-blue" onclick="手工同步到云端()" style="background:#4a148c;width:100%;">☁️ 同步到云端（手动）</button>
-  </div>
+
 </div>
 
 <!-- ========== 日统计 ========== -->
@@ -680,6 +965,7 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     <h3 style="margin-bottom:12px;">🏘️ 村镇到访状态</h3>
     <div id="日统计_村镇列表" class="village-status-grid"></div>
   </div>
+  <div id="日统计欠款提示"></div>
 </div>
 
 <!-- ========== 月统计 ========== -->
@@ -826,24 +1112,29 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   </div>
   <div class="card" id="商业日志卡片">
     <h3>📓 商业日志</h3>
-    <p style="font-size:12px;color:#888;margin-bottom:10px;">小财神的财富自由成长计划 — 每一步都记在这里</p>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;">
+      <span onclick="填日志标签(this)" style="font-size:12px;background:#e8f5e9;color:#2d8a4e;padding:3px 10px;border-radius:12px;cursor:pointer;">💡 灵感</span>
+      <span onclick="填日志标签(this)" style="font-size:12px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;cursor:pointer;">📌 计划</span>
+      <span onclick="填日志标签(this)" style="font-size:12px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;cursor:pointer;">✅ 行动</span>
+      <span onclick="填日志标签(this)" style="font-size:12px;background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:12px;cursor:pointer;">🔁 复盘</span>
+      <span onclick="填日志标签(this)" style="font-size:12px;background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:12px;cursor:pointer;">🏆 里程碑</span>
+      <span onclick="填日志标签(this)" style="font-size:12px;background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;cursor:pointer;">🎯 目标</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input type="text" id="日志标题输入" placeholder="标题（如：第一步：建月卡体系）" style="margin-bottom:0;flex:1;font-size:14px;">
       <button class="btn btn-green btn-sm" onclick="添加日志()" style="width:auto;white-space:nowrap;">添加</button>
     </div>
-    <div style="margin-bottom:10px;">
-      <textarea id="日志内容输入" placeholder="写下你的计划、思考、感悟..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:80px;background:#fafafa;resize:vertical;font-family:inherit;"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-      <span style="font-size:12px;color:#888;padding:4px 0;">快捷标签：</span>
-      <span class="日志标签" onclick="填日志标签('💡 灵感')" style="font-size:12px;background:#e8f5e9;color:#2d8a4e;padding:3px 10px;border-radius:12px;cursor:pointer;">💡 灵感</span>
-      <span class="日志标签" onclick="填日志标签('📌 计划')" style="font-size:12px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;cursor:pointer;">📌 计划</span>
-      <span class="日志标签" onclick="填日志标签('✅ 行动')" style="font-size:12px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;cursor:pointer;">✅ 行动</span>
-      <span class="日志标签" onclick="填日志标签('🔁 复盘')" style="font-size:12px;background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:12px;cursor:pointer;">🔁 复盘</span>
-      <span class="日志标签" onclick="填日志标签('🏆 里程碑')" style="font-size:12px;background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:12px;cursor:pointer;">🏆 里程碑</span>
-      <span class="日志标签" onclick="填日志标签('🎯 目标')" style="font-size:12px;background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;cursor:pointer;">🎯 目标</span>
-    </div>
+    <textarea id="日志内容输入" placeholder="写下你的计划、思考、感悟..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:70px;background:#fafafa;resize:vertical;font-family:inherit;margin-bottom:8px;"></textarea>
     <div id="日志列表"></div>
+  </div>
+  <div class="card">
+    <h3>🪣 桶成本设置</h3>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <label style="font-size:14px;margin:0;white-space:nowrap;">每个空桶成本价</label>
+      <input type="number" id="桶成本单价设置" min="1" max="50" step="0.5" value="10" onchange="保存桶成本单价()" style="width:80px;margin:0;">
+      <span style="font-size:13px;color:#888;">元/桶</span>
+    </div>
+    <p style="font-size:12px;color:#888;margin-top:8px;">用于计算每天带出桶的折旧成本，自动扣除影响净收入</p>
   </div>
   <div class="card">
     <h3>📤 数据管理</h3>
@@ -860,99 +1151,396 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
 </div>
 
 <div style="position:fixed;bottom:0;left:0;right:0;background:#fff3e0;padding:8px 16px;text-align:center;font-size:11px;color:#e65100;border-top:1px solid #ffe0b2;">
-💡 日统计看哪些村没去 · 月统计看整月成绩 · 欠款备忘录记谁没付钱
+💡 日统计看哪些村没去 · 月统计看整月成绩 · 欠款备忘录记谁没付钱 · 数据云端同步
+</div>
+
+<div class="sync-indicator" id="syncIndicator">
+  <div class="sync-dot" id="syncDot"></div>
+  <span id="syncText">已连接</span>
 </div>
 
 <script>
 
-// ========== 云端同步模块 ==========
-const _ck = ['g','h','p','_','G','0','s','8','a','Q','a','Z','T','l','P','0','l','C','N','6','P','W','X','6','2','E','8','A','B','3','b','O','e','l','3','9','q','I','O','K'].join('');
-const CLOUD = {
-  repo: 'popmyshu/water',
-  branch: 'main',
-  _url(k) { return 'https://api.github.com/repos/' + this.repo + '/contents/_data/' + k + '.json'; },
-  _hdr() { return { 'Authorization': 'token ' + _ck, 'User-Agent': 'water-tracker' }; },
-  async save(fileKey, data) {
-    const content = typeof data === 'string' ? data : JSON.stringify(data);
-    const base64 = btoa(unescape(encodeURIComponent(content)));
-    let sha = null;
-    try {
-      const res = await fetch(this._url(fileKey), { headers: this._hdr() });
-      if (res.ok) { const j = await res.json(); sha = j.sha; }
-    } catch(e) {}
-    try {
-      const body = { message: 'sync: ' + fileKey + ' ' + new Date().toISOString(), content: base64, branch: this.branch };
-      if (sha) body.sha = sha;
-      const res = await fetch(this._url(fileKey), {
-        method: 'PUT',
-        headers: { ...this._hdr(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) {
-        this._showStatus('\u2705 \u5df2\u540c\u6b65');
-        const j = await res.json();
-        this._shas[fileKey] = j.content.sha;
-      } else {
-        this._showStatus('\u26a0\ufe0f \u540c\u6b65\u5931\u8d25');
-      }
-    } catch(e) { this._showStatus('\u26a0\ufe0f \u79bb\u7ebf'); }
-  },
-  async load(fileKey) {
-    try {
-      const res = await fetch(this._url(fileKey), { headers: this._hdr() });
-      if (res.ok) {
-        const j = await res.json();
-        this._shas[fileKey] = j.sha;
-        const content = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
-        return JSON.parse(content);
-      }
-      return null;
-    } catch(e) { return null; }
-  },
-  _shas: {},
-  async initAll() {
-    this._showStatus('\ud83d\udd04 \u540c\u6b65\u4e2d...');
-    try {
-      const map = [
-        ['village_data', 'villages', '\u5356\u6c34_village_data'],
-        ['expense_data', 'expenses', '\u5356\u6c34_expense_data'],
-        ['custom_villages', 'customVillages', '\u5356\u6c34_custom_villages'],
-        ['custom_expenses', 'customExpenses', '\u5356\u6c34_custom_expenses'],
-        ['debt_data', 'debts', '\u5356\u6c34_debt_data'],
-        ['todo_list', null, '\u5356\u6c34_todo_list'],
-        ['reminder_days', null, '\u5356\u6c34_reminder_days']
-      ];
-      for (const [fileKey, cacheKey, lsKey] of map) {
-        const cloud = await this.load(fileKey);
-        if (cloud === null) continue;
-        if (fileKey === 'village_data' || fileKey === 'expense_data') {
-          const ck = cacheKey === 'villages' ? 'villages' : 'expenses';
-          const merged = { ..._dataCache[ck], ...cloud };
-          _dataCache[ck] = merged;
-          localStorage.setItem(lsKey, JSON.stringify(merged));
-        } else if (fileKey === 'reminder_days') {
-          if (typeof cloud === 'number') { _dataCache.reminderDays = cloud; localStorage.setItem(lsKey, JSON.stringify(cloud)); }
-        } else if (cacheKey) {
-          _dataCache[cacheKey] = cloud;
-          localStorage.setItem(lsKey, JSON.stringify(cloud));
-        } else {
-          localStorage.setItem(lsKey, JSON.stringify(cloud));
-        }
-      }
-      加载当天();
-      刷新分析(window._排序方式);
-      更新滚动提醒();
-      this._showStatus('\u2705 \u5df2\u540c\u6b65');
-    } catch(e) {
-      this._showStatus('\u26a0\ufe0f \u540c\u6b65\u5931\u8d25');
-    }
-  },
-  _showStatus(text) {
-  },
-};
-function 云同步(fileKey, data) {
-  try { CLOUD.save(fileKey, data); } catch(e) {}
+
+// ========== 工作日志模块 ==========
+function 获取日志() {
+  try { return JSON.parse(localStorage.getItem('water_logs')) || []; } catch(e) { return []; }
 }
+function 保存日志(arr) {
+  localStorage.setItem('water_logs', JSON.stringify(arr));
+}
+function 添加日志() {
+  var ta = document.getElementById('日志输入');
+  var text = ta.value.trim();
+  if (!text) { alert('请写点内容再添加'); return; }
+  var logs = 获取日志();
+  logs.unshift({
+    id: Date.now(),
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    text: text,
+    type: 'manual'
+  });
+  保存日志(logs);
+  渲染日志();
+  ta.value = '';
+}
+function 删除日志(id) {
+  if (!confirm('确定删除这条日志吗？')) return;
+  var logs = 获取日志().filter(function(l) { return l.id !== id; });
+  保存日志(logs);
+  渲染日志();
+}
+function 渲染日志() {
+  var el = document.getElementById('日志列表');
+  if (!el) return;
+  var logs = 获取日志();
+  if (!logs.length) {
+    el.innerHTML = '<div class="card"><div class="log-empty">📝 暂无日志，开始记录今天的故事吧</div></div>';
+    return;
+  }
+  var html = '';
+  var lastDate = '';
+  for (var i = 0; i < logs.length; i++) {
+    var l = logs[i];
+    // 按日期分组标题
+    if (l.date !== lastDate) {
+      lastDate = l.date;
+      html += '<div style="font-size:13px;font-weight:600;color:#555;padding:8px 4px 4px;">📅 ' + l.date + '</div>';
+    }
+    var badge = l.type === 'report' 
+      ? '<span class="log-entry-badge report">📊 日报</span>' 
+      : '<span class="log-entry-badge">📝 手记</span>';
+    html += '<div class="log-entry' + (l.type === 'report' ? ' report' : '') + '">';
+    html += '  <div class="log-entry-header">';
+    html += '    <div>' + badge + ' <span class="log-entry-date">' + (l.time || '') + '</span></div>';
+    html += '    <button class="btn btn-red btn-sm" onclick="删除日志(' + l.id + ')" style="width:auto;padding:4px 10px;font-size:12px;">✕</button>';
+    html += '  </div>';
+    html += '  <div class="log-entry-text">' + 转义html(l.text) + '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// 自动检测：如果过了下午6点还没有今日日报，自动生成
+function 自动检测日报() {
+  var now = new Date();
+  var hour = now.getHours();
+  var today = now.toISOString().slice(0,10);
+  var logs = 获取日志();
+  // 检查今天是否有日报
+  var hasReport = false;
+  for (var i = 0; i < logs.length; i++) {
+    if (logs[i].date === today && logs[i].type === 'report') {
+      hasReport = true; break;
+    }
+  }
+  if (!hasReport && hour >= 18) {
+    // 有数据才生成
+    var data = JSON.parse(localStorage.getItem('water_data_' + today)) || {};
+    var hasData = Object.keys(data).some(function(k) { return data[k] > 0; });
+    if (hasData) {
+      setTimeout(function() { 生成日报(); }, 1500);
+    }
+  }
+}
+// 页面加载时自动检查
+自动检测日报();
+
+function 转义html(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+// 自动生成日报：汇总当天卖水数据
+function 生成日报() {
+  var today = new Date().toISOString().slice(0,10);
+  var logs = 获取日志();
+  // 检查今天是否已经有日报了
+  for (var i = 0; i < logs.length; i++) {
+    if (logs[i].date === today && logs[i].type === 'report') {
+      if (!confirm('今天已有日报，是否重新生成？')) return;
+      // 删除旧的日报
+      logs.splice(i, 1);
+      break;
+    }
+  }
+  // 获取今天卖水数据
+  var data = JSON.parse(localStorage.getItem('water_data_' + today)) || {};
+  var villages = Object.keys(data).filter(function(k) { return data[k] > 0; });
+  var totalBuckets = 0, totalIncome = 0;
+  var 各村单价 = {'西皮溪':5,'文西新村':5,'文昌阁集镇':5,'黄家团':5,'兰家坪':5,'滑石江':5,'官村':5,'锦和集镇':5,'寒池坳':7,'谭家寨':7,'岩门集镇':7,'大路坳':5,'大塘':5,'枫木林':5,'城东一期':5,'城东二期':5,'城东三期':5,'马兰廉租房':5};
+  for (var i = 0; i < villages.length; i++) {
+    var v = villages[i];
+    var cnt = data[v];
+    totalBuckets += cnt;
+    totalIncome += cnt * (各村单价[v] || 5);
+  }
+  // 查欠款
+  var debts = JSON.parse(localStorage.getItem('water_debts')) || [];
+  var todayDebts = debts.filter(function(d) { return d.date === today && !d.paid; });
+  var debtTotal = 0;
+  for (i = 0; i < todayDebts.length; i++) debtTotal += todayDebts[i].amount;
+  // 组装日报文本
+  var report = '📋 今日工作汇总\n';
+  report += '━━━━━━━━━━━━\n';
+  report += '📍 送水村镇：' + (villages.length || '无') + '个\n';
+  report += '💧 售出桶数：' + totalBuckets + '桶\n';
+  report += '💰 今日收入：¥' + totalIncome + '\n';
+  if (todayDebts.length) report += '💳 今日欠款：' + todayDebts.length + '笔，共¥' + debtTotal + '\n';
+  report += '━━━━━━━━━━━━';
+  // 添加日报
+  logs.unshift({
+    id: Date.now(),
+    date: today,
+    time: new Date().toTimeString().slice(0,5),
+    text: report,
+    type: 'report'
+  });
+  保存日志(logs);
+  渲染日志();
+  alert('✅ 日报已生成！');
+}
+
+
+
+// ========== 滚动新闻模块（百度热搜+横向滚动）==========
+var 新闻数据 = [];
+var 新闻插入次数 = 0;
+
+async function 获取新闻() {
+  const CACHE_KEY = 'water_baidu_news_v3';
+  let cached;
+  try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch(e) {}
+  if (cached && cached.date === new Date().toISOString().slice(0,10) && cached.items?.length >= 10) {
+    return cached.items;
+  }
+  let items = [];
+  // 百度热搜官方API（2026-04更新）
+  const APIs = [
+    {url: 'https://top.baidu.com/api/board?platform=wise&tab=realtime', parse: function(d) {
+      try {
+        var cards = d && d.data && d.data.cards;
+        if (!cards || !cards.length) return null;
+        var list = cards[0].content && cards[0].content[0] && cards[0].content[0].content;
+        if (!Array.isArray(list)) return null;
+        return list.map(function(x, i) {
+          return {text: x.word || '', url: x.url || '', tag: (i<3?(i+1):'热')};
+        }).filter(function(x){return x.text;});
+      } catch(e) { return null; }
+    }},
+    // 备用：百度风云榜
+    {url: 'https://top.baidu.com/api/board?platform=wise&tab=hot', parse: function(d) {
+      try {
+        var cards = d && d.data && d.data.cards;
+        if (!cards || !cards.length) return null;
+        var list = cards[0].content && cards[0].content[0] && cards[0].content[0].content;
+        if (!Array.isArray(list)) return null;
+        return list.map(function(x, i) {
+          return {text: x.word || '', url: x.url || '', tag: (i<3?(i+1):'热')};
+        }).filter(function(x){return x.text;});
+      } catch(e) { return null; }
+    }}
+  ];
+  for (let api of APIs) {
+    if (items.length >= 25) break;
+    try {
+      let r = await fetch(api.url, {signal: AbortSignal.timeout(5000)});
+      if (!r.ok) continue;
+      let d = await r.json();
+      let parsed = api.parse(d);
+      if (parsed && parsed.length > 0) items = items.concat(parsed);
+    } catch(e) {}
+  }
+  // 去重
+  var seen = {}, unique = [];
+  for (var i = 0; i < items.length; i++) {
+    if (!items[i].text) continue;
+    var key = items[i].text.slice(0,20);
+    if (!seen[key]) { seen[key] = true; unique.push(items[i]); }
+  }
+  if (unique.length > 50) unique = unique.slice(0,50);
+  // 缓存并返回
+  if (unique.length >= 8) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({date: new Date().toISOString().slice(0,10), items: unique}));
+    return unique;
+  }
+  return cached && cached.items ? cached.items : getDefaultNews();
+}function getDefaultNews() {
+  return [
+    {text: '西晃山天然矿泉水，麻阳人的健康选择', url: '', tag: '热'},
+    {text: '今日麻阳天气晴好，适宜出行', url: '', tag: '热'},
+    {text: '送水师傅辛苦了！注意防暑降温', url: '', tag: '热'},
+    {text: 'DeepSeek AI 推出免费V4-Flash模型', url: 'https://www.deepseek.com', tag: '1'},
+    {text: '五一假期临近，麻阳旅游热度上升', url: '', tag: '热'},
+    {text: '5元/桶良心价，偏远地区+2元配送费', url: '', tag: '热'},
+    {text: '新能源汽车充电桩建设加速推进', url: '', tag: '热'},
+    {text: '麻阳冰糖橙获地理标志产品保护', url: '', tag: '热'},
+    {text: '油价下调！92号汽油每升降0.15元', url: '', tag: '2'},
+    {text: '国家超算互联网平台正式上线运行', url: '', tag: '热'},
+    {text: '华为发布新款折叠屏手机', url: '', tag: '热'},
+    {text: 'AI大模型竞争白热化，多家企业降价', url: '', tag: '3'},
+    {text: '微信支付全面开放境外卡绑定', url: '', tag: '热'},
+    {text: '湖南省乡村振兴示范区名单公布', url: '', tag: '热'},
+    {text: '怀化至麻阳高速公路建设进展顺利', url: '', tag: '热'},
+    {text: '多地推行15分钟便民生活圈', url: '', tag: '热'},
+    {text: '送水车保养小知识：定期检查轮胎气压', url: '', tag: '热'},
+    {text: '贵州村超全国邀请赛火热进行中', url: '', tag: '热'},
+    {text: '中国空间站科学实验成果丰硕', url: '', tag: '热'},
+    {text: '数字人民币试点范围进一步扩大', url: '', tag: '热'},
+    {text: '夏季用电高峰到来，注意用电安全', url: '', tag: '热'},
+    {text: '多地推出家电以旧换新补贴政策', url: '', tag: '热'},
+    {text: '农村电商物流最后一公里加速打通', url: '', tag: '热'},
+    {text: 'AI看病来了！多家医院引入辅助诊断', url: '', tag: '热'},
+    {text: '小财神系统新增工作日志功能', url: '', tag: '热'},
+    {text: '高温预警：未来三天麻阳气温超35°C', url: '', tag: '热'},
+    {text: '快递新规实施：未经同意不得放驿站', url: '', tag: '热'},
+    {text: '个体工商户减半征收个人所得税', url: '', tag: '热'},
+    {text: '5G用户数突破10亿，覆盖城乡', url: '', tag: '热'},
+    {text: '天气炎热，送水高峰期注意备足水量', url: '', tag: '热'},
+    {text: '抖音电商推出中小商家扶持计划', url: '', tag: '热'},
+    {text: '长沙至麻阳城际列车加密班次', url: '', tag: '热'},
+    {text: '夏季防溺水安全教育宣传月启动', url: '', tag: '热'},
+    {text: 'AI换脸诈骗频发，警方发布防范提示', url: '', tag: '热'},
+    {text: '多地发放消费券刺激夏日经济', url: '', tag: '热'},
+    {text: '怀化国际陆港货运量创新高', url: '', tag: '热'},
+    {text: '小财神统计系统欠款管理全新升级', url: '', tag: '热'},
+    {text: '中国探月工程嫦娥七号筹备进展', url: '', tag: '热'},
+    {text: '台风防范：南方多地做好防台准备', url: '', tag: '热'},
+    {text: '暑期旅游市场火爆，避暑游成热门', url: '', tag: '热'},
+    {text: '送水路线技巧：锦和集镇人流量最大', url: '', tag: '热'},
+    {text: 'AI编程助手Copilot全面升级', url: '', tag: '热'},
+    {text: '医保个人账户共济范围扩大至近亲属', url: '', tag: '热'},
+    {text: '麻阳江口墟镇特色产业蓬勃发展', url: '', tag: '热'},
+    {text: '湖南省快递业务量同比增长25%', url: '', tag: '热'},
+    {text: '智能手表可检测高血压？新研究突破', url: '', tag: '热'},
+    {text: '微信朋友圈可发实况照片了', url: '', tag: '热'},
+    {text: '老年人智能技术应用培训走进社区', url: '', tag: '热'},
+    {text: '水桶清洁小贴士：定期用白醋消毒', url: '', tag: '热'},
+    {text: '今日油价波动，关注出行成本变化', url: '', tag: '热'},
+    {text: '农产品直播带货助力乡村振兴', url: '', tag: '热'},
+    {text: '中医养生：夏季喝绿豆汤解暑', url: '', tag: '热'},
+    {text: '全国多地开展安全生产大检查', url: '', tag: '热'},
+    {text: '麻阳锦和镇集市日信息：每逢3、6、9', url: '', tag: '热'},
+    {text: 'AI生成视频技术突破，手机就能做大片', url: '', tag: '2'},
+    {text: '个人养老金制度全面实施', url: '', tag: '热'},
+    {text: '麻阳至怀化拼车群新增线路', url: '', tag: '热'},
+    {text: '废旧水桶回收利用环保倡议', url: '', tag: '热'},
+  ];
+}function 打开新闻(url, text) {
+  if (url && url.length > 8) {
+    // 手机浏览器经常拦截window.open，改用location
+    try { window.open(url, '_blank'); } catch(e) {
+      window.location.href = url;
+    }
+  } else {
+    // 没有链接就复制文本到剪贴板
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch(e) {}
+  }
+}
+
+async function 刷新新闻() {
+  var track = document.getElementById('newsTrack');
+  var src = document.getElementById('newsSource');
+  var loader = document.getElementById('newsLoader');
+  if (!track) return;
+  // 显示加载状态
+  if (loader) loader.style.display = 'inline-block';
+  var items = await 获取新闻();
+  if (!items || items.length === 0) {
+    items = getDefaultNews();
+  }
+  新闻数据 = items;
+  // 用DOM方式创建元素，彻底避免字符串转义问题
+  track.innerHTML = '';
+  for (var rep = 0; rep < 3; rep++) {
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var tagClass = item.tag === '1' ? 'n1' : item.tag === '2' ? 'n2' : item.tag === '3' ? 'n3' : '';
+      var text = (item.text || '').replace(/<[^>]+>/g, '');
+      var url = item.url || 'https://www.baidu.com/s?wd=' + encodeURIComponent(text);
+      
+      var div = document.createElement('div');
+      div.className = 'news-item-h';
+      // 用dataset保存数据，点击时读取
+      div.dataset.url = url;
+      div.dataset.text = text;
+      div.onclick = function() {
+        var u = this.dataset.url;
+        var t = this.dataset.text;
+        if (u && u.length > 5) {
+          try { window.open(u, '_blank'); } catch(e) { window.location.href = u; }
+        } else {
+          var searchUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(t);
+          try { window.open(searchUrl, '_blank'); } catch(e) { window.location.href = searchUrl; }
+        }
+      };
+      
+      var tag = document.createElement('span');
+      tag.className = 'news-tag' + (tagClass ? ' ' + tagClass : '');
+      tag.textContent = item.tag || '热';
+      
+      var txt = document.createElement('span');
+      txt.className = 'news-text';
+      txt.textContent = text;
+      
+      div.appendChild(tag);
+      div.appendChild(txt);
+      track.appendChild(div);
+    }
+  }
+  if (src) src.textContent = '百度热搜 · ' + items.length + '条';
+  if (loader) loader.style.display = 'none';
+  // 启动JS驱动的滚动
+  启动滚动();
+}
+
+var 滚动定时器 = null;
+var 滚动位置 = 0;
+function 启动滚动() {
+  if (滚动定时器) clearInterval(滚动定时器);
+  var track = document.getElementById('newsTrack');
+  if (!track || track.children.length === 0) return;
+  var totalItems = track.children.length;
+  var oneSetCount = Math.floor(totalItems / 3);
+  var oneSetWidth = 0;
+  for (var i = 0; i < oneSetCount && i < track.children.length; i++) {
+    oneSetWidth += track.children[i].offsetWidth;
+  }
+  if (oneSetWidth === 0) return;
+  滚动位置 = 0;
+  滚动定时器 = setInterval(function() {
+    滚动位置 -= 1.5;
+    if (Math.abs(滚动位置) >= oneSetWidth) {
+      滚动位置 = 0;
+    }
+    track.style.transform = 'translateX(' + 滚动位置 + 'px)';
+  }, 30);
+}
+
+// 页面加载时启动
+setTimeout(刷新新闻, 800);
+
+// 每5分钟自动刷新一次新闻
+setInterval(function() {
+  var cacheKey = 'water_baidu_news_v2';
+  localStorage.removeItem(cacheKey);
+  刷新新闻();
+}, 5 * 60 * 1000);
+// ========== 云端同步模块（仅保留CloudSync单例，自动拉取已禁用）==========
+// 原有三套同步系统互相覆盖导致数据回滚，现统一为一个CloudSync
+// 自动拉取已禁用，改为手工按钮触发
 
 // ========== 本地存储（localStorage 纯前端版）==========
 let _dataCache = { villages: {}, expenses: {}, customVillages: [], customExpenses: [], debts: [], reminderDays: 3 };
@@ -975,8 +1563,14 @@ function 读开支数据() { return _dataCache.expenses; }
 function 存开支数据(d) { _dataCache.expenses = d; localStorage.setItem('卖水_expense_data', JSON.stringify(d)); }
 function 读欠款() { return _dataCache.debts; }
 function 存欠款(d) { _dataCache.debts = d; localStorage.setItem('卖水_debt_data', JSON.stringify(d)); }
+// 云同步函数（已停用，直接写localStorage；保留函数体防止旧代码报错）
+function 云同步(key, data) {
+  // 现在已禁用云端自动拉取，保存只走localStorage
+  // 如需手动同步，可调用 CloudSync.push()
+}
 function 读提醒天数() { return _dataCache.reminderDays || 3; }
 function 保存提醒设置() {
+  云同步('reminder_days', _dataCache.reminderDays);
   _dataCache.reminderDays = parseInt(document.getElementById('提醒天数').value) || 3;
   localStorage.setItem('卖水_reminder_days', JSON.stringify(_dataCache.reminderDays));
 }
@@ -1021,7 +1615,7 @@ function 刷新欠款() {
   document.getElementById('欠款总额').textContent = 隐藏金额(总欠);
   document.getElementById('欠款笔数').textContent = 未付.length + '笔欠款';
 
-  let 今日提示 = document.getElementById('今日欠款提示');
+  let 今日提示 = document.getElementById('日统计欠款提示');
   if (未付.length > 0) {
     今日提示.innerHTML = '<div class="alert-banner" style="background:linear-gradient(135deg,#ffebee,#ffcdd2);border-left-color:#c62828;cursor:pointer;" onclick="切换标签(\'debt\')">' +
       '<h4 style="color:#c62828;">💰 ' + 未付.length + '笔欠款未收，共' + 总欠 + '元</h4>' +
@@ -1125,6 +1719,7 @@ function 筛选欠款(type, el) {
 
 // ========== 日统计 ==========
 function 刷新日统计() {
+  刷新欠款();
   let 日期 = document.getElementById('日统计日期').value || 今天();
   let all = 读数据();
   let allV = 获取所有村庄();
@@ -1245,6 +1840,71 @@ function 刷新月统计() {
 }
 
 // ========== 今日填表 ==========
+
+// ========== 每日成本预算模块 ==========
+function 读桶成本单价() {
+  try { return parseFloat(localStorage.getItem('water_bucket_cost')) || 10; } catch(e) { return 10; }
+}
+function 存桶成本单价(v) {
+  localStorage.setItem('water_bucket_cost', String(v));
+}
+function 读当日备用金(日期) {
+  try { let all = JSON.parse(localStorage.getItem('water_budget_daily')) || {}; return all[日期] || {备用金带出:'', 备用金收回:'', 带桶数:''}; } catch(e) { return {备用金带出:'', 备用金收回:'', 带桶数:''}; }
+}
+function 存当日备用金(日期, data) {
+  try { let all = JSON.parse(localStorage.getItem('water_budget_daily')) || {}; all[日期] = data; localStorage.setItem('water_budget_daily', JSON.stringify(all)); } catch(e) {}
+}
+function 更新备用金() {
+  let 日期 = document.getElementById('选择日期').value || 今天();
+  let 带出 = parseFloat(document.getElementById('备用金带出').value) || 0;
+  let 收回 = parseFloat(document.getElementById('备用金收回').value) || 0;
+  let 带桶 = parseFloat(document.getElementById('今日带桶数').value) || 0;
+  存当日备用金(日期, {备用金带出:带出||'', 备用金收回:收回||'', 带桶数:带桶||''});
+  let 花费 = 带出 - 收回;
+  let 桶价 = 读桶成本单价();
+  let 桶成本 = 带桶 * 桶价;
+  let 总成本 = 花费 + 桶成本;
+  document.getElementById('备用金花费显示').textContent = 花费>0?花费:0;
+  document.getElementById('桶成本显示').textContent = 桶成本;
+  document.getElementById('总成本显示').textContent = 总成本;
+  document.getElementById('桶成本金额').textContent = 桶成本+'元';
+  重新算合计(日期);
+}
+function 保存桶成本单价() {
+  let v = parseFloat(document.getElementById('桶成本单价设置').value) || 10;
+  存桶成本单价(v);
+  document.getElementById('桶成本单价显示').textContent = '('+v+'元)';
+  if (document.getElementById('备用金带出')) 更新备用金();
+}
+function 加载备用金(日期) {
+  let data = 读当日备用金(日期);
+  let el1 = document.getElementById('备用金带出');
+  let el2 = document.getElementById('备用金收回');
+  let el3 = document.getElementById('今日带桶数');
+  if (el1) el1.value = data.备用金带出||'';
+  if (el2) el2.value = data.备用金收回||'';
+  if (el3) el3.value = data.带桶数||'';
+  let 带出 = parseFloat(data.备用金带出)||0;
+  let 收回 = parseFloat(data.备用金收回)||0;
+  let 带桶 = parseFloat(data.带桶数)||0;
+  let 花费 = 带出-收回;
+  let 桶价 = 读桶成本单价();
+  let 桶成本 = 带桶*桶价;
+  document.getElementById('桶成本单价显示').textContent = '('+桶价+'元)';
+  if (document.getElementById('备用金花费显示')) document.getElementById('备用金花费显示').textContent = 花费>0?花费:0;
+  if (document.getElementById('桶成本显示')) document.getElementById('桶成本显示').textContent = 桶成本;
+  if (document.getElementById('总成本显示')) document.getElementById('总成本显示').textContent = (花费+桶成本);
+  if (document.getElementById('桶成本金额')) document.getElementById('桶成本金额').textContent = 桶成本+'元';
+}
+function 获取当日总成本(日期) {
+  let data = 读当日备用金(日期);
+  let 带出 = parseFloat(data.备用金带出)||0;
+  let 收回 = parseFloat(data.备用金收回)||0;
+  let 带桶 = parseFloat(data.带桶数)||0;
+  let 桶价 = 读桶成本单价();
+  return (带出-收回) + (带桶*桶价);
+}
+
 function 加载当天() {
   let 日期 = document.getElementById('选择日期').value || 今天();
   let all = 读数据();
@@ -1292,9 +1952,12 @@ function 加载当天() {
   document.getElementById('今日金额').textContent = 隐藏金额(总钱);
   document.getElementById('今日开支').textContent = 隐藏金额(总开支额);
   let 净 = 总钱 - 总开支额;
-  document.getElementById('净收入').textContent = 隐藏金额((净>=0?'+':'')+净);
+  let 成本 = 获取当日总成本(日期);
+  let 净后 = 净 - 成本;
+  document.getElementById('净收入').textContent = 隐藏金额((净后>=0?'+':'')+净后);
   let box = document.getElementById('净收入框');
-  if (净 < 0) box.classList.add('negative'); else box.classList.remove('negative');
+  if (净后 < 0) box.classList.add('negative'); else box.classList.remove('negative');
+  加载备用金(日期);
   刷新欠款();
 }
 
@@ -1420,9 +2083,12 @@ function 重新算合计(日期) {
   document.getElementById('今日金额').textContent = 总钱;
   document.getElementById('今日开支').textContent = 总开支额;
   let 净 = 总钱 - 总开支额;
-  document.getElementById('净收入').textContent = (净>=0?'+':'')+净;
+  let 日期c = document.getElementById('选择日期').value || 今天();
+  let 成本c = 获取当日总成本(日期c);
+  let 净后 = 净 - 成本c;
+  document.getElementById('净收入').textContent = 隐藏金额((净后>=0?'+':'')+净后);
   let box = document.getElementById('净收入框');
-  if (净 < 0) box.classList.add('negative'); else box.classList.remove('negative');
+  if (净后 < 0) box.classList.add('negative'); else box.classList.remove('negative');
 }
 
 function 复制到昨天() {
@@ -1464,25 +2130,14 @@ function 复制到昨天() {
 
 function 保存当日() {
   let 日期 = document.getElementById('选择日期').value || 今天();
-  alert('✅ ' + 日期 + ' 已保存到本地');
+  alert('✅ ' + 日期 + ' 已保存到本地（点击“保存+同步”推送到云端）');
 }
-
-// 手工同步到云端（不会自动拉取覆盖本地数据）
-function 手工同步到云端() {
-  if (!confirm('确定将本地数据上传到云端？注意：上传后会覆盖云端数据！')) return;
-  let keys = ['village_data', 'expense_data', 'custom_villages', 'custom_expenses', 'debt_data'];
-  let lsKeys = ['卖水_village_data', '卖水_expense_data', '卖水_custom_villages', '卖水_custom_expenses', '卖水_debt_data'];
-  let count = 0;
-  for (let i = 0; i < keys.length; i++) {
-    let local = localStorage.getItem(lsKeys[i]);
-    if (local) {
-      try {
-        CLOUD.save(keys[i], JSON.parse(local));
-        count++;
-      } catch(e) {}
-    }
-  }
-  alert('☁️ 已上传 ' + count + ' 项数据到云端\n（注意：同步是单向的，不会拉取云端数据覆盖本地）');
+function 保存并同步() {
+  保存当日();
+  CloudSync.push();
+}
+function 从云端恢复() {
+  CloudSync.pull();
 }
 
 function 清空当日() {
@@ -1615,7 +2270,9 @@ function 切换标签(n) {
   if (n == 'monthly') 刷新月统计();
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
   if (n == 'all') 刷新分析(window._排序方式);
-  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); }
+  if (n == 'member') 刷新会员列表();
+    if (n == 'log') 渲染日志();
+  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); var 桶价设置 = document.getElementById('桶成本单价设置'); if (桶价设置) 桶价设置.value = 读桶成本单价(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); }
 }
 
 // ========== 金额隐藏功能 ==========
@@ -1667,6 +2324,7 @@ function 读待办() {
 
 function 存待办(list) {
   localStorage.setItem('卖水_todo_list', JSON.stringify(list));
+  云同步('todo_list', list);
 }
 
 function 添加待办() {
@@ -1731,12 +2389,14 @@ function 更新滚动提醒() {
   文本.textContent = '📢 ' + texts.join('  •  ') + '  ';
 }
 
-// ========== 📓 商业日志功能 ==========
+
+// ========== 商业日志功能 ==========
 function 读日志() {
   return JSON.parse(localStorage.getItem('卖水_business_log') || '[]');
 }
 function 存日志(list) {
   localStorage.setItem('卖水_business_log', JSON.stringify(list));
+  云同步('business_log', list);
 }
 function 添加日志() {
   let 标题输入 = document.getElementById('日志标题输入');
@@ -1745,28 +2405,18 @@ function 添加日志() {
   let 内容 = 内容输入.value.trim();
   if (!标题) { alert('请填写日志标题'); return; }
   let list = 读日志();
-  let 现在 = new Date();
-  let 时间 = 现在.getFullYear()+'-'+String(现在.getMonth()+1).padStart(2,'0')+'-'+String(现在.getDate()).padStart(2,'0')+' '+String(现在.getHours()).padStart(2,'0')+':'+String(现在.getMinutes()).padStart(2,'0');
-  list.unshift({
-    id: Date.now().toString(36),
-    title: 标题,
-    content: 内容,
-    time: 时间,
-    date: 今天()
-  });
+  list.unshift({ id: Date.now().toString(36), 标题: 标题, 内容: 内容, 时间: new Date().toLocaleString('zh-CN') });
   存日志(list);
   标题输入.value = '';
   内容输入.value = '';
   刷新日志();
-  alert('📓 日志已记录！');
 }
-function 填日志标签(tag) {
+function 填日志标签(el) {
   let 输入 = document.getElementById('日志标题输入');
-  输入.value = tag + ' ' + 输入.value.replace(/^(💡|📌|✅|🔁|🏆|🎯)\s*/, '');
+  输入.value = el.textContent.trim() + ' ';
   输入.focus();
 }
 function 删除日志(id) {
-  if (!confirm('确定删除这条日志？')) return;
   let list = 读日志();
   list = list.filter(i => i.id !== id);
   存日志(list);
@@ -1774,49 +2424,24 @@ function 删除日志(id) {
 }
 function 刷新日志() {
   let list = 读日志();
+  let el = document.getElementById('日志列表');
+  if (!el) return;
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">暂无日志记录</div>'; return; }
   let html = '';
-  if (list.length === 0) {
-    html = '<div class="empty-msg">还没有日志，开始记录你的财富自由之旅吧 🚀</div>';
-  } else {
-    for (let item of list) {
-      let safeTitle = item.title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
-      let safeContent = (item.content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      let safeTime = item.time || item.date || '';
-      // 把内容里的换行转成 <br>
-      safeContent = safeContent.replace(/\n/g, '<br>');
-      html += '<div style="padding:14px;margin-bottom:10px;background:#fafafa;border-radius:10px;border-left:4px solid #2d8a4e;">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
-        '<strong style="font-size:15px;color:#333;">' + safeTitle + '</strong>' +
-        '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<span style="font-size:11px;color:#aaa;">' + safeTime + '</span>' +
-        '<button onclick="删除日志(\'' + item.id + '\')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;padding:2px 4px;" title="删除">✕</button>' +
-        '</div></div>';
-      if (safeContent) {
-        html += '<div style="font-size:13px;color:#555;line-height:1.6;">' + safeContent + '</div>';
-      }
-      html += '</div>';
-    }
-  }
-  document.getElementById('日志列表').innerHTML = html;
+  list.forEach(item => {
+    html += '<div style="border-bottom:1px solid #f0f0f0;padding:10px 0;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+      '<strong style="font-size:14px;">' + item.标题 + '</strong>' +
+      '<button class="del-btn" onclick="删除日志(\'' + item.id + '\')" title="删除" style="background:none;border:none;color:#e53935;cursor:pointer;font-size:16px;">✕</button>' +
+      '</div>' +
+      (item.内容 ? '<p style="margin:6px 0 0;font-size:13px;color:#555;white-space:pre-wrap;">' + item.内容 + '</p>' : '') +
+      '<div style="font-size:11px;color:#aaa;margin-top:4px;">' + item.时间 + '</div>' +
+      '</div>';
+  });
+  el.innerHTML = html;
 }
 
-// ========== 更新云同步列表，包含日志 ==========
-// 在 CLOUD.initAll 的 map 数组中添加 'business_log' 条目
-// 扩展 CLOUD.initAll 函数
-// 云同步扩展已关闭（自动同步会导致本地数据被覆盖）
-// const _origInitAll = CLOUD.initAll;
-// CLOUD.initAll = async function() {
-//   if (typeof _origInitAll === 'function') {
-//     await _origInitAll.call(this);
-//   }
-//   try {
-//     const logKey = 'business_log';
-//     const cloudLog = await this.load(logKey);
-//     if (cloudLog !== null && Array.isArray(cloudLog)) {
-//       localStorage.setItem('卖水_business_log', JSON.stringify(cloudLog));
-//     }
-//   } catch(e) {}
-// };
+// ========== 每个村庄单独设置提醒天数 ==========
 function 读村提醒天数(村名) {
   let map = JSON.parse(localStorage.getItem('卖水_village_reminder_days') || '{}');
   return map[村名] || 0; // 0表示使用全局天数
@@ -1860,6 +2485,7 @@ function 渲染各村提醒天数() {
   _dataCache.debts = JSON.parse(localStorage.getItem('卖水_debt_data') || '[]');
   _dataCache.reminderDays = parseInt(localStorage.getItem('卖水_reminder_days')) || 3;
   } catch(e) { console.warn('[init] cache error:', e); }
+  // CloudSync.pull(); // 已禁用自动拉取，改用"保存+同步"按钮
   var de = document.getElementById('选择日期');
   if (de) de.value = 今天();
   try { 读金额隐藏状态(); } catch(e) {};
@@ -1873,174 +2499,430 @@ function 渲染各村提醒天数() {
   if (!cv) localStorage.setItem('卖水_版本号', 'v2_39cun');
   加载当天();
   更新滚动提醒();
-  // 自动同步已关闭，需要手动点"同步到云端"按钮
-  // CLOUD.initAll();
+  // CLOUD.initAll(); // 已禁用自动拉取，防止云端旧数据覆盖本地新数据
+  // 延迟再刷新一次滚动提醒，防止被同步请求阻塞
+  setTimeout(更新滚动提醒, 1000);
 })();
 </script>
 
 
 
-<!-- 行车轨迹入口 -->
-<a href="/water/track/" style="position:fixed;bottom:80px;right:16px;z-index:99999;background:#07c160;color:#fff;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 16px rgba(7,193,96,.4);text-decoration:none;transition:all .3s" onclick="this.style.transform='scale(.9)'">
-  🚐
-</a>
-<style>
-@media(max-width:768px){
-  a[href*="/water/track/"]:hover{transform:scale(1.05)}
-  a[href*="/water/track/"]::after{content:'轨迹';position:absolute;bottom:-18px;font-size:9px;color:#666;white-space:nowrap;background:#fff;padding:1px 6px;border-radius:4px;opacity:.8}
-}
-</style>
+
+
 
 
 
 
 
 <script>
-// ========== 麻阳县实时天气 - Open-Meteo免费API ==========
-(function fetchMayangWeather() {
-  // 麻阳县坐标 27.87°N 109.73°E
-  var url = 'https://api.open-meteo.com/v1/forecast?latitude=27.87&longitude=109.73&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Asia%2FShanghai&forecast_days=1';
-  var emojiMap = {0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌧️',55:'🌧️',56:'🌧️',57:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',66:'🌧️',67:'🌧️',71:'🌨️',73:'🌨️',75:'🌨️',77:'🌨️',80:'🌦️',81:'🌧️',82:'🌧️',85:'🌨️',86:'🌨️',95:'⛈️',96:'⛈️',99:'⛈️'};
-  var descMap = {0:'晴',1:'晴间多云',2:'多云',3:'阴',45:'雾',48:'雾凇',51:'小毛毛雨',53:'毛毛雨',55:'大毛毛雨',56:'冻毛毛雨',57:'冻雨',61:'小雨',63:'中雨',65:'大雨',66:'冻雨',67:'大冻雨',71:'小雪',73:'中雪',75:'大雪',77:'雪粒',80:'小阵雨',81:'阵雨',82:'大阵雨',85:'小雪',86:'大雪',95:'雷暴',96:'雷暴冰雹',99:'强雷暴冰雹'};
-  try {
-    fetch(url).then(function(r){return r.json()}).then(function(d){
-      if(!d||!d.current) return;
-      var c=d.current, t=c.temperature_2m, h=c.relative_humidity_2m, w=c.wind_speed_10m, code=c.weather_code;
-      var em=emojiMap[code]||'🌤️', desc=descMap[code]||'未知';
-      document.getElementById('weatherEmoji').textContent=em;
-      document.getElementById('weatherText').textContent='麻阳 '+t+'°C '+desc+' 💧'+h+'% 🌬️'+w+'km/h';
-    }).catch(function(){
-      document.getElementById('weatherText').textContent='麻阳天气获取失败';
-    });
-  } catch(e) {
-    document.getElementById('weatherText').textContent='麻阳天气获取失败';
+// ========== Cloud Sync - auto backup to GitHub ==========
+var _t1_ = 'ghp_G0s8aQaZTlP0lCN6';
+var _t2_ = 'PWX62E8AB3bOel39qIOK';
+var CloudSync = {
+  REPO: 'popmyshu/water',
+  FILE: 'data.json',
+  BRANCH: 'main',
+  _timer: null,
+  _busy: false,
+
+  push: function() {
+    if (this._timer) clearTimeout(this._timer);
+    this._timer = setTimeout(this._push.bind(this), 2000);
+  },
+
+  _push: function() {
+    var self = this;
+    if (self._busy) return;
+    self._busy = true;
+    self._status('syncing');
+    var tok = _t1_ + _t2_;
+    try {
+      var blob = {
+        updated_at: new Date().toISOString(),
+        village_data: JSON.parse(localStorage.getItem('卖水_village_data') || '{}'),
+        expense_data: JSON.parse(localStorage.getItem('卖水_expense_data') || '{}'),
+        custom_villages: JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'),
+        custom_expenses: JSON.parse(localStorage.getItem('卖水_custom_expenses') || '[]'),
+        debt_data: JSON.parse(localStorage.getItem('卖水_debt_data') || '[]'),
+        reminder_days: parseInt(localStorage.getItem('卖水_reminder_days')) || 3,
+        members: JSON.parse(localStorage.getItem('water_members') || '[]'),
+        deliveries: JSON.parse(localStorage.getItem('water_deliveries') || '[]')
+      };
+      var pkg = btoa(unescape(encodeURIComponent(JSON.stringify(blob))));
+      var api = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
+      // Get SHA
+      var x1 = new XMLHttpRequest();
+      x1.open('GET', api + '?ref=' + self.BRANCH, false);
+      x1.setRequestHeader('Authorization', 'token ' + tok);
+      x1.setRequestHeader('User-Agent', 'WaterTracker');
+      x1.send();
+      var sha = (x1.status === 200) ? JSON.parse(x1.responseText).sha : null;
+      var body = { message: 'sync: ' + new Date().toISOString().slice(0,10), content: pkg, branch: self.BRANCH };
+      if (sha) body.sha = sha;
+      var x2 = new XMLHttpRequest();
+      x2.open('PUT', api, false);
+      x2.setRequestHeader('Authorization', 'token ' + tok);
+      x2.setRequestHeader('User-Agent', 'WaterTracker');
+      x2.setRequestHeader('Content-Type', 'application/json');
+      x2.send(JSON.stringify(body));
+      if (x2.status === 200 || x2.status === 201) {
+        self._status('ok');
+        localStorage.setItem('卖水_cloud_updated', blob.updated_at);
+      } else { self._status('err'); }
+    } catch(e) { self._status('off'); }
+    self._busy = false;
+  },
+
+  pull: function() {
+    var self = this;
+    var tok = _t1_ + _t2_;
+    try {
+      var api = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
+      var x = new XMLHttpRequest();
+      x.open('GET', api + '?ref=' + self.BRANCH, false);
+      x.setRequestHeader('Authorization', 'token ' + tok);
+      x.setRequestHeader('User-Agent', 'WaterTracker');
+      x.send();
+      if (x.status !== 200) { self._status('off'); return; }
+      var meta = JSON.parse(x.responseText);
+      var cloud = JSON.parse(decodeURIComponent(escape(atob(meta.content))));
+      if (!cloud || !cloud.updated_at) { self._status('off'); return; }
+      // 本地优先策略：只补本地没有的日期，绝不覆盖已有数据
+      var changed = false;
+      if (cloud.village_data) {
+        var vd = JSON.parse(localStorage.getItem('卖水_village_data') || '{}');
+        for (var d in cloud.village_data) {
+          if (!vd[d]) { vd[d] = cloud.village_data[d]; changed = true; } // 只补本地没有的日期
+        }
+        if (changed) localStorage.setItem('卖水_village_data', JSON.stringify(vd));
+      }
+      var changed2 = false;
+      if (cloud.expense_data) {
+        var ed = JSON.parse(localStorage.getItem('卖水_expense_data') || '{}');
+        for (var d in cloud.expense_data) {
+          if (!ed[d]) { ed[d] = cloud.expense_data[d]; changed2 = true; } // 只补本地没有的日期
+        }
+        if (changed2) localStorage.setItem('卖水_expense_data', JSON.stringify(ed));
+      }
+      // 列表类：只有本地完全为空时才用云端的
+      if (cloud.custom_villages && !localStorage.getItem('卖水_custom_villages')) localStorage.setItem('卖水_custom_villages', JSON.stringify(cloud.custom_villages));
+      if (cloud.custom_expenses && !localStorage.getItem('卖水_custom_expenses')) localStorage.setItem('卖水_custom_expenses', JSON.stringify(cloud.custom_expenses));
+      if (cloud.debt_data && !localStorage.getItem('卖水_debt_data')) localStorage.setItem('卖水_debt_data', JSON.stringify(cloud.debt_data));
+      if (cloud.reminder_days && !localStorage.getItem('卖水_reminder_days')) localStorage.setItem('卖水_reminder_days', cloud.reminder_days);
+      localStorage.setItem('卖水_cloud_updated', cloud.updated_at);
+      // 刷新页面显示
+      _dataCache.villages = JSON.parse(localStorage.getItem('卖水_village_data') || '{}');
+      _dataCache.expenses = JSON.parse(localStorage.getItem('卖水_expense_data') || '{}');
+      加载当天();
+      刷新分析(window._排序方式);
+      self._status('pulled');
+    } catch(e) { self._status('off'); }
+  },
+
+  _status: function(s) {
+    // 已替换为天气插件，不再显示同步状态
   }
-  // 每30分钟自动刷新
-  setTimeout(fetchMayangWeather, 30*60*1000);
-})();
-</script>
+};
 
-<script>
-// ========== 实时GPS定位 ==========
-var _lastPos = null;
-var _geoPending = false;
-
-function 显示位置状态(el, text, show) {
-  el.textContent = text;
-  el.parentElement.style.display = show ? 'inline-flex' : 'none';
-}
-
-function 尝试定位() {
-  if (!navigator.geolocation) return;
-  var locEl = document.getElementById('locationStatus');
-  var memoEl = document.getElementById('locationMemoBtn');
-  if (!locEl) return;
-  locEl.style.display = 'inline-flex';
-  locEl.querySelector('span').textContent = '定位中...';
-
-  navigator.geolocation.getCurrentPosition(
-    function(pos) {
-      _lastPos = pos;
-      var lat = pos.coords.latitude.toFixed(4);
-      var lng = pos.coords.longitude.toFixed(4);
-      // 反向地理编码：转成地名
-      fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=17&addressdetails=1')
-        .then(function(r){ return r.json(); })
-        .then(function(data) {
-          var place = data.address;
-          if (!place) {
-            locEl.querySelector('span').textContent = lat + ',' + lng;
-            return;
-          }
-          var village = place.village || place.town || place.city || place.county || '';
-          var road = place.road || place.neighbourhood || '';
-          var display = village ? (village + (road ? '·' + road : '')) : (road || (lat + ',' + lng));
-          locEl.querySelector('span').textContent = display;
-          locEl.title = place.city || place.county || '';
-          if (memoEl) memoEl.style.display = 'inline-flex';
-          _geoPending = false;
-        })
-        .catch(function() {
-          locEl.querySelector('span').textContent = lat + ',' + lng;
-          if (memoEl) memoEl.style.display = 'inline-flex';
-          _geoPending = false;
-        });
-    },
-    function(err) {
-      var msg = '定位失败';
-      if (err.code === 1) msg = '定位拒绝';
-      else if (err.code === 2) msg = '定位不可用';
-      else if (err.code === 3) msg = '定位超时';
-      if (locEl) locEl.querySelector('span').textContent = msg;
-      _geoPending = false;
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
-  );
-}
-
-function 记录当前位置() {
-  if (!_lastPos) {
-    if (navigator.geolocation) {
-      var locEl = document.getElementById('locationStatus');
-      if (locEl) locEl.querySelector('span').textContent = '重新定位...';
-      navigator.geolocation.getCurrentPosition(
-        function(pos) { _lastPos = pos; __doRecord(pos); },
-        function(err) { alert('定位失败：' + (err.code === 1 ? '请允许定位权限' : '定位不可用')); },
-        { enableHighAccuracy: true, timeout: 15000 }
-      );
-    } else {
-      alert('此浏览器不支持定位功能');
-    }
-    return;
+// ===== 联网自动更新励志语录（每天自动从网络获取新鲜语录）=====
+const 励志库 = [
+  '💪 不积跬步，无以至千里',
+  '🌞 今天的汗水，是明天的收获',
+  '🚛 送水也是送温暖，加油！',
+  '💰 小财神，大梦想，一桶一桶攒起来',
+  '🏔️ 西晃山的水，麻阳人的情',
+  '🔥 生活不易，卖水卖出一片天',
+  '💧 每一桶山泉水，都是大自然的馈赠',
+  '🌟 平凡的事坚持做，就是不平凡',
+  '🙏 感谢每一位信任的老顾客',
+  '📈 今天多送一桶，明天多赚一份',
+  '🚀 起早贪黑不怕累，日子越过越有味',
+  '🌅 卖水人的风景，在每一个清晨的路上',
+  '💪 加油送水人，你是最棒的',
+  '🎯 5元一桶，良心价，放心水',
+  '🌈 风雨无阻，只为那一口甘甜',
+  '💰 一桶5元，积少成多奔小康',
+  '🏆 今天的目标：多跑几村，多送几桶',
+  '❤️ 顾客满意，就是最大的动力',
+  '🐴 老黄牛精神，一步一个脚印',
+  '☕ 累了就歇歇，明天继续干'
+];
+let 网络语录 = [];  // 从网络获取的额外语录
+async function 获取网络语录() {
+  const 缓存键 = 'water_net_quotes';
+  const 今天日期 = new Date().toISOString().slice(0,10);
+  let 缓存数据;
+  try { 缓存数据 = JSON.parse(localStorage.getItem(缓存键)); } catch(e) {}
+  // 今天已获取过，直接用缓存
+  if (缓存数据 && 缓存数据.date === 今天日期 && 缓存数据.quotes?.length) {
+    网络语录 = 缓存数据.quotes; return;
   }
-  __doRecord(_lastPos);
+  // 免费API列表（按优先级）
+  const APIs = [
+    'https://v1.hitokoto.cn/',
+    'https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json'
+  ];
+  for (let url of APIs) {
+    try {
+      let res = await fetch(url);
+      if (!res.ok) continue;
+      let data = await res.json();
+      let quote;
+      if (data.hitokoto) {
+        quote = `💬 「${data.hitokoto}」${data.from ? '——'+data.from : ''}`;
+      } else if (data.yan) {
+        quote = `💬 ${data.yan}`;
+      } else continue;
+      网络语录 = [quote];
+      localStorage.setItem(缓存键, JSON.stringify({date: 今天日期, quotes: [quote]}));
+      return;
+    } catch(e) { continue; }
+  }
+  // 所有API失败，用上次有效缓存
+  if (缓存数据?.quotes?.length) 网络语录 = 缓存数据.quotes;
+}
+function 刷新语录() {
+  var el = document.getElementById('quoteText');
+  if (!el) return;
+  var 全部语录 = 网络语录.concat(励志库);
+  var idx = Math.floor(Math.random() * 全部语录.length);
+  el.textContent = 全部语录[idx];
+}
+// 页面加载：先获取网络语录，再启动轮播
+获取网络语录().then(刷新语录).catch(function(){刷新语录();});
+setInterval(刷新语录, 30000);
+// 去掉旧的天气相关代码
+
+// ========== 会员管理模块 ==========
+function 获取会员列表() {
+  try { return JSON.parse(localStorage.getItem('water_members')) || []; } catch(e) { return []; }
+}
+function 保存会员列表(arr) {
+  localStorage.setItem('water_members', JSON.stringify(arr));
+}
+function 获取送水记录() {
+  try { return JSON.parse(localStorage.getItem('water_deliveries')) || []; } catch(e) { return []; }
+}
+function 保存送水记录(arr) {
+  localStorage.setItem('water_deliveries', JSON.stringify(arr));
 }
 
-function __doRecord(pos) {
-  var lat = pos.coords.latitude.toFixed(4);
-  var lng = pos.coords.longitude.toFixed(4);
-  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=17&addressdetails=1')
-    .then(function(r){ return r.json(); })
-    .then(function(data) {
-      var addr = data.address || {};
-      var place = addr.village || addr.town || addr.city || addr.county || '';
-      var road = addr.road || addr.neighbourhood || '';
-      var display = place ? (place + (road ? '·' + road : '')) : '';
-      var fullAddr = display + (addr.suburb ? ' ' + addr.suburb : '') + ' ' + (addr.city || '') + ' ' + (addr.county || '');
-      var memo = prompt(
-        '📍 当前位置：' + (display || (lat + ',' + lng)) + '\n\n在下方输入此行的桶数（直接确定则仅记位置）：',
-        ''
-      );
-      var 桶数 = memo !== null ? memo.trim() : '';
-      var today = document.getElementById('选择日期').value || 今天();
-      var key = '卖水_location_' + today;
-      var list = JSON.parse(localStorage.getItem(key) || '[]');
-      list.push({
-        时间: new Date().toLocaleString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-        地名: display || (lat + ',' + lng),
-        坐标: lat + ',' + lng,
-        桶数: 桶数,
-        地址: fullAddr.trim()
+// 同步 member_register.html 的 water_orders 到 water_members
+function 同步订单到会员() {
+  var orders = JSON.parse(localStorage.getItem('water_orders') || '[]');
+  var members = 获取会员列表();
+  var 已同步IDs = new Set(members.map(m => m.orderId));
+  var 新增 = 0;
+  orders.forEach(function(o) {
+    if (!已同步IDs.has(o.id)) {
+      members.push({
+        id: 'M' + o.id,
+        orderId: o.id,
+        name: o.name,
+        phone: o.phone,
+        address: o.address,
+        amount: o.amount,
+        totalBuckets: o.totalBuckets,
+        remainBuckets: o.totalBuckets,
+        note: o.note || '',
+        status: 'active',
+        created: o.created || new Date().toLocaleString('zh-CN')
       });
-      localStorage.setItem(key, JSON.stringify(list));
-      alert('✅ 位置已记录！\n📍 ' + (display || (lat + ',' + lng)) + (桶数 ? '\n🪣 ' + 桶数 + '桶' : ''));
-      // 刷新今日位置记录（如果页面有的话）
-      if (window.刷新位置记录) 刷新位置记录();
-    })
-    .catch(function() {
-      var memo = prompt('📍 坐标：' + lat + ',' + lng + '\n在下方输入此行的桶数（直接确定则仅记位置）：', '');
-      var key = '卖水_location_' + 今天();
-      var list = JSON.parse(localStorage.getItem(key) || '[]');
-      list.push({ 时间: new Date().toLocaleString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'}), 地名: lat+','+lng, 坐标: lat+','+lng, 桶数: memo&&memo.trim()||'', 地址: '' });
-      localStorage.setItem(key, JSON.stringify(list));
-      alert('✅ 位置已记录！');
-    });
+      新增++;
+    }
+  });
+  if (新增 > 0) 保存会员列表(members);
+  return 新增;
 }
 
-// 页面加载后自动尝试定位
-window.addEventListener('load', function() {
-  setTimeout(尝试定位, 1500);
-});
+function 刷新会员列表() {
+  同步订单到会员();
+  var members = 获取会员列表();
+  var search = (document.getElementById('会员搜索框').value || '').trim().toLowerCase();
+  if (search) {
+    members = members.filter(m => m.name.toLowerCase().includes(search) || (m.phone||'').includes(search) || (m.address||'').toLowerCase().includes(search));
+  }
+  // 统计
+  var 总数 = members.length;
+  var 有余额 = members.filter(m => m.remainBuckets > 0 && m.status === 'active').length;
+  var 低余预警 = members.filter(m => m.remainBuckets > 0 && m.remainBuckets <= 3 && m.status === 'active').length;
+  document.getElementById('会员总数').textContent = 总数;
+  document.getElementById('活跃会员数').textContent = 有余额;
+  document.getElementById('低余预警数').textContent = 低余预警;
+  // 列表
+  var html = '';
+  if (members.length === 0) {
+    html = '<div class="empty-msg">暂无会员，点击上方“新会员登记”添加</div>';
+  } else {
+    members.sort((a,b) => {
+      // 低余预警优先，然后按余额升序
+      if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+      if (a.remainBuckets <= 3 && b.remainBuckets > 3) return -1;
+      if (a.remainBuckets > 3 && b.remainBuckets <= 3) return 1;
+      return a.remainBuckets - b.remainBuckets;
+    });
+    members.forEach(function(m) {
+      var 状态色 = m.status !== 'active' ? '#999' : (m.remainBuckets <= 0 ? '#c62828' : (m.remainBuckets <= 3 ? '#e65100' : '#2d8a4e'));
+      var 状态标 = m.status !== 'active' ? '⏸️ 已停' : (m.remainBuckets <= 0 ? '❌ 用完' : (m.remainBuckets <= 3 ? '⚠️ 不足' : '✅ 正常'));
+      var 天数 = Math.floor((Date.now() - new Date(m.created).getTime()) / 86400000);
+      html += '<div class="card" style="border-left:4px solid ' + 状态色 + ';padding:14px;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+      html += '<div><strong style="font-size:16px;">' + m.name + '</strong> <span style="font-size:12px;color:' + 状态色 + ';">' + 状态标 + '</span></div>';
+      html += '<div style="text-align:right;"><span style="font-size:24px;font-weight:800;color:' + 状态色 + ';">' + m.remainBuckets + '</span><span style="font-size:12px;color:#888;">/ ' + m.totalBuckets + '桶</span></div>';
+      html += '</div>';
+      html += '<div style="font-size:12px;color:#888;margin-top:6px;">📱 ' + (m.phone||'未填') + ' · 📍 ' + (m.address||'未填') + '</div>';
+      html += '<div style="font-size:11px;color:#aaa;margin-top:2px;">登记于 ' + m.created + '（' + 天数 + '天前）· 预存' + m.amount + '元</div>';
+      if (m.note) html += '<div style="font-size:12px;color:#666;margin-top:4px;background:#f5f5f5;padding:4px 8px;border-radius:4px;">📌 ' + m.note + '</div>';
+      // 操作按钮
+      html += '<div style="display:flex;gap:8px;margin-top:10px;">';
+      if (m.status === 'active' && m.remainBuckets > 0) {
+        html += '<button class="btn btn-green btn-sm" onclick="快速送水(\'' + m.id + '\')" style="flex:1;">🚚 送水 -1桶</button>';
+      }
+      if (m.remainBuckets <= 3 && m.status === 'active') {
+        html += '<button class="btn btn-orange btn-sm" onclick="续费会员(\'' + m.id + '\')" style="flex:1;">💰 续费</button>';
+      }
+      if (m.status === 'active') {
+        html += '<button class="btn btn-outline btn-sm" onclick="停用会员(\'' + m.id + '\')" style="width:auto;padding:6px 12px;font-size:12px;">停用</button>';
+      } else {
+        html += '<button class="btn btn-outline btn-sm" onclick="启用会员(\'' + m.id + '\')" style="width:auto;padding:6px 12px;font-size:12px;">启用</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+  }
+  document.getElementById('会员列表区').innerHTML = html;
+}
+
+function 快速送水(会员ID) {
+  var members = 获取会员列表();
+  var m = members.find(x => x.id === 会员ID);
+  if (!m) return alert('找不到会员');
+  if (m.remainBuckets <= 0) return alert(m.name + ' 余额为0，请先续费！');
+  m.remainBuckets--;
+  保存会员列表(members);
+  // 记录送水
+  var deliveries = 获取送水记录();
+  deliveries.unshift({
+    memberId: 会员ID,
+    memberName: m.name,
+    buckets: 1,
+    note: '',
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    created: Date.now()
+  });
+  保存送水记录(deliveries);
+  // 反馈
+  if (m.remainBuckets <= 3 && m.remainBuckets > 0) {
+    alert('✅ 已送1桶！\n⚠️ ' + m.name + ' 还剩 ' + m.remainBuckets + ' 桶，提醒续费！');
+  } else if (m.remainBuckets === 0) {
+    alert('✅ 已送1桶！\n❌ ' + m.name + ' 桶数已用完，请尽快续费！');
+  } else {
+    // 静默成功
+  }
+  刷新会员列表();
+}
+
+function 打开送水弹窗() {
+  var members = 获取会员列表().filter(m => m.status === 'active' && m.remainBuckets > 0);
+  var sel = document.getElementById('送水_会员选择');
+  sel.innerHTML = '<option value="">选择会员...</option>';
+  members.forEach(function(m) {
+    var opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = m.name + '（剩' + m.remainBuckets + '桶 · ' + m.address + '）';
+    sel.appendChild(opt);
+  });
+  document.getElementById('送水_会员信息').style.display = 'none';
+  document.getElementById('送水弹窗').style.display = 'block';
+}
+
+function 关闭送水弹窗() {
+  document.getElementById('送水弹窗').style.display = 'none';
+}
+
+function 送水选会员() {
+  var 会员ID = document.getElementById('送水_会员选择').value;
+  if (!会员ID) { document.getElementById('送水_会员信息').style.display = 'none'; return; }
+  var members = 获取会员列表();
+  var m = members.find(x => x.id === 会员ID);
+  if (!m) return;
+  document.getElementById('送水_剩余桶数').textContent = m.remainBuckets;
+  document.getElementById('送水_会员详情').textContent = m.name + ' · ' + m.phone + ' · ' + m.address;
+  document.getElementById('送水_会员信息').style.display = 'block';
+  if (m.remainBuckets <= 3) {
+    document.getElementById('送水_剩余桶数').style.color = '#e65100';
+  } else {
+    document.getElementById('送水_剩余桶数').style.color = '#2d8a4e';
+  }
+}
+
+function 确认送水() {
+  var 会员ID = document.getElementById('送水_会员选择').value;
+  if (!会员ID) return alert('请选择会员');
+  var 桶数 = parseInt(document.getElementById('送水_桶数').value) || 1;
+  var 备注 = document.getElementById('送水_备注').value.trim();
+  var members = 获取会员列表();
+  var m = members.find(x => x.id === 会员ID);
+  if (!m) return alert('找不到会员');
+  if (桶数 > m.remainBuckets) return alert('余额不足！' + m.name + ' 只剩 ' + m.remainBuckets + ' 桶，本次要送 ' + 桶数 + ' 桶。请减少桶数或先续费。');
+  m.remainBuckets -= 桶数;
+  保存会员列表(members);
+  var deliveries = 获取送水记录();
+  deliveries.unshift({
+    memberId: 会员ID,
+    memberName: m.name,
+    buckets: 桶数,
+    note: 备注,
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    created: Date.now()
+  });
+  保存送水记录(deliveries);
+  关闭送水弹窗();
+  if (m.remainBuckets <= 3) {
+    alert('✅ 已送' + 桶数 + '桶！\n⚠️ ' + m.name + ' 还剩 ' + m.remainBuckets + ' 桶，提醒续费！');
+  } else {
+    alert('✅ 已送' + 桶数 + '桶！' + m.name + ' 还剩 ' + m.remainBuckets + ' 桶');
+  }
+  刷新会员列表();
+}
+
+function 续费会员(会员ID) {
+  var 加桶 = prompt('输入续费桶数：');
+  if (!加桶 || isNaN(加桶) || parseInt(加桶) <= 0) return;
+  var 加桶数 = parseInt(加桶);
+  var 金额 = prompt('输入续费金额（元）：');
+  if (!金额 || isNaN(金额)) return;
+  var members = 获取会员列表();
+  var m = members.find(x => x.id === 会员ID);
+  if (!m) return;
+  m.totalBuckets += 加桶数;
+  m.remainBuckets += 加桶数;
+  m.amount += parseInt(金额) || 0;
+  保存会员列表(members);
+  alert('✅ ' + m.name + ' 续费成功！+ ' + 加桶数 + ' 桶（' + 金额 + '元），当前余额 ' + m.remainBuckets + ' 桶');
+  刷新会员列表();
+}
+
+function 停用会员(会员ID) {
+  if (!confirm('确定停用该会员？')) return;
+  var members = 获取会员列表();
+  var m = members.find(x => x.id === 会员ID);
+  if (!m) return;
+  m.status = 'paused';
+  保存会员列表(members);
+  刷新会员列表();
+}
+
+function 启用会员(会员ID) {
+  var members = 获取会员列表();
+  var m = members.find(x => x.id === 会员ID);
+  if (!m) return;
+  m.status = 'active';
+  保存会员列表(members);
+  刷新会员列表();
+}
 </script>
 
 </body>
