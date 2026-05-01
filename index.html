@@ -561,31 +561,6 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   font-size: 14px;
 }
 
-/* 同步状态指示器 */
-.sync-indicator {
-  position: fixed;
-  bottom: 40px;
-  right: 16px;
-  background: white;
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 11px;
-  color: #666;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #4caf50;
-}
-.sync-dot.syncing { background: #ff9800; animation: pulse 1s infinite; }
-.sync-dot.error { background: #f44336; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* 加载遮罩 */
 .loading-overlay {
@@ -884,11 +859,6 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
 <a href="https://www.djkk.cc" target="_blank" rel="noopener noreferrer" style="color:#2d8a4e;text-decoration:none;font-size:13px;font-weight:600;padding:4px 10px;background:#e8f5e9;border-radius:12px;white-space:nowrap;" onclick="event.stopPropagation();">🎵 DJ音乐</a>
 </div>
 
-<div class="sync-indicator" id="syncIndicator">
-  <div class="sync-dot" id="syncDot"></div>
-  <span id="syncText">已连接</span>
-</div>
-
 <script>
 
 // ========== 云端同步模块 ==========
@@ -974,15 +944,7 @@ const CLOUD = {
     }
   },
   _showStatus(text) {
-    const dot = document.getElementById('syncDot');
-    const txt = document.getElementById('syncText');
-    if (txt) txt.textContent = text;
-    if (dot) {
-      if (text.includes('\u4e2d')) dot.style.background = '#ff9800';
-      else if (text.includes('\u5931\u8d25') || text.includes('\u79bb\u7ebf')) dot.style.background = '#f44336';
-      else dot.style.background = '#4caf50';
-    }
-  }
+  },
 };
 function 云同步(fileKey, data) {
   try { CLOUD.save(fileKey, data); } catch(e) {}
