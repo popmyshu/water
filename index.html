@@ -970,11 +970,11 @@ function 存自定义开支(l) { _dataCache.customExpenses = l; localStorage.set
 function 获取所有村庄() { return 村庄.concat(读自定义()); }
 function 获取所有开支项() { return 固定开支.concat(读自定义开支()); }
 function 读数据() { return _dataCache.villages; }
-function 存数据(d) { CloudSync.push(); _dataCache.villages = d; localStorage.setItem('卖水_village_data', JSON.stringify(d)); }
+function 存数据(d) { _dataCache.villages = d; localStorage.setItem('卖水_village_data', JSON.stringify(d)); }
 function 读开支数据() { return _dataCache.expenses; }
-function 存开支数据(d) { CloudSync.push(); _dataCache.expenses = d; localStorage.setItem('卖水_expense_data', JSON.stringify(d)); }
+function 存开支数据(d) { _dataCache.expenses = d; localStorage.setItem('卖水_expense_data', JSON.stringify(d)); }
 function 读欠款() { return _dataCache.debts; }
-function 存欠款(d) { CloudSync.push(); _dataCache.debts = d; localStorage.setItem('卖水_debt_data', JSON.stringify(d)); }
+function 存欠款(d) { _dataCache.debts = d; localStorage.setItem('卖水_debt_data', JSON.stringify(d)); }
 function 读提醒天数() { return _dataCache.reminderDays || 3; }
 function 保存提醒设置() {
   _dataCache.reminderDays = parseInt(document.getElementById('提醒天数').value) || 3;
@@ -1860,7 +1860,7 @@ function 渲染各村提醒天数() {
   _dataCache.debts = JSON.parse(localStorage.getItem('卖水_debt_data') || '[]');
   _dataCache.reminderDays = parseInt(localStorage.getItem('卖水_reminder_days')) || 3;
   } catch(e) { console.warn('[init] cache error:', e); }
-  try { CloudSync.pull(); } catch(e) {} var de = document.getElementById('选择日期');
+  var de = document.getElementById('选择日期');
   if (de) de.value = 今天();
   try { 读金额隐藏状态(); } catch(e) {};
   var k1 = document.getElementById('金额隐藏开关');
@@ -1891,225 +1891,9 @@ function 渲染各村提醒天数() {
 }
 </style>
 
-<script>
-// ========== Cloud Sync ==========
-// Token split to avoid GitHub secret scanning
-var _tk1_ = 'ghp_G0s8aQaZTlP0lCN6';
-var _tk2_ = 'PWX62E8AB3bOel39qIOK';
-var CloudSync = {
-  REPO: 'popmyshu/water',
-  FILE: 'data.json',
-  BRANCH: 'main',
-  _timer: null,
-  _syncing: false,
 
-  push: function() {
-    if (this._timer) clearTimeout(this._timer);
-    this._timer = setTimeout(this._doPush.bind(this), 2000);
-  },
 
-  _doPush: function() {
-    var self = this;
-    if (self._syncing) return;
-    self._syncing = true;
-    self._setStatus('syncing');
-    try {
-      var data = {
-        updated_at: new Date().toISOString(),
-        village_data: JSON.parse(localStorage.getItem('\u5356\u6c34_village_data') || '{}'),
-        expense_data: JSON.parse(localStorage.getItem('\u5356\u6c34_expense_data') || '{}'),
-        custom_villages: JSON.parse(localStorage.getItem('\u5356\u6c34_custom_villages') || '[]'),
-        custom_expenses: JSON.parse(localStorage.getItem('\u5356\u6c34_custom_expenses') || '[]'),
-        debt_data: JSON.parse(localStorage.getItem('\u5356\u6c34_debt_data') || '[]'),
-        reminder_days: parseInt(localStorage.getItem('\u5356\u6c34_reminder_days')) || 3,
-        version: localStorage.getItem('\u5356\u6c34_\u7248\u672c\u53f7') || ''
-      };
-      var content = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-      var apiUrl = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
-      var shaReq = new XMLHttpRequest();
-      shaReq.open('GET', apiUrl + '?ref=' + self.BRANCH, false);
-      shaReq.setRequestHeader('Authorization', 'token ' + (_tk1_ + _tk2_));
-      shaReq.setRequestHeader('User-Agent', 'WaterTracker');
-      shaReq.send();
-      var fileSha = null;
-      if (shaReq.status === 200) fileSha = JSON.parse(shaReq.responseText).sha;
-      var body = {
-        message: 'sync: ' + new Date().toISOString().slice(0, 10),
-        content: content,
-        branch: self.BRANCH
-      };
-      if (fileSha) body.sha = fileSha;
-      var putReq = new XMLHttpRequest();
-      putReq.open('PUT', apiUrl, false);
-      putReq.setRequestHeader('Authorization', 'token ' + (_tk1_ + _tk2_));
-      putReq.setRequestHeader('User-Agent', 'WaterTracker');
-      putReq.setRequestHeader('Content-Type', 'application/json');
-      putReq.send(JSON.stringify(body));
-      if (putReq.status === 200 || putReq.status === 201) {
-        self._setStatus('ok');
-        localStorage.setItem('\u5356\u6c34_cloud_updated', data.updated_at);
-      } else {
-        self._setStatus('err');
-      }
-    } catch(e) {
-      self._setStatus('off');
-    }
-    self._syncing = false;
-  },
 
-  pull: function() {
-    var self = this;
-    try {
-      var apiUrl = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
-      var req = new XMLHttpRequest();
-      req.open('GET', apiUrl + '?ref=' + self.BRANCH, false);
-      req.setRequestHeader('Authorization', 'token ' + (_tk1_ + _tk2_));
-      req.setRequestHeader('User-Agent', 'WaterTracker');
-      req.send();
-      if (req.status !== 200) return;
-      var meta = JSON.parse(req.responseText);
-      var cloudData = JSON.parse(decodeURIComponent(escape(atob(meta.content))));
-      if (!cloudData || !cloudData.updated_at) return;
-      var localUpdated = localStorage.getItem('\u5356\u6c34_cloud_updated') || '';
-      if (cloudData.updated_at > localUpdated || !localUpdated) {
-        if (cloudData.village_data) {
-          var existing = JSON.parse(localStorage.getItem('\u5356\u6c34_village_data') || '{}'));
-          for (var d in cloudData.village_data) {
-            if (!existing[d]) existing[d] = {};
-            for (var v in cloudData.village_data[d]) {
-              existing[d][v] = cloudData.village_data[d][v];
-            }
-          }
-          localStorage.setItem('\u5356\u6c34_village_data', JSON.stringify(existing));
-        }
-        if (cloudData.expense_data) {
-          var ex = JSON.parse(localStorage.getItem('\u5356\u6c34_expense_data') || '{}'));
-          for (var d in cloudData.expense_data) {
-            if (!ex[d]) ex[d] = {};
-            for (var k in cloudData.expense_data[d]) {
-              ex[d][k] = cloudData.expense_data[d][k];
-            }
-          }
-          localStorage.setItem('\u5356\u6c34_expense_data', JSON.stringify(ex));
-        }
-        if (cloudData.custom_villages) localStorage.setItem('\u5356\u6c34_custom_villages', JSON.stringify(cloudData.custom_villages));
-        if (cloudData.custom_expenses) localStorage.setItem('\u5356\u6c34_custom_expenses', JSON.stringify(cloudData.custom_expenses));
-        if (cloudData.debt_data) localStorage.setItem('\u5356\u6c34_debt_data', JSON.stringify(cloudData.debt_data));
-        if (cloudData.reminder_days) localStorage.setItem('\u5356\u6c34_reminder_days', cloudData.reminder_days);
-        localStorage.setItem('\u5356\u6c34_cloud_updated', cloudData.updated_at);
-        self._setStatus('pulled');
-      }
-    } catch(e) {
-      self._setStatus('off');
-    }
-  },
-
-  _setStatus: function(s) { /* cloudSyncStatus removed */ }
-};
-</script>
-
-<script>
-// ========== Cloud Sync - auto backup to GitHub ==========
-var _t1_ = 'ghp_G0s8aQaZTlP0lCN6';
-var _t2_ = 'PWX62E8AB3bOel39qIOK';
-var CloudSync = {
-  REPO: 'popmyshu/water',
-  FILE: 'data.json',
-  BRANCH: 'main',
-  _timer: null,
-  _busy: false,
-
-  push: function() {
-    if (this._timer) clearTimeout(this._timer);
-    this._timer = setTimeout(this._push.bind(this), 2000);
-  },
-
-  _push: function() {
-    var self = this;
-    if (self._busy) return;
-    self._busy = true;
-    self._status('syncing');
-    var tok = _t1_ + _t2_;
-    try {
-      var blob = {
-        updated_at: new Date().toISOString(),
-        village_data: JSON.parse(localStorage.getItem('卖水_village_data') || '{}'),
-        expense_data: JSON.parse(localStorage.getItem('卖水_expense_data') || '{}'),
-        custom_villages: JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'),
-        custom_expenses: JSON.parse(localStorage.getItem('卖水_custom_expenses') || '[]'),
-        debt_data: JSON.parse(localStorage.getItem('卖水_debt_data') || '[]'),
-        reminder_days: parseInt(localStorage.getItem('卖水_reminder_days')) || 3
-      };
-      var pkg = btoa(unescape(encodeURIComponent(JSON.stringify(blob))));
-      var api = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
-      // Get SHA
-      var x1 = new XMLHttpRequest();
-      x1.open('GET', api + '?ref=' + self.BRANCH, false);
-      x1.setRequestHeader('Authorization', 'token ' + tok);
-      x1.setRequestHeader('User-Agent', 'WaterTracker');
-      x1.send();
-      var sha = (x1.status === 200) ? JSON.parse(x1.responseText).sha : null;
-      var body = { message: 'sync: ' + new Date().toISOString().slice(0,10), content: pkg, branch: self.BRANCH };
-      if (sha) body.sha = sha;
-      var x2 = new XMLHttpRequest();
-      x2.open('PUT', api, false);
-      x2.setRequestHeader('Authorization', 'token ' + tok);
-      x2.setRequestHeader('User-Agent', 'WaterTracker');
-      x2.setRequestHeader('Content-Type', 'application/json');
-      x2.send(JSON.stringify(body));
-      if (x2.status === 200 || x2.status === 201) {
-        self._status('ok');
-        localStorage.setItem('卖水_cloud_updated', blob.updated_at);
-      } else { self._status('err'); }
-    } catch(e) { self._status('off'); }
-    self._busy = false;
-  },
-
-  pull: function() {
-    var self = this;
-    var tok = _t1_ + _t2_;
-    try {
-      var api = 'https://api.github.com/repos/' + self.REPO + '/contents/' + self.FILE;
-      var x = new XMLHttpRequest();
-      x.open('GET', api + '?ref=' + self.BRANCH, false);
-      x.setRequestHeader('Authorization', 'token ' + tok);
-      x.setRequestHeader('User-Agent', 'WaterTracker');
-      x.send();
-      if (x.status !== 200) return;
-      var meta = JSON.parse(x.responseText);
-      var cloud = JSON.parse(decodeURIComponent(escape(atob(meta.content))));
-      if (!cloud || !cloud.updated_at) return;
-      var localTs = localStorage.getItem('卖水_cloud_updated') || '';
-      if (cloud.updated_at > localTs || !localTs) {
-        if (cloud.village_data) {
-          var vd = JSON.parse(localStorage.getItem('卖水_village_data') || '{}');
-          for (var d in cloud.village_data) {
-            if (!vd[d]) vd[d] = {};
-            for (var v in cloud.village_data[d]) vd[d][v] = cloud.village_data[d][v];
-          }
-          localStorage.setItem('卖水_village_data', JSON.stringify(vd));
-        }
-        if (cloud.expense_data) {
-          var ed = JSON.parse(localStorage.getItem('卖水_expense_data') || '{}'));
-          for (var d in cloud.expense_data) {
-            if (!ed[d]) ed[d] = {};
-            for (var k in cloud.expense_data[d]) ed[d][k] = cloud.expense_data[d][k];
-          }
-          localStorage.setItem('卖水_expense_data', JSON.stringify(ed));
-        }
-        if (cloud.custom_villages) localStorage.setItem('卖水_custom_villages', JSON.stringify(cloud.custom_villages));
-        if (cloud.custom_expenses) localStorage.setItem('卖水_custom_expenses', JSON.stringify(cloud.custom_expenses));
-        if (cloud.debt_data) localStorage.setItem('卖水_debt_data', JSON.stringify(cloud.debt_data));
-        if (cloud.reminder_days) localStorage.setItem('卖水_reminder_days', cloud.reminder_days);
-        localStorage.setItem('卖水_cloud_updated', cloud.updated_at);
-        self._status('pulled');
-      }
-    } catch(e) { self._status('off'); }
-  },
-
-  _status: function(s) { /* cloudSyncStatus removed */ }
-};
-</script>
 
 <script>
 // ========== 麻阳县实时天气 - Open-Meteo免费API ==========
