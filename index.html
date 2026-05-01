@@ -658,6 +658,10 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
         <button class="btn btn-blue" onclick="复制到昨天()" style="flex:2;background:#1565c0;">📋 复制到昨天</button>
     <button class="btn btn-outline" onclick="清空当日()" style="flex:1;">清空本日</button>
   </div>
+  <!-- 手工同步到云端按钮 -->
+  <div style="margin-top:8px;text-align:center;">
+    <button class="btn btn-blue" onclick="手工同步到云端()" style="background:#4a148c;width:100%;">☁️ 同步到云端（手动）</button>
+  </div>
 </div>
 
 <!-- ========== 日统计 ========== -->
@@ -960,20 +964,19 @@ let 固定开支 = ['⛽加油','🍚吃饭','🎮零花钱'];
 
 // ========== 数据读写（纯本地存储）==========
 function 读自定义() { return _dataCache.customVillages; }
-function 存自定义(l) { _dataCache.customVillages = l; localStorage.setItem('卖水_custom_villages', JSON.stringify(l)); 云同步('custom_villages', l); }
+function 存自定义(l) { _dataCache.customVillages = l; localStorage.setItem('卖水_custom_villages', JSON.stringify(l)); }
 function 读自定义开支() { return _dataCache.customExpenses; }
-function 存自定义开支(l) { _dataCache.customExpenses = l; localStorage.setItem('卖水_custom_expenses', JSON.stringify(l)); 云同步('custom_expenses', l); }
+function 存自定义开支(l) { _dataCache.customExpenses = l; localStorage.setItem('卖水_custom_expenses', JSON.stringify(l)); }
 function 获取所有村庄() { return 村庄.concat(读自定义()); }
 function 获取所有开支项() { return 固定开支.concat(读自定义开支()); }
 function 读数据() { return _dataCache.villages; }
-function 存数据(d) { CloudSync.push(); _dataCache.villages = d; localStorage.setItem('卖水_village_data', JSON.stringify(d)); 云同步('village_data', d); }
+function 存数据(d) { CloudSync.push(); _dataCache.villages = d; localStorage.setItem('卖水_village_data', JSON.stringify(d)); }
 function 读开支数据() { return _dataCache.expenses; }
-function 存开支数据(d) { CloudSync.push(); _dataCache.expenses = d; localStorage.setItem('卖水_expense_data', JSON.stringify(d)); 云同步('expense_data', d); }
+function 存开支数据(d) { CloudSync.push(); _dataCache.expenses = d; localStorage.setItem('卖水_expense_data', JSON.stringify(d)); }
 function 读欠款() { return _dataCache.debts; }
-function 存欠款(d) { CloudSync.push(); _dataCache.debts = d; localStorage.setItem('卖水_debt_data', JSON.stringify(d)); 云同步('debt_data', d); }
+function 存欠款(d) { CloudSync.push(); _dataCache.debts = d; localStorage.setItem('卖水_debt_data', JSON.stringify(d)); }
 function 读提醒天数() { return _dataCache.reminderDays || 3; }
 function 保存提醒设置() {
-  云同步('reminder_days', _dataCache.reminderDays);
   _dataCache.reminderDays = parseInt(document.getElementById('提醒天数').value) || 3;
   localStorage.setItem('卖水_reminder_days', JSON.stringify(_dataCache.reminderDays));
 }
@@ -1464,6 +1467,24 @@ function 保存当日() {
   alert('✅ ' + 日期 + ' 已保存到本地');
 }
 
+// 手工同步到云端（不会自动拉取覆盖本地数据）
+function 手工同步到云端() {
+  if (!confirm('确定将本地数据上传到云端？注意：上传后会覆盖云端数据！')) return;
+  let keys = ['village_data', 'expense_data', 'custom_villages', 'custom_expenses', 'debt_data'];
+  let lsKeys = ['卖水_village_data', '卖水_expense_data', '卖水_custom_villages', '卖水_custom_expenses', '卖水_debt_data'];
+  let count = 0;
+  for (let i = 0; i < keys.length; i++) {
+    let local = localStorage.getItem(lsKeys[i]);
+    if (local) {
+      try {
+        CLOUD.save(keys[i], JSON.parse(local));
+        count++;
+      } catch(e) {}
+    }
+  }
+  alert('☁️ 已上传 ' + count + ' 项数据到云端\n（注意：同步是单向的，不会拉取云端数据覆盖本地）');
+}
+
 function 清空当日() {
   if (!confirm('确定清空当天的所有数据？')) return;
   let 日期 = document.getElementById('选择日期').value || 今天();
@@ -1646,7 +1667,6 @@ function 读待办() {
 
 function 存待办(list) {
   localStorage.setItem('卖水_todo_list', JSON.stringify(list));
-  云同步('todo_list', list);
 }
 
 function 添加待办() {
@@ -1717,7 +1737,6 @@ function 读日志() {
 }
 function 存日志(list) {
   localStorage.setItem('卖水_business_log', JSON.stringify(list));
-  云同步('business_log', list);
 }
 function 添加日志() {
   let 标题输入 = document.getElementById('日志标题输入');
@@ -1784,21 +1803,20 @@ function 刷新日志() {
 // ========== 更新云同步列表，包含日志 ==========
 // 在 CLOUD.initAll 的 map 数组中添加 'business_log' 条目
 // 扩展 CLOUD.initAll 函数
-const _origInitAll = CLOUD.initAll;
-CLOUD.initAll = async function() {
-  if (typeof _origInitAll === 'function') {
-    // 调用原始 initAll，但需要处理异步
-    await _origInitAll.call(this);
-  }
-  // 额外同步日志数据
-  try {
-    const logKey = 'business_log';
-    const cloudLog = await this.load(logKey);
-    if (cloudLog !== null && Array.isArray(cloudLog)) {
-      localStorage.setItem('卖水_business_log', JSON.stringify(cloudLog));
-    }
-  } catch(e) {}
-};
+// 云同步扩展已关闭（自动同步会导致本地数据被覆盖）
+// const _origInitAll = CLOUD.initAll;
+// CLOUD.initAll = async function() {
+//   if (typeof _origInitAll === 'function') {
+//     await _origInitAll.call(this);
+//   }
+//   try {
+//     const logKey = 'business_log';
+//     const cloudLog = await this.load(logKey);
+//     if (cloudLog !== null && Array.isArray(cloudLog)) {
+//       localStorage.setItem('卖水_business_log', JSON.stringify(cloudLog));
+//     }
+//   } catch(e) {}
+// };
 function 读村提醒天数(村名) {
   let map = JSON.parse(localStorage.getItem('卖水_village_reminder_days') || '{}');
   return map[村名] || 0; // 0表示使用全局天数
@@ -1855,7 +1873,8 @@ function 渲染各村提醒天数() {
   if (!cv) localStorage.setItem('卖水_版本号', 'v2_39cun');
   加载当天();
   更新滚动提醒();
-  CLOUD.initAll();
+  // 自动同步已关闭，需要手动点"同步到云端"按钮
+  // CLOUD.initAll();
 })();
 </script>
 
