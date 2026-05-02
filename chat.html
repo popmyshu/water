@@ -55,6 +55,12 @@ body {
 .setup-btn { width: 100%; background: #e94560; color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; cursor: pointer; font-weight: bold; }
 .setup-btn:hover { background: #ff6b6b; }
 .hint { font-size: 11px; color: #666; margin-top: 10px; text-align: center; }
+
+/* ─── Unread Badge ─── */
+.unread-badge { background: #e94560; color: #fff; border-radius: 10px; padding: 2px 8px; font-size: 11px; margin-left: 6px; }
+.read-status { color: #4ade80; font-size: 11px; margin-left: 4px; }
+.msg-unread { box-shadow: inset 3px 0 0 #e94560; }
+
 </style>
 </head>
 <body>
@@ -66,6 +72,7 @@ body {
 
 <div class="status-bar">
   <span id="syncStatus">● 等待初始化...</span>
+  <span id="readStatus"></span>
   <span id="lastUpdate">--</span>
 </div>
 
@@ -106,6 +113,8 @@ const REPO = 'popmyshu/water';
 const BRANCH = 'main';
 const FILE = 'chat_messages.json';
 const POLL_MS = 5000;
+
+let currentSender = null;
 
 const senders = {
   huahua:  { name: "华华",   emoji: "🐔", cls: "msg-huahua" },
@@ -190,7 +199,16 @@ async function loadMessages() {
   try {
     const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
     lastSha = data.sha;
-    render(JSON.parse(decodeURIComponent(escape(atob(data.content)))));
+    const msgs = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    // Show unread count
+    const lastRead = localStorage.getItem('lastReadTime') || '0';
+    const unread = msgs.filter(m => m.time > lastRead && m.sender !== currentSender).length;
+    if (unread > 0 && currentSender) {
+      document.getElementById('readStatus').innerHTML = '<span class="unread-badge">' + unread + ' 条未读</span>';
+    } else if (currentSender) {
+      document.getElementById('readStatus').textContent = senders[currentSender].emoji + ' 已读';
+    }
+    render(msgs);
     document.getElementById("syncStatus").textContent = "● 已同步";
     document.getElementById("lastUpdate").textContent = "更新: " + fmtShort(Date.now());
   } catch (e) {
@@ -267,6 +285,7 @@ async function sendMsg() {
     document.getElementById("msgInput").style.height = "auto";
     document.getElementById("syncStatus").textContent = "● 已发送 ✓";
     await loadMessages();
+    markAsRead();
     setTimeout(() => { document.getElementById("syncStatus").textContent = "● 已同步"; }, 2000);
   } catch (e) {
     document.getElementById("syncStatus").textContent = "● 发送失败: " + e.message.substring(0,50);
@@ -276,6 +295,19 @@ async function sendMsg() {
     document.getElementById("sendBtn").disabled = false;
   }
 }
+
+// ─── Mark As Read ───
+function markAsRead() {
+  if (!currentSender) return;
+  const now = new Date().toISOString();
+  localStorage.setItem('lastReadTime', now);
+  document.getElementById('readStatus').textContent = senders[currentSender].emoji + ' 已读';
+  // Remove unread markers
+  document.querySelectorAll('.msg-unread').forEach(el => el.classList.remove('msg-unread'));
+}
+
+// Auto-mark read when switching sender
+document.getElementById("sender").addEventListener("change", markAsRead);
 
 // ─── Events ───
 document.getElementById("msgInput").addEventListener("input", function() {
@@ -290,9 +322,16 @@ document.getElementById("tokenInput").addEventListener("keydown", function(e) {
 });
 
 // ─── Init ───
+currentSender = document.getElementById("sender").value;
+// Auto-mark as read on page load if token exists
+const lastRead = localStorage.getItem('lastReadTime');
+
 if (token) {
   document.getElementById("setupOverlay").style.display = "none";
   loadMessages();
+  if (lastRead) {
+    document.getElementById('readStatus').textContent = senders[currentSender].emoji + ' 已读';
+  }
   setInterval(loadMessages, POLL_MS);
 } else {
   document.getElementById("setupOverlay").style.display = "flex";
