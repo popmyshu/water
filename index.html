@@ -2260,7 +2260,7 @@ function 切换标签(n) {
   if (n == 'all') 刷新分析(window._排序方式);
   if (n == 'member') 刷新会员列表();
     if (n == 'log') 渲染日志();
-  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); var 桶价设置 = document.getElementById('桶成本单价设置'); if (桶价设置) 桶价设置.value = 读桶成本单价(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); }
+  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); var 桶价设置 = document.getElementById('桶成本单价设置'); if (桶价设置) 桶价设置.value = 读桶成本单价(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); 切换备忘录Tab('todo'); }
 }
 
 // ========== 金额隐藏功能 ==========
@@ -2427,7 +2427,48 @@ function 刷新日志() {
   el.innerHTML = html;
 }
 
-// ========== 每个村庄单独设置提醒天数 ==========
+// ========== 高级备忘录功能 ==========
+var 当前备忘录Tab = 'todo';
+
+function 切换备忘录Tab(tab) {
+  当前备忘录Tab = tab;
+  document.getElementById('memo-tab-todo').style.borderBottomColor = tab === 'todo' ? '#2d8a4e' : 'transparent';
+  document.getElementById('memo-tab-todo').style.color = tab === 'todo' ? '#2d8a4e' : '#999';
+  document.getElementById('memo-tab-log').style.borderBottomColor = tab === 'log' ? '#2d8a4e' : 'transparent';
+  document.getElementById('memo-tab-log').style.color = tab === 'log' ? '#2d8a4e' : '#999';
+  document.getElementById('memo-panel-todo').style.display = tab === 'todo' ? 'block' : 'none';
+  document.getElementById('memo-panel-log').style.display = tab === 'log' ? 'block' : 'none';
+  document.getElementById('备忘录搜索').value = '';
+  document.getElementById('备忘录搜索').placeholder = tab === 'todo' ? '🔍 搜索待办...' : '🔍 搜索日志...';
+  过滤备忘录();
+}
+
+function 填待办标签(el) {
+  var 输入 = document.getElementById('新增待办输入');
+  输入.value = el.textContent.trim() + ' ';
+  输入.focus();
+}
+
+function 过滤备忘录() {
+  var kw = document.getElementById('备忘录搜索').value.trim().toLowerCase();
+  if (当前备忘录Tab === 'todo') {
+    var empty = document.querySelector('#待办列表 .empty-msg');
+    if (empty) empty.style.display = kw ? 'none' : 'block';
+    var cards = document.querySelectorAll('#待办列表 > div');
+    cards.forEach(function(c) {
+      var txt = c.textContent.toLowerCase();
+      c.style.display = kw && txt.indexOf(kw) < 0 ? 'none' : '';
+    });
+  } else {
+    var emptyL = document.querySelector('#memo-panel-log .empty-msg');
+    if (emptyL) emptyL.style.display = kw ? 'none' : 'block';
+    var logCards = document.querySelectorAll('#memo-panel-log > div[style*="border-bottom"]');
+    logCards.forEach(function(c) {
+      var txt = c.textContent.toLowerCase();
+      c.style.display = kw && txt.indexOf(kw) < 0 ? 'none' : '';
+    });
+  }
+}
 function 读村提醒天数(村名) {
   let map = JSON.parse(localStorage.getItem('卖水_village_reminder_days') || '{}');
   return map[村名] || 0; // 0表示使用全局天数
