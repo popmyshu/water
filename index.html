@@ -1076,30 +1076,50 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
       </label>
     </div>
   </div>
-  <div class="card" id="待办卡片">
-    <h3>📌 待办提醒</h3>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-      <input type="text" id="新增待办输入" placeholder="写下要提醒的事..." style="margin-bottom:0;flex:1;">
-      <button class="btn btn-green btn-sm" onclick="添加待办()" style="width:auto;white-space:nowrap;">添加</button>
+  <div class="card" id="备忘录卡片">
+    <h3>📓 备忘录</h3>
+    <!-- Tab切换 -->
+    <div style="display:flex;border-bottom:2px solid #e0e0e0;margin-bottom:12px;">
+      <div id="memo-tab-todo" onclick="切换备忘录Tab('todo')" style="flex:1;text-align:center;padding:8px 0;font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid #2d8a4e;color:#2d8a4e;margin-bottom:-2px;">📋 待办</div>
+      <div id="memo-tab-log" onclick="切换备忘录Tab('log')" style="flex:1;text-align:center;padding:8px 0;font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:#999;margin-bottom:-2px;">📝 日志</div>
     </div>
-    <div id="待办列表"></div>
-  </div>
-  <div class="card" id="商业日志卡片">
-    <h3>📓 商业日志</h3>
-    <div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;">
-      <span onclick="填日志标签(this)" style="font-size:12px;background:#e8f5e9;color:#2d8a4e;padding:3px 10px;border-radius:12px;cursor:pointer;">💡 灵感</span>
-      <span onclick="填日志标签(this)" style="font-size:12px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;cursor:pointer;">📌 计划</span>
-      <span onclick="填日志标签(this)" style="font-size:12px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;cursor:pointer;">✅ 行动</span>
-      <span onclick="填日志标签(this)" style="font-size:12px;background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:12px;cursor:pointer;">🔁 复盘</span>
-      <span onclick="填日志标签(this)" style="font-size:12px;background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:12px;cursor:pointer;">🏆 里程碑</span>
-      <span onclick="填日志标签(this)" style="font-size:12px;background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;cursor:pointer;">🎯 目标</span>
+    <!-- 搜索栏 -->
+    <div style="margin-bottom:10px;">
+      <input type="text" id="备忘录搜索" placeholder="🔍 搜索待办或日志..." oninput="过滤备忘录()" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#f9f9f9;">
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <input type="text" id="日志标题输入" placeholder="标题（如：第一步：建月卡体系）" style="margin-bottom:0;flex:1;font-size:14px;">
-      <button class="btn btn-green btn-sm" onclick="添加日志()" style="width:auto;white-space:nowrap;">添加</button>
+    <!-- 待办面板 -->
+    <div id="memo-panel-todo">
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        <span onclick="填待办标签(this)" style="font-size:12px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;cursor:pointer;">🔥 紧急</span>
+        <span onclick="填待办标签(this)" style="font-size:12px;background:#e8f5e9;color:#2d8a4e;padding:3px 10px;border-radius:12px;cursor:pointer;">💼 送水</span>
+        <span onclick="填待办标签(this)" style="font-size:12px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;cursor:pointer;">👤 客户</span>
+        <span onclick="填待办标签(this)" style="font-size:12px;background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:12px;cursor:pointer;">🚗 车辆</span>
+        <span onclick="填待办标签(this)" style="font-size:12px;background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;cursor:pointer;">💰 账务</span>
+        <span onclick="填待办标签(this)" style="font-size:12px;background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:12px;cursor:pointer;">🏠 生活</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input type="text" id="新增待办输入" placeholder="写下要提醒的事..." style="margin-bottom:0;flex:1;">
+        <button class="btn btn-green btn-sm" onclick="添加待办()" style="width:auto;white-space:nowrap;">添加</button>
+      </div>
+      <div id="待办列表"></div>
     </div>
-    <textarea id="日志内容输入" placeholder="写下你的计划、思考、感悟..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:70px;background:#fafafa;resize:vertical;font-family:inherit;margin-bottom:8px;"></textarea>
-    <div id="日志列表"></div>
+    <!-- 日志面板 -->
+    <div id="memo-panel-log" style="display:none;">
+      <div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span onclick="填日志标签(this)" style="font-size:12px;background:#e8f5e9;color:#2d8a4e;padding:3px 10px;border-radius:12px;cursor:pointer;">💡 灵感</span>
+        <span onclick="填日志标签(this)" style="font-size:12px;background:#e3f2fd;color:#1565c0;padding:3px 10px;border-radius:12px;cursor:pointer;">📌 计划</span>
+        <span onclick="填日志标签(this)" style="font-size:12px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;cursor:pointer;">✅ 行动</span>
+        <span onclick="填日志标签(this)" style="font-size:12px;background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:12px;cursor:pointer;">🔁 复盘</span>
+        <span onclick="填日志标签(this)" style="font-size:12px;background:#fff8e1;color:#f57f17;padding:3px 10px;border-radius:12px;cursor:pointer;">🏆 里程碑</span>
+        <span onclick="填日志标签(this)" style="font-size:12px;background:#ffebee;color:#c62828;padding:3px 10px;border-radius:12px;cursor:pointer;">🎯 目标</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="text" id="日志标题输入" placeholder="标题（如：第一步：建月卡体系）" style="margin-bottom:0;flex:1;font-size:14px;">
+        <button class="btn btn-green btn-sm" onclick="添加日志()" style="width:auto;white-space:nowrap;">添加</button>
+      </div>
+      <textarea id="日志内容输入" placeholder="写下你的计划、思考、感悟..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:70px;background:#fafafa;resize:vertical;font-family:inherit;margin-bottom:8px;"></textarea>
+      <div id="日志列表"></div>
+    </div>
   </div>
   <div class="card">
     <h3>🪣 桶成本设置</h3>
