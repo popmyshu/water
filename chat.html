@@ -221,13 +221,17 @@ async function sendMsg() {
   document.getElementById("syncStatus").textContent = "● 发送中...";
 
   try {
-    let sha = lastSha;
+    let sha = null;
     let messages = [];
-    try {
-      const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
-      sha = data.sha;
-      messages = JSON.parse(atob(data.content));
-    } catch(e) { messages = []; }
+    // Always fetch latest SHA to avoid 409 conflict
+    for (let retry = 0; retry < 3; retry++) {
+      try {
+        const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
+        sha = data.sha;
+        messages = JSON.parse(atob(data.content));
+        break;
+      } catch(e) { messages = []; }
+    }
 
     messages.push({ id: Date.now(), sender, text, time: new Date().toISOString() });
     if (messages.length > 200) messages = messages.slice(-200);
@@ -236,9 +240,28 @@ async function sendMsg() {
     const payload = { message: `chat: ${senders[sender].name} 发送`, content: content_b64, branch: BRANCH };
     if (sha) payload.sha = sha;
 
-    const result = await ghFetch(`/repos/${REPO}/contents/${FILE}`, {
-      method: "PUT", body: JSON.stringify(payload)
-    });
+    // If still 409, retry once with fresh SHA
+    let result;
+    try {
+      result = await ghFetch(`/repos/${REPO}/contents/${FILE}`, {
+        method: "PUT", body: JSON.stringify(payload)
+      });
+    } catch (putErr) {
+      if (putErr.message.includes("409")) {
+        // SHA conflict - refetch and retry
+        const fresh = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
+        payload.sha = fresh.sha;
+        const freshMsgs = JSON.parse(atob(fresh.content));
+        freshMsgs.push({ id: Date.now(), sender, text, time: new Date().toISOString() });
+        if (freshMsgs.length > 200) freshMsgs.slice(-200);
+        payload.content = btoa(unescape(encodeURIComponent(JSON.stringify(freshMsgs, null, 2))));
+        result = await ghFetch(`/repos/${REPO}/contents/${FILE}`, {
+          method: "PUT", body: JSON.stringify(payload)
+        });
+      } else {
+        throw putErr;
+      }
+    }
     lastSha = result.content.sha;
     document.getElementById("msgInput").value = "";
     document.getElementById("msgInput").style.height = "auto";
