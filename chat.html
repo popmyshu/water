@@ -190,7 +190,7 @@ async function loadMessages() {
   try {
     const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
     lastSha = data.sha;
-    render(JSON.parse(atob(data.content)));
+    render(JSON.parse(decodeURIComponent(escape(atob(data.content)))));
     document.getElementById("syncStatus").textContent = "● 已同步";
     document.getElementById("lastUpdate").textContent = "更新: " + fmtShort(Date.now());
   } catch (e) {
@@ -228,7 +228,7 @@ async function sendMsg() {
       try {
         const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
         sha = data.sha;
-        messages = JSON.parse(atob(data.content));
+        messages = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         break;
       } catch(e) { messages = []; }
     }
@@ -251,7 +251,7 @@ async function sendMsg() {
         // SHA conflict - refetch and retry
         const fresh = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
         payload.sha = fresh.sha;
-        const freshMsgs = JSON.parse(atob(fresh.content));
+        const freshMsgs = JSON.parse(decodeURIComponent(escape(atob(fresh.content))));
         freshMsgs.push({ id: Date.now(), sender, text, time: new Date().toISOString() });
         if (freshMsgs.length > 200) freshMsgs.slice(-200);
         payload.content = btoa(unescape(encodeURIComponent(JSON.stringify(freshMsgs, null, 2))));
