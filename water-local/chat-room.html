@@ -18,7 +18,7 @@
   --header-bg: #12122a; --input-bg: #2a2a45;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+html, body { height: 100%; margin: 0; overflow: hidden; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
 
 /* ========== 设置遮罩 ========== */
 #setupOverlay {
@@ -44,7 +44,8 @@ html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft
 .my-identity { margin: 10px 0; font-size: 14px; color: var(--sub); }
 
 /* ========== 主界面 ========== */
-#mainUI { display: none; flex-direction: column; height: 100vh; max-width: 600px; margin: 0 auto; position: relative; }
+#mainUI { display: none; flex-direction: column; height: 100vh; height: 100dvh; max-width: 600px; margin: 0 auto; position: relative; overflow: hidden; }
+@supports (height: 100dvh) { #mainUI { height: 100dvh; } }
 #header {
   background: var(--header-bg); color: #fff; padding: 14px 18px; display: flex;
   justify-content: space-between; align-items: center; border-radius: 0 0 12px 12px;
@@ -144,7 +145,7 @@ html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft
 
 /* ========== 输入区 ========== */
 #inputArea {
-  flex-shrink: 0; background: var(--card); border-top: 1px solid var(--border);
+  flex-shrink: 0; min-height: 56px; background: var(--card); border-top: 1px solid var(--border);
   padding: 10px 14px; display: flex; gap: 8px; align-items: flex-end;
 }
 #inputArea .identity-badge {
