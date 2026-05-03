@@ -7,6 +7,7 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #333; }
+
 /* ========== 设置遮罩 ========== */
 #setupOverlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6);
@@ -52,6 +53,7 @@ html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft
 #msgContainer {
   flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column;
   gap: 2px; scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 .msg-date-divider {
   text-align: center; font-size: 11px; color: #aaa; margin: 8px 0;
@@ -61,7 +63,7 @@ html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft
 .msg-row.doudou { justify-content: flex-start; }
 .msg-row.xiaocai { justify-content: flex-end; }
 
-.msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 15px; line-height: 1.5; position: relative; }
+.msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 15px; line-height: 1.5; position: relative; word-break: break-word; }
 .msg-bubble .sender-tag { font-size: 11px; font-weight: 600; margin-bottom: 3px; opacity: 0.7; }
 .msg-bubble .msg-time { font-size: 10px; color: rgba(0,0,0,0.35); text-align: right; margin-top: 3px; }
 
@@ -91,11 +93,24 @@ html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft
 #inputArea #sendBtn {
   width: 70px; padding: 10px; background: #e94560; color: #fff; border: none;
   border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+  transition: opacity 0.2s;
 }
 #inputArea #sendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+#inputArea #sendBtn.sending { opacity: 0.6; }
+.hint-text { font-size: 11px; color: #bbb; text-align: center; padding: 4px 0 0; }
 
 /* ========== 系统消息 ========== */
 .sys-msg { text-align: center; color: #aaa; font-size: 12px; margin: 6px 0; }
+
+/* ========== 错误提示 ========== */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.75); color: #fff; padding: 8px 20px; border-radius: 20px;
+  font-size: 13px; z-index: 999; animation: toastIn 0.3s, toastOut 0.3s 2.7s;
+  pointer-events: none;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
 </style>
 </head>
 <body>
@@ -134,17 +149,48 @@ html, body { height: 100%; font-family: -apple-system, "PingFang SC", "Microsoft
     <textarea id="msgInput" placeholder="说点什么..." rows="1" oninput="autoResize(this)"></textarea>
     <button id="sendBtn" onclick="sendMsg()">发送</button>
   </div>
+  <div class="hint-text">Enter 发送 · Shift+Enter 换行</div>
 </div>
 
 <script>
 // ========== 配置 ==========
 const OWNER = 'popmyshu', REPO = 'water', BRANCH = 'main', FILE = 'chat_messages.json';
-const POLL_MS = 3000; // 3秒轮询
-const IDENTITY_MAP = { huahua: { emoji:'🐔', name:'华华' }, doudou: { emoji:'🫘', name:'豆豆' }, xiaocai: { emoji:'💰', name:'小财神' } };
+const POLL_MS = 5000;       // 5秒轮询（降低API消耗）
+const MAX_RETRIES = 3;      // 发送冲突最大重试次数
+const CLEANUP_DAYS = 30;    // 自动清理30天前的消息
+const IDENTITY_MAP = {
+  huahua:  { emoji:'🐔', name:'华华' },
+  doudou:  { emoji:'🫘', name:'豆豆' },
+  xiaocai: { emoji:'💰', name:'小财神' }
+};
 
 let TOKEN = '', MY_ROLE = 'huahua', lastMsgId = 0, lastReadTime = 0, sending = false;
 let pollTimer = null, unreadCount = 0;
 let currentMessages = [];
+let lastEtag = null;        // ETag 缓存，条件请求用
+let lastSha = null;         // 缓存文件 SHA
+let consecutiveErrors = 0;  // 连续错误计数
+
+// ========== UTF-8 安全解码（修复乱码核心） ==========
+function decodeBase64UTF8(base64Str) {
+  try {
+    // 方法1：TextDecoder（现代浏览器推荐）
+    const binaryStr = atob(base64Str);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return new TextDecoder('utf-8').decode(bytes);
+  } catch(e) {
+    // 方法2：降级到旧方式（兼容性保底）
+    try {
+      return decodeURIComponent(escape(atob(base64Str)));
+    } catch(e2) {
+      // 方法3：直接解码
+      return atob(base64Str);
+    }
+  }
+}
 
 // ========== 进入聊天室 ==========
 function enterChat() {
@@ -176,33 +222,59 @@ function updateBadge() {
   lastReadTime = parseInt(localStorage.getItem('lastReadTime') || '0');
 })();
 
-// ========== 轮询 ==========
+// ========== 轮询（带退避） ==========
 function startPolling() {
   if (pollTimer) clearInterval(pollTimer);
   pollTimer = setInterval(loadMessages, POLL_MS);
 }
+
+function getNextPollMs() {
+  // 连续出错时自动退避：5s → 10s → 20s → 40s，最多60s
+  if (consecutiveErrors === 0) return POLL_MS;
+  return Math.min(POLL_MS * Math.pow(2, consecutiveErrors), 60000);
+}
+
+function scheduleNextPoll() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(loadMessages, getNextPollMs());
+}
+
 function setStatus(ok) {
   const dot = document.getElementById('statusDot');
   const txt = document.getElementById('statusText');
-  if (ok === true) { dot.className = 'dot green'; txt.textContent = '已连接'; }
-  else if (ok === false) { dot.className = 'dot red'; txt.textContent = '连接失败'; }
+  if (ok === true) { dot.className = 'dot green'; txt.textContent = '已连接'; consecutiveErrors = 0; }
+  else if (ok === false) { dot.className = 'dot red'; txt.textContent = '连接失败'; consecutiveErrors = Math.min(consecutiveErrors + 1, 4); scheduleNextPoll(); }
   else { dot.className = 'dot yellow'; txt.textContent = '同步中...'; }
 }
 
 // ========== 加载消息 ==========
 async function loadMessages() {
   try {
-    const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, {
-      headers: { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
+    const headers = {
+      'Authorization': `Bearer ${TOKEN}`,
+      'Accept': 'application/vnd.github.v3+json'
+    };
+    // 条件请求：有ETag时发送，没变化时304不消耗API配额
+    if (lastEtag) { headers['If-None-Match'] = lastEtag; }
+
+    const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers });
+
+    // 304 = 没变化，不消耗API配额
+    if (resp.status === 304) { setStatus(true); return; }
     if (!resp.ok) { setStatus(false); return; }
+
+    // 保存ETag
+    const etag = resp.headers.get('ETag');
+    if (etag) lastEtag = etag;
+
     const data = await resp.json();
-    const raw = atob(data.content);
-    // UTF-8 解码
-    const decoded = decodeURIComponent(escape(raw));
+    lastSha = data.sha; // 缓存SHA供发送时用
+
+    // ===== 关键修复：使用 TextDecoder 正确解码 UTF-8 =====
+    const decoded = decodeBase64UTF8(data.content);
     const messages = JSON.parse(decoded);
     setStatus(true);
-    
+
     // 去重 & 排序
     const seen = new Set();
     const unique = [];
@@ -211,10 +283,10 @@ async function loadMessages() {
       if (!seen.has(key)) { seen.add(key); unique.push(m); }
     }
     unique.sort((a,b) => new Date(a.time) - new Date(b.time));
-    
+
     // 检查是否有新消息
     const latest = unique.length > 0 ? unique[unique.length-1] : null;
-    if (latest && latest.id !== lastMsgId) {
+    if (latest && (latest.id !== lastMsgId || currentMessages.length !== unique.length)) {
       const oldLen = currentMessages.length;
       currentMessages = unique;
       renderMessages(unique, oldLen);
@@ -228,160 +300,177 @@ async function loadMessages() {
   }
 }
 
-// ========== 渲染 ==========
+// ========== 增量渲染 ==========
 function renderMessages(messages, oldLen) {
   const container = document.getElementById('msgContainer');
   const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
-  
-  // 检测新消息（从 oldLen 开始的新消息）
-  const newMsgs = messages.slice(oldLen || 0);
-  
-  // 全量重绘
-  container.innerHTML = '';
-  let lastDate = '';
-  for (let i = 0; i < messages.length; i++) {
-    const m = messages[i];
-    const msgDate = m.time ? m.time.substring(0,10) : '';
-    if (msgDate && msgDate !== lastDate) {
-      const div = document.createElement('div'); div.className = 'msg-date-divider';
-      div.textContent = formatDate(msgDate);
-      container.appendChild(div);
-      lastDate = msgDate;
+
+  // 首次加载或消息数量差异大时全量渲染
+  if (oldLen === 0 || Math.abs(messages.length - oldLen) > 5) {
+    container.innerHTML = '';
+    let lastDate = '';
+    for (let i = 0; i < messages.length; i++) {
+      appendMessage(container, messages[i], lastDate, i >= oldLen);
+      if (messages[i].time) lastDate = messages[i].time.substring(0,10);
     }
-    
-    // 系统消息
-    if (m.sender === 'system') {
-      const div = document.createElement('div'); div.className = 'sys-msg';
-      div.textContent = m.text;
-      container.appendChild(div);
-      continue;
+    if (messages.length === 0) {
+      container.innerHTML = '<div class="sys-msg">👋 欢迎来到麻阳百事通聊天室！说句话吧</div>';
     }
-    
-    const isNew = i >= (oldLen || 0);
-    const isMine = m.sender === MY_ROLE;
-    const info = IDENTITY_MAP[m.sender] || { emoji:'❓', name:m.sender };
-    
-    const row = document.createElement('div');
-    row.className = `msg-row ${m.sender}`;
-    if (isNew) row.classList.add('msg-unread');
-    
-    const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
-    bubble.innerHTML = `<div class="sender-tag">${info.emoji} ${info.name}</div><div>${escapeHtml(m.text)}</div><div class="msg-time">${formatTime(m.time)}</div>`;
-    row.appendChild(bubble);
-    container.appendChild(row);
+  } else {
+    // 增量追加：只添加新消息
+    const newMsgs = messages.slice(oldLen);
+    let lastDate = messages.length > 1 ? messages[oldLen - 1].time?.substring(0,10) : '';
+    for (const m of newMsgs) {
+      appendMessage(container, m, lastDate, true);
+      if (m.time) lastDate = m.time.substring(0,10);
+    }
   }
-  
-  // 如果没有消息
-  if (messages.length === 0) {
-    container.innerHTML = '<div class="sys-msg">👋 欢迎来到麻阳百事通聊天室！说句话吧</div>';
-  }
-  
+
   // 自动滚到底
   if (isAtBottom || oldLen === 0) {
     setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
   }
 }
 
-// ========== 发送消息 ==========
+function appendMessage(container, m, lastDate, isNew) {
+  const msgDate = m.time ? m.time.substring(0,10) : '';
+  if (msgDate && msgDate !== lastDate) {
+    const div = document.createElement('div'); div.className = 'msg-date-divider';
+    div.textContent = formatDate(msgDate);
+    container.appendChild(div);
+  }
+
+  if (m.sender === 'system') {
+    const div = document.createElement('div'); div.className = 'sys-msg';
+    div.textContent = m.text;
+    container.appendChild(div);
+    return;
+  }
+
+  const info = IDENTITY_MAP[m.sender] || { emoji:'❓', name:m.sender };
+
+  const row = document.createElement('div');
+  row.className = `msg-row ${m.sender}`;
+  if (isNew) row.classList.add('msg-unread');
+
+  const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
+  bubble.innerHTML = `<div class="sender-tag">${info.emoji} ${info.name}</div><div>${escapeHtml(m.text)}</div><div class="msg-time">${formatTime(m.time)}</div>`;
+  row.appendChild(bubble);
+  container.appendChild(row);
+}
+
+// ========== 发送消息（带3次指数退避重试） ==========
 async function sendMsg() {
   if (sending) return;
   const input = document.getElementById('msgInput');
   const text = input.value.trim();
   if (!text) return;
-  
+
   sending = true;
-  document.getElementById('sendBtn').disabled = true;
-  setStatus(null); // 同步中
-  
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.classList.add('sending');
+  btn.textContent = '...';
+  setStatus(null);
+
+  const now = new Date();
+  const newMsg = { id: now.getTime(), sender: MY_ROLE, text: text, time: now.toISOString() };
+
   try {
-    // 1. 读取最新文件获取 SHA
-    const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, {
-      headers: { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (!resp.ok) { alert('读取失败: ' + resp.status); sending = false; document.getElementById('sendBtn').disabled = false; return; }
-    const data = await resp.json();
-    const sha = data.sha;
-    const decoded = decodeURIComponent(escape(atob(data.content)));
-    let messages = JSON.parse(decoded);
-    
-    // 2. 添加新消息
-    const now = new Date();
-    const newMsg = {
-      id: now.getTime(),
-      sender: MY_ROLE,
-      text: text,
-      time: now.toISOString()
-    };
-    messages.push(newMsg);
-    
-    // 3. 写入
-    const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(messages, null, 2))));
-    const payload = {
-      message: `chat: ${MY_ROLE}`,
-      content: contentB64,
-      sha: sha,
-      branch: BRANCH
-    };
-    
-    const putResp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-    
-    if (!putResp.ok) {
-      const errData = await putResp.json();
-      if (putResp.status === 409) {
-        // SHA冲突，重试一次
-        await new Promise(r => setTimeout(r, 500));
-        const retryResp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, {
-          headers: { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        const retryData = await retryResp.json();
-        const retrySha = retryData.sha;
-        const retryDecoded = decodeURIComponent(escape(atob(retryData.content)));
-        let retryMsgs = JSON.parse(retryDecoded);
-        retryMsgs.push(newMsg);
-        const retryB64 = btoa(unescape(encodeURIComponent(JSON.stringify(retryMsgs, null, 2))));
-        const retryPayload = {
-          message: `chat: ${MY_ROLE} (retry)`,
-          content: retryB64,
-          sha: retrySha,
-          branch: BRANCH
-        };
-        const retryPut = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${TOKEN}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(retryPayload)
-        });
-        if (!retryPut.ok) { alert('发送失败(重试): ' + await retryPut.text()); }
-      } else {
-        alert('发送失败: ' + await putResp.text());
-      }
+    const success = await putMessageWithRetry(newMsg, MAX_RETRIES);
+    if (success) {
+      input.value = '';
+      input.style.height = 'auto';
+      lastReadTime = now.getTime();
+      localStorage.setItem('lastReadTime', String(lastReadTime));
+      await loadMessages();
+    } else {
+      showToast('发送失败，请重试');
     }
-    
-    // 4. 清空输入，立即加载
-    input.value = '';
-    input.style.height = 'auto';
-    lastReadTime = now.getTime();
-    localStorage.setItem('lastReadTime', String(lastReadTime));
-    await loadMessages();
-    
   } catch(e) {
-    alert('发送出错: ' + e.message);
+    showToast('发送出错: ' + e.message);
   }
-  
+
   sending = false;
-  document.getElementById('sendBtn').disabled = false;
+  btn.disabled = false;
+  btn.classList.remove('sending');
+  btn.textContent = '发送';
   setStatus(true);
+}
+
+async function putMessageWithRetry(newMsg, maxRetries) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // 1. 读取最新文件
+      const getHeaders = {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json'
+      };
+      const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers: getHeaders });
+      if (!resp.ok) { if (attempt === maxRetries) return false; continue; }
+
+      const data = await resp.json();
+      const sha = data.sha;
+      const decoded = decodeBase64UTF8(data.content);
+      let messages = JSON.parse(decoded);
+
+      // 2. 添加新消息
+      messages.push(newMsg);
+
+      // 3. 自动清理旧消息（超过CLEANUP_DAYS天）
+      const cutoff = Date.now() - CLEANUP_DAYS * 24 * 60 * 60 * 1000;
+      messages = messages.filter(m => new Date(m.time).getTime() > cutoff || m.sender === 'system');
+
+      // 4. 写入
+      const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(messages, null, 2))));
+      const payload = { message: `chat: ${MY_ROLE}`, content: contentB64, sha: sha, branch: BRANCH };
+
+      const putResp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (putResp.ok) {
+        // 更新缓存
+        const result = await putResp.json();
+        lastSha = result.content.sha;
+        lastEtag = null; // 清除ETag，下次强制拉取
+        return true;
+      }
+
+      if (putResp.status === 409) {
+        // SHA冲突，指数退避重试
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+          continue;
+        }
+      }
+
+      // 其他错误不再重试
+      if (attempt === maxRetries) return false;
+
+    } catch(e) {
+      if (attempt === maxRetries) return false;
+      await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+    }
+  }
+  return false;
+}
+
+// ========== Toast 提示 ==========
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
 // ========== 未读计数 & 桌面通知 ==========
@@ -399,8 +488,8 @@ function updateNotifCount(messages) {
   unreadCount = unread;
   const el = document.getElementById('notifCount');
   if (unread > 0) { el.textContent = `🔔 ${unread}`; } else { el.textContent = ''; }
-  
-  // 桌面通知（只提醒最新一条）
+
+  // 桌面通知
   if (lastUnread && document.hidden && Notification.permission === 'granted') {
     const info = IDENTITY_MAP[lastUnread.sender] || { emoji:'❓', name:lastUnread.sender };
     new Notification(`💬 ${info.emoji} ${info.name}`, {
