@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>三人专属聊天室</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #1a1a2e;
+  color: #eee;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  background: linear-gradient(135deg, #e94560, #16213e);
+  padding: 14px 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.header h1 { font-size: 18px; color: #fff; }
+.header p { font-size: 12px; color: #aaa; margin-top: 4px; }
+.online-dot { display: inline-block; width: 8px; height: 8px; background: #4ade80; border-radius: 50%; margin-right: 4px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.status-bar { background: #16213e; padding: 6px 12px; font-size: 12px; color: #888; display: flex; justify-content: space-between; flex-shrink: 0; }
+#messages { flex: 1; overflow-y: auto; padding: 12px 8px; display: flex; flex-direction: column; gap: 8px; }
+.msg { max-width: 78%; padding: 10px 14px; border-radius: 12px; font-size: 15px; line-height: 1.6; word-break: break-all; }
+.msg-huahua { align-self: flex-end; background: #e94560; color: #fff; border-bottom-right-radius: 4px; }
+.msg-doudou { align-self: flex-end; background: #0f3460; color: #fff; border-bottom-right-radius: 4px; }
+.msg-xiaocai { align-self: flex-end; background: #1a6b3a; color: #fff; border-bottom-right-radius: 4px; }
+.msg-system { align-self: center; background: #333; color: #888; font-size: 12px; border-radius: 20px; max-width: 90%; text-align: center; }
+.meta { font-size: 11px; color: #aaa; margin-top: 3px; }
+.msg-huahua .meta { color: #ffb3b3; }
+.msg-doudou .meta { color: #93c5fd; }
+.msg-xiaocai .meta { color: #86efac; }
+.time-divider { text-align: center; font-size: 11px; color: #555; margin: 8px 0; }
+.time-divider span { background: #2a2a3e; padding: 2px 10px; border-radius: 10px; }
+.input-area { background: #16213e; padding: 10px 8px; display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; }
+.sender-select { background: #0f3460; border: 1px solid #e94560; border-radius: 8px; color: #fff; font-size: 13px; padding: 8px 6px; outline: none; }
+#msgInput { flex: 1; background: #0f3460; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px; padding: 10px 12px; outline: none; resize: none; max-height: 120px; font-family: inherit; }
+#msgInput:focus { border-color: #e94560; }
+#sendBtn { background: #e94560; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 15px; cursor: pointer; font-weight: bold; flex-shrink: 0; }
+#sendBtn:hover { background: #ff6b6b; }
+#sendBtn:disabled { background: #555; cursor: not-allowed; }
+.loading { text-align: center; padding: 20px; color: #666; font-size: 13px; }
+.setup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.setup-box { background: #16213e; border-radius: 16px; padding: 32px 24px; max-width: 420px; width: 100%; }
+.setup-box h2 { color: #e94560; margin-bottom: 8px; font-size: 20px; }
+.setup-box p { color: #aaa; font-size: 13px; line-height: 1.7; margin-bottom: 16px; }
+.setup-box code { background: #0a0a1a; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #4ade80; }
+.token-input { width: 100%; background: #0f3460; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px; padding: 12px; outline: none; margin-bottom: 12px; }
+.token-input:focus { border-color: #e94560; }
+.setup-btn { width: 100%; background: #e94560; color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; cursor: pointer; font-weight: bold; }
+.setup-btn:hover { background: #ff6b6b; }
+.hint { font-size: 11px; color: #666; margin-top: 10px; text-align: center; }
+
+/* ─── Unread Badge ─── */
+.unread-badge { background: #e94560; color: #fff; border-radius: 10px; padding: 2px 8px; font-size: 11px; margin-left: 6px; }
+.read-status { color: #4ade80; font-size: 11px; margin-left: 4px; }
+.msg-unread { box-shadow: inset 3px 0 0 #e94560; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💬 三人专属聊天室</h1>
+  <p><span class="online-dot"></span>实时同步 · 华华+豆豆+小财神</p>
+</div>
+
+<div class="status-bar">
+  <span id="syncStatus">● 等待初始化...</span>
+  <span id="readStatus"></span>
+  <span id="lastUpdate">--</span>
+</div>
+
+<div id="messages">
+  <div class="loading">加载中，请先输入 Token...</div>
+</div>
+
+<div class="input-area">
+  <select id="sender" class="sender-select">
+    <option value="huahua">🐔 华华</option>
+    <option value="doudou">🫘 豆豆</option>
+    <option value="xiaocai">💰 小财神</option>
+  </select>
+  <textarea id="msgInput" placeholder="输入消息..." rows="1"></textarea>
+  <button id="sendBtn" onclick="sendMsg()">发送</button>
+</div>
+
+<!-- Setup Overlay -->
+<div id="setupOverlay" class="setup-overlay">
+  <div class="setup-box">
+    <h2>🔑 首次使用需要 Token</h2>
+    <p>
+      本页面通过 GitHub 同步消息，需要你的<br>
+      <strong style="color:#e94560">GitHub Personal Access Token</strong><br><br>
+      去这里生成：<br>
+      <code>github.com → 头像 → Settings → Developer settings → Personal access tokens → Generate new token (classic)</code><br><br>
+      需要的权限：<strong style="color:#4ade80">repo</strong>（全部勾选）<br><br>
+      生成后粘贴到下面，点击确认即可。
+    </p>
+    <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxx">
+    <button class="setup-btn" onclick="saveToken()">确认进入聊天室 ✓</button>
+    <div class="hint">Token 只保存在你本地浏览器，不会上传到任何第三方</div>
+  </div>
+</div>
+
+<script>
+const REPO = 'popmyshu/water';
+const BRANCH = 'main';
+const FILE = 'chat_messages.json';
+const POLL_MS = 5000;
+
+let currentSender = null;
+
+const senders = {
+  huahua:  { name: "华华",   emoji: "🐔", cls: "msg-huahua" },
+  doudou:  { name: "豆豆",   emoji: "🫘", cls: "msg-doudou" },
+  xiaocai: { name: "小财神", emoji: "💰", cls: "msg-xiaocai" }
+};
+
+let lastSha = null;
+let syncing = false;
+let token = localStorage.getItem('gh_token');
+
+// ─── Token Setup ───
+function saveToken() {
+  const t = document.getElementById('tokenInput').value.trim();
+  if (!t || !t.startsWith('ghp_')) {
+    alert('请输入以 ghp_ 开头的 GitHub Token');
+    return;
+  }
+  localStorage.setItem('gh_token', t);
+  token = t;
+  document.getElementById('setupOverlay').style.display = 'none';
+  loadMessages();
+}
+
+// ─── Time Formatting ───
+function fmt(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}:${d.getSeconds().toString().padStart(2,"0")}`;
+}
+function fmtShort(ts) {
+  const d = new Date(ts);
+  return `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+}
+function getDivider(ts) {
+  const d = new Date(ts);
+  const now = new Date();
+  const same = d.toDateString() === now.toDateString();
+  if (same) return `<div class="time-divider"><span>今天 ${fmtShort(ts)}</span></div>`;
+  return `<div class="time-divider"><span>${d.getMonth()+1}月${d.getDate()}日 ${fmtShort(ts)}</span></div>`;
+}
+
+// ─── Render ───
+function render(messages) {
+  const box = document.getElementById("messages");
+  const isBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 100;
+  box.innerHTML = "";
+  let lastDate = "";
+  messages.forEach(m => {
+    const s = senders[m.sender];
+    if (!s) return;
+    const dateKey = new Date(m.time).toDateString();
+    if (dateKey !== lastDate) {
+      box.innerHTML += getDivider(m.time);
+      lastDate = dateKey;
+    }
+    const div = document.createElement("div");
+    div.className = "msg " + s.cls;
+    div.innerHTML = `<div>${s.emoji} ${m.text.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>")}</div><div class="meta">${s.name} · ${fmt(m.time)}</div>`;
+    box.appendChild(div);
+  });
+  if (isBottom) box.scrollTop = box.scrollHeight;
+}
+
+// ─── GitHub API ───
+async function ghFetch(path, options = {}) {
+  const resp = await fetch("https://api.github.com" + path, {
+    ...options,
+    headers: {
+      "Authorization": "token " + token,
+      "User-Agent": "QClaw-Chat/1.0",
+      "Accept": "application/vnd.github.v3+json",
+      ...(options.headers || {})
+    }
+  });
+  if (!resp.ok) throw new Error("GH " + resp.status + ": " + await resp.text());
+  return resp.json();
+}
+
+// ─── Load Messages ───
+async function loadMessages() {
+  if (!token) return;
+  try {
+    const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
+    lastSha = data.sha;
+    const msgs = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    // Show unread count
+    const lastRead = localStorage.getItem('lastReadTime') || '0';
+    const unread = msgs.filter(m => m.time > lastRead && m.sender !== currentSender).length;
+    if (unread > 0 && currentSender) {
+      document.getElementById('readStatus').innerHTML = '<span class="unread-badge">' + unread + ' 条未读</span>';
+    } else if (currentSender) {
+      document.getElementById('readStatus').textContent = senders[currentSender].emoji + ' 已读';
+    }
+    render(msgs);
+    document.getElementById("syncStatus").textContent = "● 已同步";
+    document.getElementById("lastUpdate").textContent = "更新: " + fmtShort(Date.now());
+  } catch (e) {
+    if (e.message.includes("404")) {
+      // Create file
+      document.getElementById("syncStatus").textContent = "● 首次同步，创建文件...";
+      await ghFetch(`/repos/${REPO}/contents/${FILE}`, {
+        method: "PUT",
+        body: JSON.stringify({ message: "init: chat room", content: btoa(JSON.stringify([])), branch: BRANCH })
+      });
+      render([]);
+      document.getElementById("syncStatus").textContent = "● 已同步";
+    } else {
+      document.getElementById("syncStatus").textContent = "● 同步失败: " + e.message.substring(0,40);
+    }
+  }
+}
+
+// ─── Send Message ───
+async function sendMsg() {
+  if (syncing || !token) return;
+  const text = document.getElementById("msgInput").value.trim();
+  if (!text) return;
+  const sender = document.getElementById("sender").value;
+
+  syncing = true;
+  document.getElementById("sendBtn").disabled = true;
+  document.getElementById("syncStatus").textContent = "● 发送中...";
+
+  try {
+    let sha = null;
+    let messages = [];
+    // Always fetch latest SHA to avoid 409 conflict
+    for (let retry = 0; retry < 3; retry++) {
+      try {
+        const data = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
+        sha = data.sha;
+        messages = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        break;
+      } catch(e) { messages = []; }
+    }
+
+    messages.push({ id: Date.now(), sender, text, time: new Date().toISOString() });
+    if (messages.length > 200) messages = messages.slice(-200);
+
+    const content_b64 = btoa(unescape(encodeURIComponent(JSON.stringify(messages, null, 2))));
+    const payload = { message: `chat: ${senders[sender].name} 发送`, content: content_b64, branch: BRANCH };
+    if (sha) payload.sha = sha;
+
+    // If still 409, retry once with fresh SHA
+    let result;
+    try {
+      result = await ghFetch(`/repos/${REPO}/contents/${FILE}`, {
+        method: "PUT", body: JSON.stringify(payload)
+      });
+    } catch (putErr) {
+      if (putErr.message.includes("409")) {
+        // SHA conflict - refetch and retry
+        const fresh = await ghFetch(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
+        payload.sha = fresh.sha;
+        const freshMsgs = JSON.parse(decodeURIComponent(escape(atob(fresh.content))));
+        freshMsgs.push({ id: Date.now(), sender, text, time: new Date().toISOString() });
+        if (freshMsgs.length > 200) freshMsgs.slice(-200);
+        payload.content = btoa(unescape(encodeURIComponent(JSON.stringify(freshMsgs, null, 2))));
+        result = await ghFetch(`/repos/${REPO}/contents/${FILE}`, {
+          method: "PUT", body: JSON.stringify(payload)
+        });
+      } else {
+        throw putErr;
+      }
+    }
+    lastSha = result.content.sha;
+    document.getElementById("msgInput").value = "";
+    document.getElementById("msgInput").style.height = "auto";
+    document.getElementById("syncStatus").textContent = "● 已发送 ✓";
+    await loadMessages();
+    markAsRead();
+    setTimeout(() => { document.getElementById("syncStatus").textContent = "● 已同步"; }, 2000);
+  } catch (e) {
+    document.getElementById("syncStatus").textContent = "● 发送失败: " + e.message.substring(0,50);
+    alert("发送失败: " + e.message);
+  } finally {
+    syncing = false;
+    document.getElementById("sendBtn").disabled = false;
+  }
+}
+
+// ─── Mark As Read ───
+function markAsRead() {
+  if (!currentSender) return;
+  const now = new Date().toISOString();
+  localStorage.setItem('lastReadTime', now);
+  document.getElementById('readStatus').textContent = senders[currentSender].emoji + ' 已读';
+  // Remove unread markers
+  document.querySelectorAll('.msg-unread').forEach(el => el.classList.remove('msg-unread'));
+}
+
+// Auto-mark read when switching sender
+document.getElementById("sender").addEventListener("change", markAsRead);
+
+// ─── Events ───
+document.getElementById("msgInput").addEventListener("input", function() {
+  this.style.height = "auto";
+  this.style.height = Math.min(this.scrollHeight, 120) + "px";
+});
+document.getElementById("msgInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+document.getElementById("tokenInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") saveToken();
+});
+
+// ─── Init ───
+currentSender = document.getElementById("sender").value;
+// Auto-mark as read on page load if token exists
+const lastRead = localStorage.getItem('lastReadTime');
+
+if (token) {
+  document.getElementById("setupOverlay").style.display = "none";
+  loadMessages();
+  if (lastRead) {
+    document.getElementById('readStatus').textContent = senders[currentSender].emoji + ' 已读';
+  }
+  setInterval(loadMessages, POLL_MS);
+} else {
+  document.getElementById("setupOverlay").style.display = "flex";
+  document.getElementById("tokenInput").focus();
+}
+</script>
+</body>
+</html>

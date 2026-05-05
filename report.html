@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>麻阳万事通 — 可行性报告</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f2f5; color: #333; padding: 16px; padding-bottom: 40px;
+}
+.slide {
+  background: #fff; border-radius: 16px; padding: 24px 20px;
+  margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.slide-title {
+  font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 14px;
+  padding-bottom: 10px; border-bottom: 3px solid #e94560; display: flex; align-items: center; gap: 8px;
+}
+.slide-title .num {
+  background: #e94560; color: #fff; font-size: 13px; border-radius: 20px;
+  padding: 2px 10px; font-weight: 600;
+}
+.highlight { color: #e94560; font-weight: 600; }
+.green { color: #2e7d32; font-weight: 600; }
+.gray { color: #888; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+td, th { padding: 8px 10px; border: 1px solid #eee; text-align: left; }
+th { background: #f8f9fa; font-weight: 600; color: #555; font-size: 13px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+.tag-red { background: #ffe8e8; color: #e94560; }
+.tag-green { background: #e8f5e9; color: #2e7d32; }
+.tag-blue { background: #e3f2fd; color: #1565c0; }
+.tag-yellow { background: #fff8e1; color: #f57f17; }
+.flow-box {
+  background: #f8f9fa; border-radius: 12px; padding: 16px; margin: 10px 0;
+  font-family: monospace; font-size: 13px; line-height: 1.8;
+}
+.row-flex { display: flex; gap: 10px; flex-wrap: wrap; }
+.card {
+  flex: 1; min-width: 100px; background: #f8f9fa; border-radius: 12px;
+  padding: 14px; text-align: center;
+}
+.card .num { font-size: 28px; font-weight: 700; }
+.bullet { padding-left: 6px; margin: 6px 0; line-height: 1.7; font-size: 14px; }
+.bullet::before { content: "• "; color: #e94560; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- 封面 -->
+<div class="slide" style="text-align:center; padding: 40px 20px;">
+  <div style="font-size: 48px; margin-bottom: 12px;">🏘️</div>
+  <div style="font-size: 26px; font-weight: 800; color: #1a1a2e; margin-bottom: 6px;">麻阳万事通</div>
+  <div style="font-size: 16px; color: #666; margin-bottom: 20px;">本地便民信息服务 · 可行性报告</div>
+  <div style="background: #f8f9fa; border-radius: 12px; padding: 16px; display: inline-block;">
+    <div style="font-size: 13px; color: #888; line-height: 2;">
+      <div>📋 版本 1.0 &nbsp;|&nbsp; 📅 2026年5月</div>
+      <div>🤝 华华 · 小财神 · 豆豆 联合出品</div>
+    </div>
+  </div>
+</div>
+
+<!-- 项目概述 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">1</span> 项目概述</div>
+  <div class="row-flex" style="margin-bottom: 10px;">
+    <div class="card"><div class="num green">2,000元</div><div class="gray">启动资金</div></div>
+    <div class="card"><div class="num green">1-2个月</div><div class="gray">回本周期</div></div>
+    <div class="card"><div class="num green">0人</div><div class="gray">人工成本</div></div>
+  </div>
+  <div><span class="tag tag-blue">项目</span> 麻阳本地便民信息平台</div>
+  <div style="margin-top:6px;"><span class="tag tag-blue">模式</span> 企业微信 + AI全自动运营</div>
+  <div style="margin-top:6px;"><span class="tag tag-blue">愿景</span> 麻阳人自己的信息服务平台</div>
+</div>
+
+<!-- 市场分析 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">2</span> 市场分析</div>
+  <div><span class="tag tag-red">麻阳</span> 县城常住约 <strong>30万</strong> 人，18个乡镇</div>
+  <div style="margin-top:8px;"><span class="tag tag-yellow">华华覆盖</span> <strong>12个</strong> 核心乡镇</div>
+  <div style="margin-top:8px; margin-bottom:6px;"><span class="tag tag-green">刚需</span> 水电工 · 找工作 · 租房子 · 二手 · 顺风车</div>
+  <table>
+    <tr><th>平台</th><th>麻阳覆盖</th><th>缺点</th></tr>
+    <tr><td>58同城</td><td>❌ 极少</td><td>贵，本地信息少</td></tr>
+    <tr><td>本地微信群</td><td>⚠️ 零散</td><td>无人维护，广告泛滥</td></tr>
+    <tr><td>抖音同城</td><td>⚠️ 有</td><td>信息杂乱，留存差</td></tr>
+  </table>
+  <div style="background: #fff3e0; border-radius: 10px; padding: 10px; margin-top: 8px; font-size: 14px; font-weight: 600;">
+    💡 <span class="highlight">麻阳本地便民信息 — 空白市场，先入者占绝对优势</span>
+  </div>
+</div>
+
+<!-- 收入模式 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">3</span> 收费标准</div>
+  <table>
+    <tr><th>服务</th><th>价格</th><th>策略</th></tr>
+    <tr><td>个人发布</td><td class="green">免费</td><td>积累人气</td></tr>
+    <tr><td>商家推广</td><td><strong>60元/条</strong></td><td>低价占领市场</td></tr>
+    <tr><td>置顶推广（7天）</td><td><strong>300元/周</strong></td><td>重点商家</td></tr>
+    <tr><td>开业/活动推广</td><td><strong>500元/次</strong></td><td>含朋友圈+群发</td></tr>
+    <tr><td>包月推广</td><td><strong>800元/月</strong></td><td>每天发一条</td></tr>
+  </table>
+</div>
+
+<!-- 收入预测 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">4</span> 收入预测</div>
+  <table>
+    <tr><th>月份</th><th>好友数</th><th>付费推广</th><th>月收入</th></tr>
+    <tr><td>第1个月</td><td>500人</td><td>5条</td><td><strong>300元</strong></td></tr>
+    <tr><td>第2个月</td><td>1,500人</td><td>15条</td><td><strong>900元</strong></td></tr>
+    <tr><td>第3个月</td><td>3,000人</td><td>30条</td><td><span class="highlight">1,800元</span></td></tr>
+    <tr><td>第6个月</td><td>6,000人</td><td>60条</td><td><span class="highlight">3,600元</span></td></tr>
+    <tr style="background: #fff3e0;"><td><strong>第12个月</strong></td><td><strong>10,000人</strong></td><td><strong>100条</strong></td><td><span class="highlight"><strong>6,000元</strong></span></td></tr>
+  </table>
+  <div style="margin-top:8px; font-size:14px;">
+    📊 一年保守收入：<span class="highlight">约5-7万元</span>
+    <span style="color:#888;font-size:13px;">&nbsp;|&nbsp;运营成本仅600元/年</span>
+  </div>
+</div>
+
+<!-- AI自动化方案 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">5</span> AI全自动运营</div>
+  <div style="font-size: 14px; margin-bottom: 8px;">这是本项目的<span class="highlight">核心竞争力</span>—0人工成本，24小时在线</div>
+  <div class="flow-box">
+    用户扫码加微信 → 自动通过<br>
+    &nbsp;&nbsp;&nbsp;↓<br>
+    AI自动发欢迎语 + 使用说明<br>
+    &nbsp;&nbsp;&nbsp;↓<br>
+    用户发需求 → AI识别意图 → 引导补充信息<br>
+    &nbsp;&nbsp;&nbsp;↓<br>
+    AI自动生成朋友圈文案 + 自动发布<br>
+    &nbsp;&nbsp;&nbsp;↓<br>
+    AI自动同步到信息展示网站
+  </div>
+</div>
+
+<!-- AI vs 人工 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">6</span> 成本优势</div>
+  <table>
+    <tr><th>对比项</th><th>传统人工</th><th class="highlight">AI自动化</th></tr>
+    <tr><td>人员</td><td>1-2人全职</td><td class="green">0人</td></tr>
+    <tr><td>人力成本</td><td>4,000-6,000元/月</td><td class="green">0元</td></tr>
+    <tr><td>工作时间</td><td>8小时/天</td><td class="green">24小时/天</td></tr>
+    <tr><td>响应速度</td><td>数分钟至数小时</td><td class="green">秒级响应</td></tr>
+    <tr><td>处理量</td><td>50-100条/天</td><td class="green">无上限</td></tr>
+  </table>
+  <div style="background: #e8f5e9; border-radius: 10px; padding: 10px; margin-top: 8px; font-size: 14px;">
+    ✅ AI 能干：自动通过好友 · 识别意图 · 引导信息 · 生成文案 · 发布朋友圈 · 统计数据 · 发日报
+  </div>
+</div>
+
+<!-- 推广计划 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">7</span> 推广计划</div>
+  <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">📣 线下推广（华华负责）</div>
+  <table>
+    <tr><th>渠道</th><th>成本</th><th>预计效果</th></tr>
+    <tr><td>🚛 送水车身广告</td><td>200元</td><td>每天曝光300-500人</td></tr>
+    <tr><td>🏠 送水入户推荐</td><td class="green">0元</td><td>每天加10-15人</td></tr>
+    <tr><td>🏪 合作商家贴码</td><td class="green">0元</td><td>每店加5-10人/天</td></tr>
+    <tr><td>🎪 赶集日摆摊</td><td>100元/次</td><td>每次加50-100人</td></tr>
+  </table>
+  <div style="margin-top:8px; font-size:14px; font-weight:600;">🌐 线上推广（AI自动）</div>
+  <div class="bullet">每条信息自动带二维码水印</div>
+  <div class="bullet">自动生成分享海报</div>
+  <div class="bullet">自动发送推荐有礼消息</div>
+</div>
+
+<!-- 合作模式 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">8</span> 合作模式</div>
+  <div style="background: #e8f5e9; border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+    <div style="font-weight: 700; font-size: 16px; margin-bottom: 8px;">✅ 方案A：分成模式（推荐）</div>
+    <div>广告公司（营业执照+认证） → <strong>30%</strong></div>
+    <div style="margin-top:4px;">华华（推广+送水车） → <strong>40%</strong></div>
+    <div style="margin-top:4px;">AI系统（运营+技术） → <strong>30%</strong></div>
+  </div>
+  <div style="background: #f8f9fa; border-radius: 12px; padding: 14px;">
+    <div style="font-weight: 700; font-size: 16px; margin-bottom: 8px;">📋 方案B：固定工资+提成</div>
+    <div>广告公司：每月管理费1000元 + 10%流水</div>
+    <div style="margin-top:4px;">华华：拉新奖20元/客户 + 30%流水</div>
+    <div style="margin-top:4px;">AI系统：60%流水用于运营</div>
+  </div>
+</div>
+
+<!-- 启动计划 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">9</span> 启动计划</div>
+  <div class="flow-box" style="font-size:13px;">
+    第1天 &nbsp; 签约合作协议 → 华华+广告公司<br>
+    第1-2天 企业微信注册认证 → 广告公司<br>
+    第3天 &nbsp; 云电脑部署，AI接入 → 豆豆+小财神<br>
+    第4-5天 系统测试调优 → 豆豆+小财神<br>
+    第6天 &nbsp; 车身广告+名片印刷 → 华华<br>
+    第7天 &nbsp; <strong>📢 正式上线！</strong><br>
+    第8-30天 每天推广拉新+优化 → 全员
+  </div>
+</div>
+
+<!-- 风险评估 -->
+<div class="slide">
+  <div class="slide-title"><span class="num">10</span> 风险评估</div>
+  <table>
+    <tr><th>风险</th><th>概率</th><th>应对</th></tr>
+    <tr><td>微信封号</td><td><span class="tag tag-yellow">中</span></td><td>企业微信安全，不群发骚扰</td></tr>
+    <tr><td>推广不及预期</td><td><span class="tag tag-green">低</span></td><td>送水车已验证流量入口</td></tr>
+    <tr><td>竞争对手</td><td><span class="tag tag-yellow">中</span></td><td>先发优势+AI效率碾压</td></tr>
+    <tr><td>收入不及预期</td><td><span class="tag tag-green">低</span></td><td>零成本运营，不亏本</td></tr>
+  </table>
+</div>
+
+<!-- 总结 -->
+<div class="slide" style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff;">
+  <div style="font-size: 20px; font-weight: 700; margin-bottom: 14px;">🎯 总结</div>
+  <div style="margin: 8px 0; font-size: 15px;">✅ 市场空白 — 麻阳唯一便民平台</div>
+  <div style="margin: 8px 0; font-size: 15px;">✅ 流量稳 — 送水车天然广告位</div>
+  <div style="margin: 8px 0; font-size: 15px;">✅ 成本极低 — AI全自动，0人工</div>
+  <div style="margin: 8px 0; font-size: 15px;">✅ 技术领先 — 自动化效率碾压人工</div>
+  <div style="margin: 8px 0; font-size: 15px;">✅ 回本快 — 首月即可产生收入</div>
+  <div style="margin: 8px 0; font-size: 15px;">✅ 可复制 — 跑通后扩展到周边县市</div>
+  <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center; font-size: 16px;">
+    🤝 华华 · 小财神 · 豆豆 — 三人行必有我师
+  </div>
+</div>
+
+</body>
+</html>

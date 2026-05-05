@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>麻阳百事通 三人聊天室</title>
+<style>
+:root {
+  --bg: #f0f2f5; --card: #fff; --text: #333; --sub: #888; --border: #eee;
+  --primary: #e94560; --primary-dark: #d63851;
+  --bubble-huahua: #95ec69; --bubble-doudou: #fff3e0; --bubble-xiaocai: #e94560;
+  --header-bg: #1a1a2e; --input-bg: #f7f7f7;
+}
+[data-theme="dark"] {
+  --bg: #1a1a2e; --card: #252540; --text: #e0e0e0; --sub: #888; --border: #333;
+  --primary: #e94560; --primary-dark: #ff6b81;
+  --bubble-huahua: #2d4a2d; --bubble-doudou: #3d2e1a; --bubble-xiaocai: #8b1a30;
+  --header-bg: #12122a; --input-bg: #2a2a45;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; margin: 0; overflow: hidden; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+
+/* ========== 设置遮罩 ========== */
+#setupOverlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+#setupBox {
+  background: var(--card); border-radius: 16px; padding: 30px 28px; width: 340px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+#setupBox h2 { font-size: 20px; margin-bottom: 6px; color: var(--text); }
+#setupBox p { font-size: 13px; color: var(--sub); margin-bottom: 16px; }
+#setupBox input, #setupBox select {
+  width: 100%; padding: 12px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 10px;
+  margin-bottom: 12px; outline: none; background: var(--input-bg); color: var(--text);
+}
+#setupBox input:focus, #setupBox select:focus { border-color: var(--primary); }
+#setupBox button {
+  width: 100%; padding: 12px; font-size: 16px; background: var(--primary); color: #fff;
+  border: none; border-radius: 10px; cursor: pointer; font-weight: 600;
+}
+#setupBox button:hover { background: var(--primary-dark); }
+.my-identity { margin: 10px 0; font-size: 14px; color: var(--sub); }
+
+/* ========== 主界面 ========== */
+#mainUI { display: none; flex-direction: column; height: 100vh; height: 100dvh; max-width: 600px; margin: 0 auto; position: relative; overflow: hidden; }
+@supports (height: 100dvh) { #mainUI { height: 100dvh; } }
+#header {
+  background: var(--header-bg); color: #fff; padding: 14px 18px; display: flex;
+  justify-content: space-between; align-items: center; border-radius: 0 0 12px 12px;
+  flex-shrink: 0; z-index: 10;
+}
+#header h1 { font-size: 16px; font-weight: 600; }
+#header .status { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.green { background: #4ade80; } .dot.yellow { background: #fbbf24; } .dot.red { background: #ef4444; }
+.header-btns { display: flex; gap: 6px; align-items: center; }
+#header .tool-btn {
+  background: rgba(255,255,255,0.12); color: #fff; border: none;
+  padding: 5px 10px; border-radius: 6px; font-size: 14px; cursor: pointer;
+}
+
+/* ========== 在线状态 ========== */
+#onlineBar {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 6px 16px; display: flex; gap: 12px; font-size: 12px; flex-shrink: 0;
+}
+.online-user { display: flex; align-items: center; gap: 4px; }
+.online-user .ou-dot { width: 6px; height: 6px; border-radius: 50%; }
+.online-user .ou-dot.on { background: #4ade80; }
+.online-user .ou-dot.off { background: #666; }
+
+/* ========== 消息列表 ========== */
+#msgContainer {
+  flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column;
+  gap: 2px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+}
+.msg-date-divider { text-align: center; font-size: 11px; color: var(--sub); margin: 8px 0; }
+
+/* 微信风格气泡 */
+.msg-row { display: flex; margin-bottom: 4px; align-items: flex-start; }
+.msg-row.huahua { justify-content: flex-start; }
+.msg-row.doudou { justify-content: flex-start; }
+.msg-row.xiaocai { justify-content: flex-end; }
+
+.msg-avatar {
+  width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center;
+  justify-content: center; font-size: 20px; flex-shrink: 0; margin-top: 2px;
+}
+.huahua .msg-avatar { background: #e8f5e9; }
+.doudou .msg-avatar { background: #fff3e0; }
+.xiaocai .msg-avatar { background: #fce4ec; }
+
+.msg-body { max-width: 72%; margin: 0 8px; }
+.msg-sender { font-size: 11px; color: var(--sub); margin-bottom: 2px; }
+.huahua .msg-sender { text-align: left; }
+.doudou .msg-sender { text-align: left; }
+.xiaocai .msg-sender { text-align: right; }
+
+.msg-bubble {
+  padding: 10px 14px; border-radius: 10px; font-size: 15px; line-height: 1.5;
+  position: relative; word-break: break-word; cursor: pointer;
+}
+.msg-bubble .msg-time { font-size: 10px; color: rgba(0,0,0,0.3); text-align: right; margin-top: 3px; }
+
+.huahua .msg-bubble { background: var(--bubble-huahua); color: #1a1a1a; border-top-left-radius: 2px; }
+.doudou .msg-bubble { background: var(--bubble-doudou); border-top-left-radius: 2px; }
+.xiaocai .msg-bubble { background: var(--bubble-xiaocai); color: #fff; border-top-right-radius: 2px; }
+.xiaocai .msg-bubble .msg-time { color: rgba(255,255,255,0.5); }
+
+/* 引用消息 */
+.msg-quote {
+  background: rgba(0,0,0,0.06); border-left: 3px solid rgba(0,0,0,0.15);
+  padding: 4px 8px; border-radius: 4px; font-size: 13px; margin-bottom: 6px;
+  color: rgba(0,0,0,0.6); max-height: 60px; overflow: hidden;
+}
+.xiaocai .msg-quote { background: rgba(255,255,255,0.15); border-left-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
+
+/* 图片预览 */
+.msg-image { max-width: 100%; max-height: 200px; border-radius: 6px; margin-top: 4px; cursor: pointer; }
+
+/* 新消息动画 */
+.msg-unread { animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ========== 新消息按钮 ========== */
+#newMsgBtn {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  background: var(--primary); color: #fff; border: none; border-radius: 20px;
+  padding: 6px 16px; font-size: 13px; cursor: pointer; z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: none; transition: opacity 0.2s;
+}
+
+/* ========== 搜索栏 ========== */
+#searchBar {
+  display: none; background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 8px 14px; flex-shrink: 0;
+}
+#searchBar input {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 14px; outline: none; background: var(--input-bg); color: var(--text);
+}
+#searchBar .search-results { font-size: 12px; color: var(--sub); margin-top: 4px; }
+
+/* ========== 输入区 ========== */
+#inputArea {
+  flex-shrink: 0; min-height: 56px; background: var(--card); border-top: 1px solid var(--border);
+  padding: 10px 14px; display: flex; gap: 8px; align-items: flex-end;
+}
+#inputArea .identity-badge {
+  width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+#inputArea textarea {
+  flex: 1; border: none; outline: none; font-size: 15px; resize: none;
+  min-height: 36px; max-height: 120px; line-height: 1.5; padding: 6px 0;
+  font-family: inherit; background: transparent; color: var(--text);
+}
+#inputArea #sendBtn {
+  width: 64px; padding: 10px 0; background: var(--primary); color: #fff; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+#inputArea #sendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+#inputArea #sendBtn.sending { opacity: 0.6; }
+.hint-text { font-size: 11px; color: var(--sub); text-align: center; padding: 4px 0 0; background: var(--card); }
+
+/* ========== 引用预览 ========== */
+#quoteBar {
+  display: none; background: var(--card); border-top: 1px solid var(--border);
+  padding: 6px 14px; font-size: 13px; align-items: center; gap: 8px;
+}
+#quoteBar .quote-preview {
+  flex: 1; background: rgba(0,0,0,0.04); padding: 4px 8px; border-radius: 6px;
+  border-left: 3px solid var(--primary); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+#quoteBar .quote-cancel {
+  background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub); padding: 4px;
+}
+
+/* ========== 系统消息 ========== */
+.sys-msg { text-align: center; color: var(--sub); font-size: 12px; margin: 6px 0; }
+
+/* ========== 长按菜单 ========== */
+#contextMenu {
+  display: none; position: fixed; background: var(--card); border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 999; overflow: hidden; min-width: 120px;
+}
+#contextMenu .ctx-item {
+  padding: 10px 16px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+}
+#contextMenu .ctx-item:hover { background: rgba(0,0,0,0.06); }
+#contextMenu .ctx-item.danger { color: #ef4444; }
+
+/* ========== 图片查看器 ========== */
+#imgViewer {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+  z-index: 9998; align-items: center; justify-content: center; cursor: pointer;
+}
+#imgViewer img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 4px; }
+
+/* ========== Toast ========== */
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.75); color: #fff; padding: 8px 20px; border-radius: 20px;
+  font-size: 13px; z-index: 999; animation: toastIn 0.3s, toastOut 0.3s 2.7s;
+  pointer-events: none;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+</style>
+</head>
+<body>
+
+<!-- ====== 设置页 ====== -->
+<div id="setupOverlay">
+  <div id="setupBox">
+    <h2>🛡️ 麻阳百事通聊天室</h2>
+    <p>输入 GitHub Token 选择身份进入</p>
+    <input type="password" id="tokenInput" placeholder="GitHub Token (ghp_...)" autocomplete="off">
+    <select id="myIdentity">
+      <option value="huahua">🐔 华华（送水工）</option>
+      <option value="doudou">🫘 豆豆（自动执行）</option>
+      <option value="xiaocai">💰 小财神（AI管家）</option>
+    </select>
+    <p class="my-identity">🔑 Token 只存在你本地浏览器</p>
+    <button onclick="enterChat()">🚪 进入聊天室</button>
+  </div>
+</div>
+
+<!-- ====== 主界面 ====== -->
+<div id="mainUI">
+  <div id="header">
+    <div>
+      <h1>💬 麻阳百事通 · 三人组</h1>
+      <div class="status"><span class="dot green" id="statusDot"></span><span id="statusText">已连接</span></div>
+    </div>
+    <div class="header-btns">
+      <span id="notifCount" style="background:var(--primary);color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;"></span>
+      <button class="tool-btn" onclick="toggleSearch()" title="搜索">🔍</button>
+      <button class="tool-btn" onclick="toggleDarkMode()" title="深色模式" id="darkBtn">🌙</button>
+      <button class="tool-btn" onclick="document.getElementById('setupOverlay').style.display='flex';document.getElementById('mainUI').style.display='none'" title="设置">⚙️</button>
+    </div>
+  </div>
+
+  <!-- 在线状态栏 -->
+  <div id="onlineBar">
+    <div class="online-user"><span class="ou-dot" id="dot-huahua"></span>🐔 华华</div>
+    <div class="online-user"><span class="ou-dot" id="dot-doudou"></span>🫘 豆豆</div>
+    <div class="online-user"><span class="ou-dot" id="dot-xiaocai"></span>💰 小财神</div>
+  </div>
+
+  <!-- 搜索栏 -->
+  <div id="searchBar">
+    <input type="text" id="searchInput" placeholder="搜索消息..." oninput="doSearch(this.value)">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <!-- 消息区 -->
+  <div id="msgContainer"></div>
+
+  <!-- 新消息按钮 -->
+  <button id="newMsgBtn" onclick="scrollToBottom()">↓ 新消息</button>
+
+  <!-- 引用预览 -->
+  <div id="quoteBar">
+    <div class="quote-preview" id="quotePreview"></div>
+    <button class="quote-cancel" onclick="cancelQuote()">✕</button>
+  </div>
+
+  <!-- 输入区 -->
+  <div id="inputArea">
+    <div class="identity-badge" id="myBadge">🐔</div>
+    <textarea id="msgInput" placeholder="说点什么..." rows="1" oninput="autoResize(this)"></textarea>
+    <button id="sendBtn" onclick="sendMsg()">发送</button>
+  </div>
+  <div class="hint-text">Enter 发送 · Shift+Enter 换行 · 点击气泡引用回复</div>
+</div>
+
+<!-- 长按菜单 -->
+<div id="contextMenu">
+  <div class="ctx-item" onclick="ctxReply()">💬 引用回复</div>
+  <div class="ctx-item" onclick="ctxCopy()">📋 复制</div>
+  <div class="ctx-item danger" onclick="ctxDelete()">🗑️ 删除</div>
+</div>
+
+<!-- 图片查看器 -->
+<div id="imgViewer" onclick="this.style.display='none'">
+  <img id="imgViewerSrc" src="" alt="图片">
+</div>
+
+<script>
+// ========== 配置 ==========
+const OWNER = 'popmyshu', REPO = 'water', BRANCH = 'main', FILE = 'chat_messages.json';
+const POLL_MS = 5000;
+const MAX_RETRIES = 3;
+const CLEANUP_DAYS = 30;
+const ONLINE_THRESHOLD = 5 * 60 * 1000; // 5分钟内发言算在线
+const IDENTITY_MAP = {
+  huahua:  { emoji:'🐔', name:'华华' },
+  doudou:  { emoji:'🫘', name:'豆豆' },
+  xiaocai: { emoji:'💰', name:'小财神' }
+};
+
+let TOKEN = '', MY_ROLE = 'huahua', lastMsgId = 0, lastReadTime = 0, sending = false;
+let pollTimer = null, unreadCount = 0, hiddenUnread = 0;
+let currentMessages = [];
+let lastEtag = null, lastSha = null, consecutiveErrors = 0;
+let quotingMsg = null; // 当前引用的消息
+let contextTarget = null; // 长按菜单目标消息
+
+// ========== 音效（Web Audio API，无需外部文件） ==========
+let audioCtx = null;
+function playSound(type) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    if (type === 'send') {
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.15);
+    } else {
+      osc.frequency.setValueAtTime(660, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.2);
+    }
+  } catch(e) {}
+}
+
+// ========== 震动 ==========
+function vibrate() {
+  try { if (navigator.vibrate) navigator.vibrate(100); } catch(e) {}
+}
+
+// ========== UTF-8 安全解码 ==========
+function decodeBase64UTF8(base64Str) {
+  try {
+    const binaryStr = atob(base64Str);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    return new TextDecoder('utf-8').decode(bytes);
+  } catch(e) {
+    try { return decodeURIComponent(escape(atob(base64Str))); } catch(e2) { return atob(base64Str); }
+  }
+}
+
+// ========== 深色模式 ==========
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  localStorage.setItem('chat_dark', isDark ? '' : 'dark');
+  document.getElementById('darkBtn').textContent = isDark ? '🌙' : '☀️';
+}
+if (localStorage.getItem('chat_dark') === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+  // 延迟设置按钮文字，确保DOM就绪
+  setTimeout(() => { const b = document.getElementById('darkBtn'); if(b) b.textContent = '☀️'; }, 100);
+}
+
+// ========== 搜索 ==========
+function toggleSearch() {
+  const bar = document.getElementById('searchBar');
+  bar.style.display = bar.style.display === 'none' || !bar.style.display ? 'flex' : 'none';
+  if (bar.style.display === 'flex') document.getElementById('searchInput').focus();
+  else { document.getElementById('searchInput').value = ''; doSearch(''); }
+}
+function doSearch(q) {
+  const res = document.getElementById('searchResults');
+  if (!q) { res.textContent = ''; highlightSearch(''); return; }
+  const found = currentMessages.filter(m => m.text && m.text.includes(q));
+  res.textContent = `找到 ${found.length} 条消息`;
+  highlightSearch(q);
+}
+function highlightSearch(q) {
+  document.querySelectorAll('.msg-bubble .msg-text').forEach(el => {
+    const orig = el.getAttribute('data-orig') || el.textContent;
+    el.setAttribute('data-orig', orig);
+    if (!q) { el.innerHTML = escapeHtml(orig); return; }
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    el.innerHTML = escapeHtml(orig).replace(re, '<mark>$1</mark>');
+  });
+}
+
+// ========== 进入聊天室 ==========
+function enterChat() {
+  TOKEN = document.getElementById('tokenInput').value.trim();
+  MY_ROLE = document.getElementById('myIdentity').value;
+  if (!TOKEN) { alert('请输入 GitHub Token'); return; }
+  if (!TOKEN.startsWith('ghp_') && !TOKEN.startsWith('github_pat_')) { alert('Token 格式不对，应该是 ghp_ 开头的'); return; }
+  localStorage.setItem('gh_token_v2', TOKEN);
+  localStorage.setItem('my_role', MY_ROLE);
+  document.getElementById('setupOverlay').style.display = 'none';
+  document.getElementById('mainUI').style.display = 'flex';
+  updateBadge();
+  startPolling();
+  loadMessages();
+}
+
+function updateBadge() {
+  const info = IDENTITY_MAP[MY_ROLE];
+  document.getElementById('myBadge').textContent = info.emoji;
+  document.getElementById('msgInput').placeholder = `${info.name}，说点什么...`;
+}
+
+// 恢复上次身份
+(function() {
+  const savedToken = localStorage.getItem('gh_token_v2');
+  const savedRole = localStorage.getItem('my_role');
+  if (savedToken) document.getElementById('tokenInput').value = savedToken;
+  if (savedRole && IDENTITY_MAP[savedRole]) document.getElementById('myIdentity').value = savedRole;
+  lastReadTime = parseInt(localStorage.getItem('lastReadTime') || '0');
+})();
+
+// ========== 轮询（带退避） ==========
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(loadMessages, POLL_MS);
+}
+function getNextPollMs() {
+  if (consecutiveErrors === 0) return POLL_MS;
+  return Math.min(POLL_MS * Math.pow(2, consecutiveErrors), 60000);
+}
+function scheduleNextPoll() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(loadMessages, getNextPollMs());
+}
+function setStatus(ok) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (ok === true) { dot.className = 'dot green'; txt.textContent = '已连接'; consecutiveErrors = 0; }
+  else if (ok === false) { dot.className = 'dot red'; txt.textContent = '连接失败'; consecutiveErrors = Math.min(consecutiveErrors + 1, 4); scheduleNextPoll(); }
+  else { dot.className = 'dot yellow'; txt.textContent = '同步中...'; }
+}
+
+// ========== 在线状态更新 ==========
+function updateOnlineStatus(messages) {
+  const now = Date.now();
+  const lastSeen = {};
+  for (const id of ['huahua', 'doudou', 'xiaocai']) {
+    const userMsgs = messages.filter(m => m.sender === id);
+    lastSeen[id] = userMsgs.length > 0 ? new Date(userMsgs[userMsgs.length-1].time).getTime() : 0;
+  }
+  for (const id of ['huahua', 'doudou', 'xiaocai']) {
+    const dot = document.getElementById('dot-' + id);
+    if (dot) {
+      const isOnline = (now - lastSeen[id]) < ONLINE_THRESHOLD;
+      dot.className = 'ou-dot ' + (isOnline ? 'on' : 'off');
+    }
+  }
+}
+
+// ========== 加载消息 ==========
+async function loadMessages() {
+  try {
+    const headers = { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
+    if (lastEtag) headers['If-None-Match'] = lastEtag;
+    const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers });
+    if (resp.status === 304) { setStatus(true); return; }
+    if (!resp.ok) { setStatus(false); return; }
+    const etag = resp.headers.get('ETag');
+    if (etag) lastEtag = etag;
+    const data = await resp.json();
+    lastSha = data.sha;
+    const decoded = decodeBase64UTF8(data.content);
+    const messages = JSON.parse(decoded);
+    setStatus(true);
+
+    const seen = new Set(), unique = [];
+    for (const m of messages) {
+      const key = `${m.sender}:${m.text}:${m.time}`;
+      if (!seen.has(key)) { seen.add(key); unique.push(m); }
+    }
+    unique.sort((a,b) => new Date(a.time) - new Date(b.time));
+
+    const latest = unique.length > 0 ? unique[unique.length-1] : null;
+    if (latest && (latest.id !== lastMsgId || currentMessages.length !== unique.length)) {
+      const oldLen = currentMessages.length;
+      const hadNewFromOthers = unique.filter(m => m.sender !== MY_ROLE && m.sender !== 'system' && new Date(m.time).getTime() > lastReadTime).length > (currentMessages.filter(m => m.sender !== MY_ROLE && m.sender !== 'system' && new Date(m.time).getTime() > lastReadTime).length);
+      currentMessages = unique;
+      renderMessages(unique, oldLen);
+      updateOnlineStatus(unique);
+      if (latest.id > lastMsgId) {
+        lastMsgId = latest.id;
+        updateNotifCount(unique);
+        // 新消息音效+震动
+        if (hadNewFromOthers && oldLen > 0) {
+          playSound('recv');
+          vibrate();
+        }
+      }
+    } else {
+      updateOnlineStatus(unique);
+    }
+  } catch(e) { setStatus(false); }
+}
+
+// ========== 渲染消息 ==========
+function renderMessages(messages, oldLen) {
+  const container = document.getElementById('msgContainer');
+  const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+
+  if (oldLen === 0 || Math.abs(messages.length - oldLen) > 5) {
+    container.innerHTML = '';
+    let lastDate = '';
+    for (let i = 0; i < messages.length; i++) {
+      appendMessage(container, messages[i], lastDate, i >= oldLen);
+      if (messages[i].time) lastDate = messages[i].time.substring(0,10);
+    }
+    if (messages.length === 0) container.innerHTML = '<div class="sys-msg">👋 欢迎来到麻阳百事通聊天室！说句话吧</div>';
+  } else {
+    const newMsgs = messages.slice(oldLen);
+    let lastDate = messages.length > 1 ? messages[oldLen - 1].time?.substring(0,10) : '';
+    for (const m of newMsgs) {
+      appendMessage(container, m, lastDate, true);
+      if (m.time) lastDate = m.time.substring(0,10);
+    }
+  }
+
+  if (isAtBottom || oldLen === 0) {
+    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+  } else {
+    // 不在底部时显示新消息按钮
+    document.getElementById('newMsgBtn').style.display = 'block';
+    hiddenUnread += Math.max(0, messages.length - oldLen);
+    updateNewMsgBtn();
+  }
+}
+
+function updateNewMsgBtn() {
+  const btn = document.getElementById('newMsgBtn');
+  if (hiddenUnread > 0) {
+    btn.textContent = `↓ ${hiddenUnread} 条新消息`;
+    btn.style.display = 'block';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function scrollToBottom() {
+  const c = document.getElementById('msgContainer');
+  c.scrollTop = c.scrollHeight;
+  hiddenUnread = 0;
+  updateNewMsgBtn();
+}
+
+// 滚动到底部时隐藏按钮
+document.addEventListener('DOMContentLoaded', function() {
+  const c = document.getElementById('msgContainer');
+  if (c) c.addEventListener('scroll', function() {
+    if (c.scrollHeight - c.scrollTop - c.clientHeight < 60) {
+      hiddenUnread = 0;
+      updateNewMsgBtn();
+    }
+  });
+});
+
+function appendMessage(container, m, lastDate, isNew) {
+  const msgDate = m.time ? m.time.substring(0,10) : '';
+  if (msgDate && msgDate !== lastDate) {
+    const div = document.createElement('div'); div.className = 'msg-date-divider';
+    div.textContent = formatDate(msgDate);
+    container.appendChild(div);
+  }
+
+  if (m.sender === 'system') {
+    const div = document.createElement('div'); div.className = 'sys-msg';
+    div.textContent = m.text;
+    container.appendChild(div);
+    return;
+  }
+
+  const info = IDENTITY_MAP[m.sender] || { emoji:'❓', name:m.sender };
+  const row = document.createElement('div');
+  row.className = `msg-row ${m.sender}`;
+  if (isNew) row.classList.add('msg-unread');
+  row.setAttribute('data-msgid', m.id);
+
+  // 头像
+  const avatar = document.createElement('div'); avatar.className = 'msg-avatar';
+  avatar.textContent = info.emoji;
+
+  // 消息体
+  const body = document.createElement('div'); body.className = 'msg-body';
+  const sender = document.createElement('div'); sender.className = 'msg-sender';
+  sender.textContent = info.name;
+
+  const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
+
+  // 引用内容
+  if (m.quote) {
+    const q = document.createElement('div'); q.className = 'msg-quote';
+    const qInfo = IDENTITY_MAP[m.quote.sender] || { name: m.quote.sender };
+    q.textContent = `${qInfo.name}: ${m.quote.text.substring(0,60)}${m.quote.text.length > 60 ? '...' : ''}`;
+    bubble.appendChild(q);
+  }
+
+  // 消息文本
+  const textDiv = document.createElement('div'); textDiv.className = 'msg-text';
+  textDiv.setAttribute('data-orig', m.text);
+  textDiv.innerHTML = escapeHtml(m.text);
+  bubble.appendChild(textDiv);
+
+  // 图片检测
+  const imgUrl = detectImageUrl(m.text);
+  if (imgUrl) {
+    const img = document.createElement('img'); img.className = 'msg-image';
+    img.src = imgUrl; img.loading = 'lazy'; img.alt = '图片';
+    img.onclick = function() {
+      document.getElementById('imgViewerSrc').src = imgUrl;
+      document.getElementById('imgViewer').style.display = 'flex';
+    };
+    bubble.appendChild(img);
+  }
+
+  // 时间
+  const time = document.createElement('div'); time.className = 'msg-time';
+  time.textContent = formatTime(m.time);
+  bubble.appendChild(time);
+
+  body.appendChild(sender);
+  body.appendChild(bubble);
+
+  // 排列：自己的消息头像在右，他人在左
+  if (m.sender === MY_ROLE) {
+    row.appendChild(body);
+    row.appendChild(avatar);
+  } else {
+    row.appendChild(avatar);
+    row.appendChild(body);
+  }
+
+  // 点击气泡引用
+  bubble.addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG') return; // 图片点击不引用
+    setQuote(m);
+  });
+
+  // 长按菜单
+  let pressTimer = null;
+  bubble.addEventListener('mousedown', function(e) {
+    if (e.target.tagName === 'IMG') return;
+    pressTimer = setTimeout(() => showContextMenu(e, m), 600);
+  });
+  bubble.addEventListener('mouseup', function() { clearTimeout(pressTimer); });
+  bubble.addEventListener('mouseleave', function() { clearTimeout(pressTimer); });
+  // 触屏长按
+  bubble.addEventListener('touchstart', function(e) {
+    if (e.target.tagName === 'IMG') return;
+    pressTimer = setTimeout(() => showContextMenu(e, m), 600);
+  }, { passive: true });
+  bubble.addEventListener('touchend', function() { clearTimeout(pressTimer); });
+  bubble.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
+
+  container.appendChild(row);
+}
+
+// ========== 图片URL检测 ==========
+function detectImageUrl(text) {
+  const urlPattern = /(https?:\/\/\S+\.(?:jpg|jpeg|png|gif|webp|bmp)(?:\?\S*)?)/i;
+  const match = text.match(urlPattern);
+  return match ? match[1] : null;
+}
+
+// ========== 引用回复 ==========
+function setQuote(m) {
+  quotingMsg = { id: m.id, sender: m.sender, text: m.text };
+  const info = IDENTITY_MAP[m.sender] || { name: m.sender };
+  const bar = document.getElementById('quoteBar');
+  document.getElementById('quotePreview').textContent = `${info.name}: ${m.text.substring(0,50)}${m.text.length > 50 ? '...' : ''}`;
+  bar.style.display = 'flex';
+  document.getElementById('msgInput').focus();
+}
+function cancelQuote() {
+  quotingMsg = null;
+  document.getElementById('quoteBar').style.display = 'none';
+}
+
+// ========== 长按菜单 ==========
+function showContextMenu(e, m) {
+  contextTarget = m;
+  const menu = document.getElementById('contextMenu');
+  // 删除按钮只对自己的消息显示
+  const delItem = menu.querySelector('.danger');
+  delItem.style.display = m.sender === MY_ROLE ? 'flex' : 'none';
+  // 定位
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  menu.style.left = Math.min(x, window.innerWidth - 140) + 'px';
+  menu.style.top = Math.min(y, window.innerHeight - 150) + 'px';
+  menu.style.display = 'block';
+}
+function hideContextMenu() { document.getElementById('contextMenu').style.display = 'none'; }
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#contextMenu')) hideContextMenu();
+});
+
+function ctxReply() {
+  if (contextTarget) setQuote(contextTarget);
+  hideContextMenu();
+}
+function ctxCopy() {
+  if (contextTarget) {
+    navigator.clipboard.writeText(contextTarget.text).then(() => showToast('已复制'));
+  }
+  hideContextMenu();
+}
+async function ctxDelete() {
+  if (!contextTarget || contextTarget.sender !== MY_ROLE) { hideContextMenu(); return; }
+  hideContextMenu();
+  // 删除消息：重新读取文件，移除该消息，写回
+  try {
+    const headers = { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
+    const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers });
+    if (!resp.ok) { showToast('删除失败'); return; }
+    const data = await resp.json();
+    const decoded = decodeBase64UTF8(data.content);
+    let messages = JSON.parse(decoded);
+    messages = messages.filter(m => String(m.id) !== String(contextTarget.id));
+    const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(messages, null, 2))));
+    const payload = { message: `delete msg by ${MY_ROLE}`, content: contentB64, sha: data.sha, branch: BRANCH };
+    const putResp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`, {
+      method: 'PUT', headers: { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (putResp.ok) {
+      lastEtag = null; lastSha = null;
+      showToast('已删除');
+      await loadMessages();
+    } else {
+      showToast('删除失败');
+    }
+  } catch(e) { showToast('删除出错'); }
+}
+
+// ========== 发送消息 ==========
+async function sendMsg() {
+  if (sending) return;
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  sending = true;
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.classList.add('sending'); btn.textContent = '...';
+  setStatus(null);
+
+  const now = new Date();
+  const newMsg = { id: now.getTime(), sender: MY_ROLE, text: text, time: now.toISOString() };
+  if (quotingMsg) { newMsg.quote = { id: quotingMsg.id, sender: quotingMsg.sender, text: quotingMsg.text.substring(0,100) }; cancelQuote(); }
+
+  try {
+    const success = await putMessageWithRetry(newMsg, MAX_RETRIES);
+    if (success) {
+      input.value = ''; input.style.height = 'auto';
+      lastReadTime = now.getTime(); localStorage.setItem('lastReadTime', String(lastReadTime));
+      playSound('send');
+      await loadMessages();
+    } else {
+      showToast('发送失败，请重试');
+    }
+  } catch(e) { showToast('发送出错: ' + e.message); }
+
+  sending = false; btn.disabled = false; btn.classList.remove('sending'); btn.textContent = '发送';
+  setStatus(true);
+}
+
+async function putMessageWithRetry(newMsg, maxRetries) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const getHeaders = { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json' };
+      const resp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers: getHeaders });
+      if (!resp.ok) { if (attempt === maxRetries) return false; continue; }
+      const data = await resp.json();
+      const sha = data.sha;
+      const decoded = decodeBase64UTF8(data.content);
+      let messages = JSON.parse(decoded);
+      messages.push(newMsg);
+      const cutoff = Date.now() - CLEANUP_DAYS * 24 * 60 * 60 * 1000;
+      messages = messages.filter(m => new Date(m.time).getTime() > cutoff || m.sender === 'system');
+      const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(messages, null, 2))));
+      const payload = { message: `chat: ${MY_ROLE}`, content: contentB64, sha: sha, branch: BRANCH };
+      const putResp = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${TOKEN}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (putResp.ok) {
+        const result = await putResp.json();
+        lastSha = result.content.sha; lastEtag = null;
+        return true;
+      }
+      if (putResp.status === 409 && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+        continue;
+      }
+      if (attempt === maxRetries) return false;
+    } catch(e) {
+      if (attempt === maxRetries) return false;
+      await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+    }
+  }
+  return false;
+}
+
+// ========== Toast ==========
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ========== 未读计数 & 通知 ==========
+function updateNotifCount(messages) {
+  const myTime = parseInt(localStorage.getItem('lastReadTime') || '0');
+  let unread = 0, lastUnread = null;
+  for (const m of messages) {
+    const t = new Date(m.time).getTime();
+    if (t > myTime && m.sender !== MY_ROLE && m.sender !== 'system') { unread++; lastUnread = m; }
+  }
+  unreadCount = unread;
+  const el = document.getElementById('notifCount');
+  el.textContent = unread > 0 ? `🔔 ${unread}` : '';
+
+  if (lastUnread && document.hidden && Notification.permission === 'granted') {
+    const info = IDENTITY_MAP[lastUnread.sender] || { emoji:'❓', name:lastUnread.sender };
+    new Notification(`💬 ${info.emoji} ${info.name}`, {
+      body: lastUnread.text.length > 50 ? lastUnread.text.substring(0,50)+'...' : lastUnread.text,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💬</text></svg>'
+    });
+  }
+}
+
+document.addEventListener('click', function() {
+  if (unreadCount > 0) {
+    lastReadTime = Date.now(); localStorage.setItem('lastReadTime', String(lastReadTime));
+    document.getElementById('notifCount').textContent = ''; unreadCount = 0;
+  }
+});
+
+// ========== 工具函数 ==========
+function formatDate(d) {
+  const today = new Date(), yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+  const ds = d.substring(0,10);
+  if (ds === today.toISOString().substring(0,10)) return '今天';
+  if (ds === yesterday.toISOString().substring(0,10)) return '昨天';
+  return d.substring(5);
+}
+function formatTime(t) {
+  if (!t) return '';
+  const d = new Date(t);
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+
+// Enter 发送
+document.getElementById('msgInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+});
+
+// 通知权限
+if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+</script>
+</body>
+</html>
