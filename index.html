@@ -592,8 +592,6 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   <div id="weatherBar" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:13px;flex-wrap:wrap;">
     <button id="saveBackupBtn" onclick="手动备份()" style="background:rgba(76,175,80,.85);color:#fff;border:none;padding:3px 12px;border-radius:12px;cursor:pointer;font-size:13px;">💾 保存备份</button>
     <span id="dailyQuote" style="color:#fff;background:rgba(0,0,0,.25);padding:3px 12px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;font-size:13px;">🌟 加载励志语录中...</span>
-    <span id="locationStatus" style="color:#fff;text-decoration:none;background:rgba(0,0,0,.25);padding:3px 10px;border-radius:12px;display:none;align-items:center;gap:4px;cursor:pointer;" title="点击记录当前位置" onclick="记录当前位置()">📍 <span id="locationText">定位中...</span></span>
-    <span id="locationMemoBtn" style="color:#fff;text-decoration:none;background:rgba(255,0,0,.5);padding:3px 10px;border-radius:12px;display:none;align-items:center;gap:4px;cursor:pointer;font-size:12px;" title="记录当前卖水位置" onclick="记录当前位置()">💾 记位置</span>
   </div>
   <span id="金额隐藏开关" style="position:absolute;right:16px;top:20px;font-size:22px;cursor:pointer;" onclick="切换金额隐藏()" title="切换金额显示/隐藏">👁️</span>
 </div>
@@ -1881,16 +1879,6 @@ function 渲染各村提醒天数() {
 
 
 
-<!-- 行车轨迹入口 -->
-<a href="/water/track/" style="position:fixed;bottom:80px;right:16px;z-index:99999;background:#07c160;color:#fff;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 16px rgba(7,193,96,.4);text-decoration:none;transition:all .3s" onclick="this.style.transform='scale(.9)'">
-  🚐
-</a>
-<style>
-@media(max-width:768px){
-  a[href*="/water/track/"]:hover{transform:scale(1.05)}
-  a[href*="/water/track/"]::after{content:'轨迹';position:absolute;bottom:-18px;font-size:9px;color:#666;white-space:nowrap;background:#fff;padding:1px 6px;border-radius:4px;opacity:.8}
-}
-</style>
 
 
 
@@ -1921,128 +1909,3 @@ function 渲染各村提醒天数() {
 })();
 </script>
 
-<script>
-// ========== 实时GPS定位 ==========
-var _lastPos = null;
-var _geoPending = false;
-
-function 显示位置状态(el, text, show) {
-  el.textContent = text;
-  el.parentElement.style.display = show ? 'inline-flex' : 'none';
-}
-
-function 尝试定位() {
-  if (!navigator.geolocation) return;
-  var locEl = document.getElementById('locationStatus');
-  var memoEl = document.getElementById('locationMemoBtn');
-  if (!locEl) return;
-  locEl.style.display = 'inline-flex';
-  locEl.querySelector('span').textContent = '定位中...';
-
-  navigator.geolocation.getCurrentPosition(
-    function(pos) {
-      _lastPos = pos;
-      var lat = pos.coords.latitude.toFixed(4);
-      var lng = pos.coords.longitude.toFixed(4);
-      // 反向地理编码：转成地名
-      fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=17&addressdetails=1')
-        .then(function(r){ return r.json(); })
-        .then(function(data) {
-          var place = data.address;
-          if (!place) {
-            locEl.querySelector('span').textContent = lat + ',' + lng;
-            return;
-          }
-          var village = place.village || place.town || place.city || place.county || '';
-          var road = place.road || place.neighbourhood || '';
-          var display = village ? (village + (road ? '·' + road : '')) : (road || (lat + ',' + lng));
-          locEl.querySelector('span').textContent = display;
-          locEl.title = place.city || place.county || '';
-          if (memoEl) memoEl.style.display = 'inline-flex';
-          _geoPending = false;
-        })
-        .catch(function() {
-          locEl.querySelector('span').textContent = lat + ',' + lng;
-          if (memoEl) memoEl.style.display = 'inline-flex';
-          _geoPending = false;
-        });
-    },
-    function(err) {
-      var msg = '定位失败';
-      if (err.code === 1) msg = '定位拒绝';
-      else if (err.code === 2) msg = '定位不可用';
-      else if (err.code === 3) msg = '定位超时';
-      if (locEl) locEl.querySelector('span').textContent = msg;
-      _geoPending = false;
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
-  );
-}
-
-function 记录当前位置() {
-  if (!_lastPos) {
-    if (navigator.geolocation) {
-      var locEl = document.getElementById('locationStatus');
-      if (locEl) locEl.querySelector('span').textContent = '重新定位...';
-      navigator.geolocation.getCurrentPosition(
-        function(pos) { _lastPos = pos; __doRecord(pos); },
-        function(err) { alert('定位失败：' + (err.code === 1 ? '请允许定位权限' : '定位不可用')); },
-        { enableHighAccuracy: true, timeout: 15000 }
-      );
-    } else {
-      alert('此浏览器不支持定位功能');
-    }
-    return;
-  }
-  __doRecord(_lastPos);
-}
-
-function __doRecord(pos) {
-  var lat = pos.coords.latitude.toFixed(4);
-  var lng = pos.coords.longitude.toFixed(4);
-  fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=17&addressdetails=1')
-    .then(function(r){ return r.json(); })
-    .then(function(data) {
-      var addr = data.address || {};
-      var place = addr.village || addr.town || addr.city || addr.county || '';
-      var road = addr.road || addr.neighbourhood || '';
-      var display = place ? (place + (road ? '·' + road : '')) : '';
-      var fullAddr = display + (addr.suburb ? ' ' + addr.suburb : '') + ' ' + (addr.city || '') + ' ' + (addr.county || '');
-      var memo = prompt(
-        '📍 当前位置：' + (display || (lat + ',' + lng)) + '\n\n在下方输入此行的桶数（直接确定则仅记位置）：',
-        ''
-      );
-      var 桶数 = memo !== null ? memo.trim() : '';
-      var today = document.getElementById('选择日期').value || 今天();
-      var key = '卖水_location_' + today;
-      var list = JSON.parse(localStorage.getItem(key) || '[]');
-      list.push({
-        时间: new Date().toLocaleString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-        地名: display || (lat + ',' + lng),
-        坐标: lat + ',' + lng,
-        桶数: 桶数,
-        地址: fullAddr.trim()
-      });
-      localStorage.setItem(key, JSON.stringify(list));
-      alert('✅ 位置已记录！\n📍 ' + (display || (lat + ',' + lng)) + (桶数 ? '\n🪣 ' + 桶数 + '桶' : ''));
-      // 刷新今日位置记录（如果页面有的话）
-      if (window.刷新位置记录) 刷新位置记录();
-    })
-    .catch(function() {
-      var memo = prompt('📍 坐标：' + lat + ',' + lng + '\n在下方输入此行的桶数（直接确定则仅记位置）：', '');
-      var key = '卖水_location_' + 今天();
-      var list = JSON.parse(localStorage.getItem(key) || '[]');
-      list.push({ 时间: new Date().toLocaleString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'}), 地名: lat+','+lng, 坐标: lat+','+lng, 桶数: memo&&memo.trim()||'', 地址: '' });
-      localStorage.setItem(key, JSON.stringify(list));
-      alert('✅ 位置已记录！');
-    });
-}
-
-// 页面加载后自动尝试定位
-window.addEventListener('load', function() {
-  setTimeout(尝试定位, 1500);
-});
-</script>
-
-</body>
-</html>
