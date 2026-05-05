@@ -613,6 +613,7 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     <div class="tab" onclick="切换标签('debt',this)">💰 欠款</div>
     <div class="tab" onclick="切换标签('all',this)">📈 总分析</div>
     <div class="tab" onclick="切换标签('settings',this)">⚙️ 管理</div>
+    <div class="tab" onclick="切换标签('analysis',this)">📊 到访分析</div>
 </div>
 
 <!-- ========== 今日填表 ========== -->
@@ -856,6 +857,51 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   <div class="card">
     <h3>📋 历史日期速查</h3>
     <div id="历史记录"><div class="empty-msg">暂无数据</div></div>
+  </div>
+</div>
+
+<!-- ========== 到访分析 ========== -->
+<div id="page-analysis" class="container">
+  <div class="card">
+    <h3>📊 到访分析总览</h3>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="分析_总天数">0</div><div class="stat-label">有记录天数</div></div>
+      <div class="stat-box"><div class="stat-num" id="分析_日均村数">0</div><div class="stat-label">日均到访(村)</div></div>
+      <div class="stat-box"><div class="stat-num" id="分析_日均桶数">0</div><div class="stat-label">日均桶数</div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="分析_最勤村">-</div><div class="stat-label">最勤快村</div></div>
+      <div class="stat-box"><div class="stat-num" id="分析_最懒村">-</div><div class="stat-label">最久没去</div></div>
+      <div class="stat-box"><div class="stat-num" id="分析_连续天数">0</div><div class="stat-label">连续出勤(天)</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 近30天到访趋势</h3>
+    <div style="display:flex;gap:4px;align-items:end;min-height:120px;padding:10px 0;" id="分析_趋势图"></div>
+    <div style="display:flex;gap:4px;font-size:10px;color:#888;padding:0 4px;" id="分析_趋势图_日期"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3>🏘️ 各村到访详情</h3>
+      <div style="display:flex;gap:4px;">
+        <span class="sort-btn active" onclick="分析排序切换(this,'间隔')">按间隔</span>
+        <span class="sort-btn" onclick="分析排序切换(this,'频次')">按频次</span>
+        <span class="sort-btn" onclick="分析排序切换(this,'桶数')">按桶数</span>
+      </div>
+    </div>
+    <div id="分析_各村详情"><div class="empty-msg">暂无数据</div></div>
+  </div>
+
+  <div class="card">
+    <h3>🔴 需关注村镇</h3>
+    <div id="分析_需关注"><div class="empty-msg">暂无数据</div></div>
+  </div>
+
+  <div class="card">
+    <h3>🔄 路线优化建议</h3>
+    <div id="分析_路线建议"><div class="empty-msg">暂无数据</div></div>
   </div>
 </div>
 
@@ -1616,6 +1662,7 @@ function 切换标签(n) {
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
   if (n == 'all') 刷新分析(window._排序方式);
   if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); }
+  if (n == 'analysis') 刷新到访分析();
 }
 
 // ========== 金额隐藏功能 ==========
@@ -2040,6 +2087,233 @@ function __doRecord(pos) {
 // 页面加载后自动尝试定位
 window.addEventListener('load', function() {
   setTimeout(尝试定位, 1500);
+});
+
+// ========== 到访分析 ==========
+let 分析排序模式 = '间隔';
+
+function 刷新到访分析() {
+  let all = 读数据();
+  let allV = 获取所有村庄();
+  let 日期列表 = Object.keys(all).sort();
+  if (日期列表.length === 0) return;
+  
+  let 今天日期 = 今天();
+  let 总天数 = 日期列表.length;
+  let 总村次 = 0, 总桶数 = 0;
+  let 村统计 = {};
+  for (let v of allV) {
+    村统计[v] = { 次数: 0, 总桶: 0, 最后日期: null, 最大间隔: 0 };
+  }
+
+  // 统计每村数据
+  for (let 日期 of 日期列表) {
+    let 天 = all[日期];
+    let 日村数 = 0, 日桶 = 0;
+    for (let v of allV) {
+      let d = 天[v] || {};
+      let 桶 = parseFloat(d.桶) || 0;
+      if (桶 > 0) {
+        日村数++; 日桶 += 桶;
+        村统计[v].次数++;
+        村统计[v].总桶 += 桶;
+        村统计[v].最后日期 = 日期;
+      }
+    }
+    总村次 += 日村数;
+    总桶数 += 日桶;
+  }
+
+  // 计算连续出勤
+  let 连续 = 0;
+  for (let i = 日期列表.length - 1; i >= 0; i--) {
+    let 天 = all[日期列表[i]];
+    let 有数据 = false;
+    for (let v of allV) {
+      if ((parseFloat(天[v]?.桶) || 0) > 0) { 有数据 = true; break; }
+    }
+    if (有数据) 连续++;
+    else break;
+  }
+
+  // 总览数据
+  document.getElementById('分析_总天数').textContent = 总天数;
+  document.getElementById('分析_日均村数').textContent = (总村次 / 总天数).toFixed(1);
+  document.getElementById('分析_日均桶数').textContent = (总桶数 / 总天数).toFixed(1);
+  document.getElementById('分析_连续天数').textContent = 连续;
+
+  // 最勤/最懒村
+  let 最多次数 = 0, 最勤村 = '-', 最长间隔 = 0, 最懒村 = '-';
+  for (let v of allV) {
+    if (村统计[v].次数 > 最多次数) { 最多次数 = 村统计[v].次数; 最勤村 = v; }
+    if (村统计[v].最后日期) {
+      let 间隔 = 日期差(今天日期, 村统计[v].最后日期);
+      if (间隔 > 最长间隔) { 最长间隔 = 间隔; 最懒村 = v; }
+    }
+  }
+  document.getElementById('分析_最勤村').textContent = 最勤村 + '(' + 最多次数 + '次)';
+  document.getElementById('分析_最懒村').textContent = 最懒村 + '(' + 最长间隔 + '天)';
+
+  // 趋势图（近30天）
+  渲染趋势图(日期列表, all, allV);
+
+  // 各村详情
+  渲染各村详情(allV, 村统计, 今天日期);
+
+  // 需关注
+  渲染需关注(allV, 村统计, 今天日期);
+
+  // 路线建议
+  渲染路线建议(allV, 村统计, 今天日期);
+}
+
+function 渲染趋势图(日期列表, all, allV) {
+  let 近30 = 日期列表.slice(-30);
+  let max村 = 0;
+  let 日数据 = [];
+  for (let 日期 of 近30) {
+    let 天 = all[日期];
+    let 日村 = 0;
+    for (let v of allV) {
+      if ((parseFloat(天[v]?.桶) || 0) > 0) 日村++;
+    }
+    if (日村 > max村) max村 = 日村;
+    日数据.push({ 日期, 村数: 日村 });
+  }
+  if (max村 < 5) max村 = 10;
+
+  let barHtml = '', labelHtml = '';
+  let 高度 = 100;
+  for (let d of 日数据) {
+    let h = Math.max(3, (d.村数 / max村) * 高度);
+    let color = d.村数 > 0 ? '#2d8a4e' : '#e0e0e0';
+    barHtml += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;">' +
+      '<div style="width:100%;background:' + color + ';height:' + h + 'px;border-radius:3px 3px 0 0;min-width:6px;opacity:0.8;" title="' + d.日期 + ' ' + d.村数 + '个村"></div>' +
+      '<span style="font-size:9px;color:#888;margin-top:2px;">' + d.村数 + '</span></div>';
+    let 短日期 = d.日期.slice(5);
+    labelHtml += '<div style="flex:1;text-align:center;">' + 短日期 + '</div>';
+  }
+  document.getElementById('分析_趋势图').innerHTML = barHtml;
+  document.getElementById('分析_趋势图_日期').innerHTML = labelHtml;
+}
+
+function 渲染各村详情(allV, 村统计, 今天日期) {
+  let arr = [];
+  for (let v of allV) {
+    let s = 村统计[v];
+    let 间隔 = s.最后日期 ? 日期差(今天日期, s.最后日期) : '从未';
+    let 平均间隔 = s.次数 > 0 ? (日期差(今天日期, s.最后日期) / s.次数).toFixed(1) : '-';
+    let 提醒天数 = 获取村提醒天数(v);
+    let 状态 = s.次数 === 0 ? '🆕 从未' :
+               (间隔 > 提醒天数 * 2 ? '🔴 ' + 间隔 + '天' :
+                (间隔 > 提醒天数 ? '⚠️ ' + 间隔 + '天' : '✅ ' + 间隔 + '天'));
+    arr.push({ 村: v, 次数: s.次数, 总桶: s.总桶, 间隔, 平均间隔, 状态, 最后: s.最后日期 || '-' });
+  }
+
+  排序分析列表(arr);
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+    '<thead><tr style="background:#f5f5f5;"><th style="padding:6px 8px;text-align:left;">村镇</th>' +
+    '<th style="padding:6px 8px;text-align:center;">到访次数</th>' +
+    '<th style="padding:6px 8px;text-align:center;">总桶数</th>' +
+    '<th style="padding:6px 8px;text-align:center;">状态</th>' +
+    '<th style="padding:6px 8px;text-align:center;">平均间隔</th></tr></thead><tbody>';
+  for (let r of arr) {
+    let color = r.状态.startsWith('🔴') ? '#c62828' : r.状态.startsWith('⚠️') ? '#e65100' : r.状态.startsWith('✅') ? '#2d8a4e' : '#888';
+    html += '<tr style="border-bottom:1px solid #f0f0f0;">' +
+      '<td style="padding:6px 8px;font-weight:600;">' + r.村 + '</td>' +
+      '<td style="padding:6px 8px;text-align:center;">' + r.次数 + '次</td>' +
+      '<td style="padding:6px 8px;text-align:center;">' + r.总桶 + '桶</td>' +
+      '<td style="padding:6px 8px;text-align:center;color:' + color + ';">' + r.状态 + '</td>' +
+      '<td style="padding:6px 8px;text-align:center;">' + r.平均间隔 + '天</td></tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('分析_各村详情').innerHTML = html;
+}
+
+function 渲染需关注(allV, 村统计, 今天日期) {
+  let arr = [];
+  for (let v of allV) {
+    let s = 村统计[v];
+    let 间隔 = s.最后日期 ? 日期差(今天日期, s.最后日期) : 999;
+    let 提醒天数 = 获取村提醒天数(v);
+    if (间隔 >= 提醒天数) {
+      arr.push({ 村: v, 间隔, 上限: 提醒天数, 最后: s.最后日期 || '从未', 总桶: s.总桶 });
+    }
+  }
+  arr.sort((a,b) => b.间隔 - a.间隔);
+  if (arr.length === 0) {
+    document.getElementById('分析_需关注').innerHTML = '<div style="text-align:center;padding:20px;color:#2d8a4e;">✅ 所有村镇都在提醒天数内，继续保持！</div>';
+    return;
+  }
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+    '<thead><tr style="background:#ffebee;"><th style="padding:6px 8px;text-align:left;">村镇</th>' +
+    '<th style="padding:6px 8px;text-align:center;">已隔天数</th>' +
+    '<th style="padding:6px 8px;text-align:center;">提醒上限</th>' +
+    '<th style="padding:6px 8px;text-align:center;">上次送水</th>' +
+    '<th style="padding:6px 8px;text-align:center;">累计桶数</th></tr></thead><tbody>';
+  for (let r of arr) {
+    let level = r.间隔 >= r.上限 * 2 ? '🔴' : '⚠️';
+    html += '<tr style="border-bottom:1px solid #ffcdd2;">' +
+      '<td style="padding:6px 8px;font-weight:600;">' + level + ' ' + r.村 + '</td>' +
+      '<td style="padding:6px 8px;text-align:center;color:#c62828;font-weight:600;">' + r.间隔 + '天</td>' +
+      '<td style="padding:6px 8px;text-align:center;">' + r.上限 + '天</td>' +
+      '<td style="padding:6px 8px;text-align:center;">' + r.最后 + '</td>' +
+      '<td style="padding:6px 8px;text-align:center;">' + r.总桶 + '桶</td></tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('分析_需关注').innerHTML = html;
+}
+
+function 渲染路线建议(allV, 村统计, 今天日期) {
+  let arr = [];
+  for (let v of allV) {
+    let s = 村统计[v];
+    let 间隔 = s.最后日期 ? 日期差(今天日期, s.最后日期) : 999;
+    let 提醒天数 = 获取村提醒天数(v);
+    let 紧缺 = 间隔 >= 提醒天数 * 0.8;
+    if (紧缺 || s.次数 === 0) {
+      arr.push({ 村: v, 间隔, 上限: 提醒天数, 最后: s.最后日期 || '从未', 总桶: s.总桶, 从未: !s.最后日期 });
+    }
+  }
+  arr.sort((a,b) => b.间隔 - a.间隔);
+  if (arr.length === 0) {
+    document.getElementById('分析_路线建议').innerHTML = '<div style="text-align:center;padding:20px;color:#2d8a4e;">🗺️ 当前路线覆盖良好，暂无优化建议</div>';
+    return;
+  }
+  let html = '<p style="font-size:13px;color:#666;margin-bottom:10px;">以下村镇建议尽快安排送水：</p>';
+  for (let r of arr.slice(0, 10)) {
+    let label = r.从未 ? '🆕 新村镇，建议尽快拜访并建立送水关系' : ('⏰ 已' + r.间隔 + '天未送水（上限' + r.上限 + '天）' + (r.间隔 >= r.上限 * 2 ? ' 🔴 严重超期' : r.间隔 >= r.上限 ? ' ⚠️ 已超期' : ''));
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid #f0f0f0;">' +
+      '<span style="font-weight:600;width:80px;">' + r.村 + '</span>' +
+      '<span style="font-size:12px;color:#666;flex:1;">' + label + '</span>' +
+      (r.总桶 > 0 ? '<span style="font-size:12px;color:#2d8a4e;">累计' + r.总桶 + '桶</span>' : '') +
+      '</div>';
+  }
+  document.getElementById('分析_路线建议').innerHTML = html;
+}
+
+function 排序分析列表(arr) {
+  if (分析排序模式 === '间隔') {
+    arr.sort((a,b) => (b.间隔 === '从未' ? 9999 : b.间隔) - (a.间隔 === '从未' ? 9999 : a.间隔));
+  } else if (分析排序模式 === '频次') {
+    arr.sort((a,b) => b.次数 - a.次数 || a.村.localeCompare(b.村));
+  } else if (分析排序模式 === '桶数') {
+    arr.sort((a,b) => b.总桶 - a.总桶 || a.村.localeCompare(b.村));
+  }
+}
+
+function 分析排序切换(el, mode) {
+  分析排序模式 = mode;
+  document.querySelectorAll('#page-analysis .sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  刷新到访分析();
+}
+
+// 初始化默认日期
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('日统计日期') && !document.getElementById('日统计日期').value) {
+    document.getElementById('日统计日期').value = 今天();
+  }
 });
 </script>
 
