@@ -802,6 +802,16 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     <p style="font-size:12px;color:#888;margin-top:8px;">超过设定天数没去送水的村镇，会在"日统计"页面标红提醒</p>
   </div>
   <div class="card">
+
+<div class="card">
+    <h3>🏘️ 村庄管理</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">添加新村庄，或删除自定义村庄（内置村庄不可删）</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="text" id="新增村庄管理名" placeholder="输入村庄名称..." style="margin-bottom:0;flex:1;">
+      <button class="btn btn-green btn-sm" onclick="管理页添加村庄()" style="width:auto;white-space:nowrap;">➕ 添加</button>
+    </div>
+    <div id="村庄管理列表" style="max-height:300px;overflow-y:auto;"></div>
+  </div>
     <h3>🏘️ 各村单独提醒天数</h3>
     <p style="font-size:12px;color:#888;margin-bottom:10px;">为每个村庄单独设置提醒天数，留空则使用全局天数</p>
     <div id="各村提醒天数列表"></div>
@@ -1614,7 +1624,7 @@ function 切换标签(n) {
   if (n == 'monthly') 刷新月统计();
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
   if (n == 'all') 刷新分析(window._排序方式);
-  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); try{ _dataCache.customVillages = JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'); }catch(e){} 渲染各村提醒天数(); }
+  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); try{ _dataCache.customVillages = JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'); }catch(e){} 渲染各村提醒天数(); 管理页渲染村庄列表(); }
 }
 
 // ========== 金额隐藏功能 ==========
@@ -1850,6 +1860,49 @@ function 渲染各村提醒天数() {
   if (el) el.innerHTML = html;
 }
 
+
+function 管理页渲染村庄列表() {
+  let allV = 获取所有村庄();
+  if (!allV || allV.length === 0) { document.getElementById('村庄管理列表').innerHTML = '<div class="empty-msg">暂无村庄</div>'; return; }
+  let 自定义 = 读自定义();
+  let html = '<table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f5f5f5;"><th style="padding:6px 8px;text-align:left;font-size:13px;">村镇</th><th style="padding:6px 8px;text-align:center;font-size:13px;">来源</th><th style="padding:6px 8px;text-align:center;font-size:13px;">操作</th></tr></thead><tbody>';
+  for (let v of allV) {
+    let isCustom = 自定义.indexOf(v) !== -1;
+    let deleteBtn = isCustom ? '<button class="btn btn-red btn-sm" onclick="管理页删除村庄(\'' + v + '\')" style="padding:2px 10px;font-size:12px;">删除</button>' : '<span style="font-size:12px;color:#999;">内置</span>';
+    html += '<tr><td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:14px;">' + v + '</td>' +
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;font-size:12px;color:' + (isCustom ? '#2d8a4e' : '#888') + ';">' + (isCustom ? '自定义' : '内置') + '</td>' +
+      '<td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;">' + deleteBtn + '</td></tr>';
+  }
+  html += '</tbody></table>';
+  let el = document.getElementById('村庄管理列表');
+  if (el) el.innerHTML = html;
+}
+
+function 管理页添加村庄() {
+  let 村名 = document.getElementById('新增村庄管理名').value.trim();
+  if (!村名) { alert('请输入村庄名称'); return; }
+  let allV = 获取所有村庄();
+  if (allV.indexOf(村名) !== -1) { alert('该村庄已存在'); return; }
+  let 自定义 = 读自定义();
+  自定义.push(村名);
+  存自定义(自定义);
+  _dataCache.customVillages = 自定义;
+  document.getElementById('新增村庄管理名').value = '';
+  管理页渲染村庄列表();
+  渲染各村提醒天数();
+}
+
+function 管理页删除村庄(村名) {
+  if (!confirm('确定删除「' + 村名 + '」？数据不会丢失，只是不再显示。')) return;
+  let 自定义 = 读自定义();
+  let i = 自定义.indexOf(村名);
+  if (i === -1) { alert('内置村庄不可删除'); return; }
+  自定义.splice(i, 1);
+  存自定义(自定义);
+  _dataCache.customVillages = 自定义;
+  管理页渲染村庄列表();
+  渲染各村提醒天数();
+}
 // ========== 启动（本地+云端同步）==========
 (function 启动() {
   try { _dataCache.customVillages = JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]');
