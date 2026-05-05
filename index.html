@@ -1614,7 +1614,7 @@ function 切换标签(n) {
   if (n == 'monthly') 刷新月统计();
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
   if (n == 'all') 刷新分析(window._排序方式);
-  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); 渲染各村提醒天数(); }
+  if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); try{ _dataCache.customVillages = JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'); }catch(e){} 渲染各村提醒天数(); }
 }
 
 // ========== 金额隐藏功能 ==========
