@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -590,7 +590,8 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   <h1>📋 小财神统计系统</h1>
   <p>西晃山天然矿泉水 · 专业定制版</p>
   <div id="weatherBar" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:13px;flex-wrap:wrap;">
-    <a href="https://www.weather.com.cn/weather/101250802.shtml" target="_blank" style="color:#fff;text-decoration:none;background:rgba(0,0,0,.25);padding:3px 12px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;"><span id="weatherEmoji">🌤️</span> <span id="weatherText">麻阳天气加载中...</span></a>
+    <button id="saveBackupBtn" onclick="手动备份()" style="background:rgba(76,175,80,.85);color:#fff;border:none;padding:3px 12px;border-radius:12px;cursor:pointer;font-size:13px;">💾 保存备份</button>
+    <span id="dailyQuote" style="color:#fff;background:rgba(0,0,0,.25);padding:3px 12px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;font-size:13px;">🌟 加载励志语录中...</span>
     <span id="locationStatus" style="color:#fff;text-decoration:none;background:rgba(0,0,0,.25);padding:3px 10px;border-radius:12px;display:none;align-items:center;gap:4px;cursor:pointer;" title="点击记录当前位置" onclick="记录当前位置()">📍 <span id="locationText">定位中...</span></span>
     <span id="locationMemoBtn" style="color:#fff;text-decoration:none;background:rgba(255,0,0,.5);padding:3px 10px;border-radius:12px;display:none;align-items:center;gap:4px;cursor:pointer;font-size:12px;" title="记录当前卖水位置" onclick="记录当前位置()">💾 记位置</span>
   </div>
