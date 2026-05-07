@@ -2023,5 +2023,64 @@ function 管理页删除村庄(村名) {
   // 每30分钟自动刷新
   setTimeout(fetchMayangWeather, 30*60*1000);
 })();
+
+// ===== 励志语录 =====
+const 励志库 = [
+  '💪 不积跬步，无以至千里',
+  '🌞 今天的汗水，是明天的收获',
+  '🚛 送水也是送温暖，加油！',
+  '💰 小财神，大梦想，一桶一桶攒起来',
+  '🏔️ 西晃山的水，麻阳人的情',
+  '🔥 生活不易，卖水卖出一片天',
+  '💧 每一桶山泉水，都是大自然的馈赠',
+  '🌟 平凡的事坚持做，就是不平凡',
+  '🙏 感谢每一位信任的老顾客',
+  '📈 今天多送一桶，明天多赚一份',
+  '🚀 起早贪黑不怕累，日子越过越有味',
+  '🌅 卖水人的风景，在每一个清晨的路上',
+  '💪 加油送水人，你是最棒的',
+  '🎯 5元一桶，良心价，放心水',
+  '🌈 风雨无阻，只为那一口甘甜',
+  '💰 一桶5元，积少成多奔小康',
+  '🏆 今天的目标：多跑几村，多送几桶',
+  '❤️ 顾客满意，就是最大的动力',
+  '🐴 老黄牛精神，一步一个脚印',
+  '☕ 累了就歇歇，明天继续干'
+];
+let 网络语录 = [];
+async function 获取网络语录() {
+  const 缓存键 = 'water_net_quotes';
+  const 今天日期 = new Date().toISOString().slice(0,10);
+  let 缓存数据;
+  try { 缓存数据 = JSON.parse(localStorage.getItem(缓存键)); } catch(e) {}
+  if (缓存数据 && 缓存数据.date === 今天日期 && 缓存数据.quotes?.length) {
+    网络语录 = 缓存数据.quotes; return;
+  }
+  const APIs = ['https://v1.hitokoto.cn/', 'https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json'];
+  for (let url of APIs) {
+    try {
+      let res = await fetch(url);
+      if (!res.ok) continue;
+      let data = await res.json();
+      let quote;
+      if (data.hitokoto) { quote = '💬 「'+data.hitokoto+'」'+(data.from?'——'+data.from:''); }
+      else if (data.yan) { quote = '💬 '+data.yan; }
+      else continue;
+      网络语录 = [quote];
+      localStorage.setItem(缓存键, JSON.stringify({date:今天日期,quotes:[quote]}));
+      return;
+    } catch(e) { continue; }
+  }
+  if (缓存数据?.quotes?.length) 网络语录 = 缓存数据.quotes;
+}
+function 刷新语录() {
+  var el = document.getElementById('dailyQuote');
+  if (!el) return;
+  var 全部语录 = 网络语录.concat(励志库);
+  var idx = Math.floor(Math.random() * 全部语录.length);
+  el.textContent = 全部语录[idx];
+}
+获取网络语录().then(刷新语录).catch(function(){刷新语录();});
+setInterval(刷新语录, 30000);
 </script>
 
