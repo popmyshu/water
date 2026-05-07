@@ -586,11 +586,11 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
 </head>
 <body>
 
-<div class="header">
-  <h1>📋 小财神统计系统</h1>
+<div class="header" style="position:relative;">
+  <button id="saveBackupBtn" onclick="手动备份()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:#2d8a4e;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;z-index:10;box-shadow:0 2px 6px rgba(45,138,78,0.3);">💾 保存</button>
+  <h1 style="margin-left:70px;">📋 小财神统计系统</h1>
   <p>西晃山天然矿泉水 · 专业定制版</p>
   <div id="weatherBar" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:13px;flex-wrap:wrap;">
-    <button id="saveBackupBtn" onclick="手动备份()" style="background:rgba(76,175,80,.85);color:#fff;border:none;padding:3px 12px;border-radius:12px;cursor:pointer;font-size:13px;">💾 保存备份</button>
     <span id="dailyQuote" style="color:#fff;background:rgba(0,0,0,.25);padding:3px 12px;border-radius:12px;display:inline-flex;align-items:center;gap:4px;font-size:13px;">🌟 加载励志语录中...</span>
   </div>
   <span id="金额隐藏开关" style="position:absolute;right:16px;top:20px;font-size:22px;cursor:pointer;" onclick="切换金额隐藏()" title="切换金额显示/隐藏">👁️</span>
