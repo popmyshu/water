@@ -1298,7 +1298,7 @@ function 刷新到访() {
 }
 
 // ========== 数据分析 ==========
-function 刷新分析() {
+function 刷新数据分析() {
   let all = 读数据();
   let allV = 获取所有村庄();
   let 日期列表 = Object.keys(all).sort();
@@ -1864,7 +1864,7 @@ function 切换标签(n) {
   document.getElementById('page-'+n).classList.add('active');
   if (n == 'today') 加载当天();
   if (n == 'visit') { document.getElementById('到访日期').value = document.getElementById('选择日期').value || 今天(); 刷新到访(); }
-  if (n == 'analysis') 刷新分析();
+  if (n == 'analysis') 刷新数据分析();
   if (n == 'daily') { document.getElementById('日统计日期').value = document.getElementById('选择日期').value || 今天(); 刷新日统计(); }
   if (n == 'monthly') 刷新月统计();
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
