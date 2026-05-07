@@ -607,6 +607,8 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
 
 <div class="tab-bar">
 <div class="tab active" onclick="切换标签('today',this)">📊 今日</div>
+    <div class="tab" onclick="切换标签('visit',this)">🏘️ 到访</div>
+    <div class="tab" onclick="切换标签('analysis',this)">📊 分析</div>
     <div class="tab" onclick="切换标签('daily',this)">📅 日统计</div>
     <div class="tab" onclick="切换标签('monthly',this)">📆 月统计</div>
     <div class="tab" onclick="切换标签('debt',this)">💰 欠款</div>
@@ -660,6 +662,54 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   <!-- 手工同步到云端按钮 -->
   <div style="margin-top:8px;text-align:center;">
     <button class="btn btn-blue" onclick="手工同步到云端()" style="background:#4a148c;width:100%;">☁️ 同步到云端（手动）</button>
+  </div>
+</div>
+
+<!-- ========== 到访 ========== -->
+<div id="page-visit" class="container">
+  <div class="card">
+    <label>📅 查看日期</label>
+    <input type="date" id="到访日期" onchange="刷新到访()">
+  </div>
+  <div id="到访提醒栏"></div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="到访_已去">0</div><div class="stat-label">已去村镇</div></div>
+    <div class="stat-box"><div class="stat-num" id="到访_桶数" style="color:#2d8a4e;">0</div><div class="stat-label">今日桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="到访_收入" style="color:#e65100;">0</div><div class="stat-label">今日收入(元)</div></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">🏘️ 村镇到访状态</h3>
+    <div id="到访_村镇列表" class="village-status-grid"></div>
+  </div>
+</div>
+
+<!-- ========== 分析 ========== -->
+<div id="page-analysis" class="container">
+  <div class="card">
+    <h3 style="margin-bottom:12px;">📊 数据分析</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:12px;">看看你的卖水生意数据趋势</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="分析_总桶">0</div><div class="stat-label">总桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="分析_总收入" style="color:#2d8a4e;">0</div><div class="stat-label">总收入(元)</div></div>
+    <div class="stat-box"><div class="stat-num" id="分析_总开支" style="color:#e65100;">0</div><div class="stat-label">总开支(元)</div></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="分析_平均日桶">0</div><div class="stat-label">日均桶数</div></div>
+    <div class="stat-box"><div class="stat-num" id="分析_平均日赚" style="color:#2d8a4e;">0</div><div class="stat-label">日均收入(元)</div></div>
+    <div class="stat-box"><div class="stat-num" id="分析_记录天数" style="color:#1565c0;">0</div><div class="stat-label">记录天数</div></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">📈 桶数趋势</h3>
+    <div id="分析_桶数趋势" style="font-size:13px;color:#888;"><p>加载中...</p></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">💰 收入趋势</h3>
+    <div id="分析_收入趋势" style="font-size:13px;color:#888;"><p>加载中...</p></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">🏆 村镇排行</h3>
+    <div id="分析_村镇排行" style="font-size:13px;color:#888;"><p>加载中...</p></div>
   </div>
 </div>
 
@@ -1195,6 +1245,136 @@ function 筛选欠款(type, el) {
   刷新欠款();
 }
 
+// ========== 到访（独立版）==========
+function 刷新到访() {
+  let 日期 = document.getElementById('到访日期').value || 今天();
+  let all = 读数据();
+  let allV = 获取所有村庄();
+  let 当天 = all[日期] || {};
+  let 已去 = 0, 总桶 = 0, 总钱 = 0;
+  let 村状态 = [];
+  for (let v of allV) {
+    let d = 当天[v] || {};
+    let 桶 = parseFloat(d.桶) || 0;
+    let 价 = parseFloat(d.价) || 0;
+    let 钱 = 桶 * 价;
+    let 今日去了 = 桶 > 0;
+    if (今日去了) { 已去++; 总桶 += 桶; 总钱 += 钱; }
+    let 最后访问 = 获取村最后访问(v, 日期);
+    let 状态, 样式, 提示;
+    let 提醒天数 = 获取村提醒天数(v);
+    if (今日去了) { 状态 = '今天去过'; 样式 = 'visited'; 提示 = '✅ ' + 桶 + '桶 · ' + 钱 + '元'; }
+    else if (最后访问) {
+      let 天数差 = 日期差(日期, 最后访问);
+      if (天数差 >= 提醒天数 * 2) { 样式 = 'alert-red'; 状态 = '已' + 天数差 + '天没去'; 提示 = '🔴 上次: ' + 最后访问; }
+      else if (天数差 >= 提醒天数) { 样式 = 'alert-orange'; 状态 = '已' + 天数差 + '天没去'; 提示 = '⚠️ 上次: ' + 最后访问; }
+      else { 样式 = 'alert-yellow'; 状态 = 天数差 + '天前去过'; 提示 = '上次: ' + 最后访问; }
+    } else { 样式 = 'never'; 状态 = '从未去过'; 提示 = '🆕 新村镇'; }
+    村状态.push({ 村: v, 样式, 状态, 提示, 桶, 钱 });
+  }
+  document.getElementById('到访_已去').textContent = 已去 + '/' + allV.length;
+  document.getElementById('到访_桶数').textContent = 总桶;
+  document.getElementById('到访_收入').textContent = 隐藏金额(总钱);
+
+  let 需提醒 = 村状态.filter(v => v.样式 === 'alert-red' || v.样式 === 'alert-orange');
+  let 提醒html = '';
+  if (需提醒.length > 0) {
+    提醒html = '<div class="alert-banner"><h4>🔔 ' + 需提醒.length + '个村镇该去送水了！</h4><p>';
+    for (let v of 需提醒) 提醒html += (v.样式 === 'alert-red' ? '🔴 ' : '⚠️ ') + v.村 + '：' + v.状态 + '<br>';
+    提醒html += '</p></div>';
+  }
+  document.getElementById('到访提醒栏').innerHTML = 提醒html;
+
+  let 排序优先 = { 'alert-red': 0, 'alert-orange': 1, 'alert-yellow': 2, 'never': 3, 'visited': 4 };
+  村状态.sort((a, b) => 排序优先[a.样式] - 排序优先[b.样式]);
+  let 卡片html = '';
+  for (let v of 村状态) {
+    卡片html += '<div class="village-card ' + v.样式 + '" onclick="跳到日期填(\'' + 日期 + '\',\'' + v.村 + '\')">' +
+      '<div class="vc-name">' + v.村 + '</div><div class="vc-status">' + v.状态 + '</div>' +
+      '<div class="vc-detail">' + v.提示 + '</div>' +
+      (v.桶 > 0 ? '<div class="vc-buckets">' + v.桶 + '桶</div>' : '') + '</div>';
+  }
+  document.getElementById('到访_村镇列表').innerHTML = 卡片html;
+}
+
+// ========== 数据分析 ==========
+function 刷新分析() {
+  let all = 读数据();
+  let allV = 获取所有村庄();
+  let 日期列表 = Object.keys(all).sort();
+  let 总桶 = 0, 总收入 = 0, 总开支 = 0, 有记录天数 = 0, 村桶数 = {};
+  
+  for (let v of allV) 村桶数[v] = 0;
+  
+  for (let d of 日期列表) {
+    let 天 = all[d];
+    let 天桶 = 0, 天钱 = 0;
+    for (let v of allV) {
+      let 桶 = parseFloat(天[v]?.桶) || 0;
+      let 价 = parseFloat(天[v]?.价) || 0;
+      if (桶 > 0) { 天桶 += 桶; 天钱 += 桶 * 价; 村桶数[v] = (村桶数[v] || 0) + 桶; }
+    }
+    // 开支
+    if (天._expenses) {
+      for (let k in 天._expenses) 总开支 += parseFloat(天._expenses[k]) || 0;
+    }
+    if (天桶 > 0) { 有记录天数++; 总桶 += 天桶; 总收入 += 天钱; }
+  }
+
+  let 日均桶 = 有记录天数 > 0 ? (总桶 / 有记录天数).toFixed(1) : 0;
+  let 日均赚 = 有记录天数 > 0 ? (总收入 / 有记录天数).toFixed(1) : 0;
+
+  document.getElementById('分析_总桶').textContent = 总桶;
+  document.getElementById('分析_总收入').textContent = 隐藏金额(总收入.toFixed(1));
+  document.getElementById('分析_总开支').textContent = 总开支.toFixed(1);
+  document.getElementById('分析_平均日桶').textContent = 日均桶;
+  document.getElementById('分析_平均日赚').textContent = 隐藏金额(日均赚);
+  document.getElementById('分析_记录天数').textContent = 有记录天数;
+
+  // 桶数趋势（近7天）
+  let 近7天 = 日期列表.slice(-7);
+  let 趋势html = '<div style="display:flex;align-items:flex-end;gap:4px;height:120px;padding:0 4px;overflow-x:auto;">';
+  for (let d of 近7天) {
+    let 天桶 = 0;
+    for (let v of allV) { 天桶 += parseFloat(all[d][v]?.桶) || 0; }
+    let h = Math.max(4, 天桶 * 8);
+    趋势html += '<div style="display:flex;flex-direction:column;align-items:center;min-width:40px;">' +
+      '<div style="width:28px;height:' + h + 'px;background:#2d8a4e;border-radius:4px 4px 0 0;opacity:0.8;"></div>' +
+      '<span style="font-size:10px;color:#888;margin-top:4px;">' + d.slice(5) + '</span>' +
+      '<span style="font-size:11px;font-weight:600;">' + 天桶 + '桶</span></div>';
+  }
+  趋势html += '</div>';
+  document.getElementById('分析_桶数趋势').innerHTML = 趋势html;
+
+  // 收入趋势（近7天）
+  let 收入html = '<div style="display:flex;align-items:flex-end;gap:4px;height:120px;padding:0 4px;overflow-x:auto;">';
+  for (let d of 近7天) {
+    let 天钱 = 0;
+    for (let v of allV) { let 桶 = parseFloat(all[d][v]?.桶) || 0; let 价 = parseFloat(all[d][v]?.价) || 0; 天钱 += 桶 * 价; }
+    let h = Math.max(4, 天钱 * 2);
+    收入html += '<div style="display:flex;flex-direction:column;align-items:center;min-width:40px;">' +
+      '<div style="width:28px;height:' + h + 'px;background:#e65100;border-radius:4px 4px 0 0;opacity:0.8;"></div>' +
+      '<span style="font-size:10px;color:#888;margin-top:4px;">' + d.slice(5) + '</span>' +
+      '<span style="font-size:11px;font-weight:600;">' + 隐藏金额(天钱.toFixed(1)) + '</span></div>';
+  }
+  收入html += '</div>';
+  document.getElementById('分析_收入趋势').innerHTML = 收入html;
+
+  // 村镇排行
+  let 排行 = Object.entries(村桶数).sort((a,b) => b[1] - a[1]).filter(x => x[1] > 0);
+  let 排行html = '';
+  if (排行.length === 0) {
+    排行html = '<div class="empty-msg">暂无数据</div>';
+  } else {
+    for (let i = 0; i < 排行.length; i++) {
+      排行html += '<div style="display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid #f0f0f0;">' +
+        '<span style="font-weight:600;">' + (i+1) + '. ' + 排行[i][0] + '</span>' +
+        '<span style="color:#2d8a4e;">' + 排行[i][1] + '桶</span></div>';
+    }
+  }
+  document.getElementById('分析_村镇排行').innerHTML = 排行html;
+}
+
 // ========== 日统计 ==========
 function 刷新日统计() {
   let 日期 = document.getElementById('日统计日期').value || 今天();
@@ -1683,6 +1863,8 @@ function 切换标签(n) {
   event.target.classList.add('active');
   document.getElementById('page-'+n).classList.add('active');
   if (n == 'today') 加载当天();
+  if (n == 'visit') { document.getElementById('到访日期').value = document.getElementById('选择日期').value || 今天(); 刷新到访(); }
+  if (n == 'analysis') 刷新分析();
   if (n == 'daily') { document.getElementById('日统计日期').value = document.getElementById('选择日期').value || 今天(); 刷新日统计(); }
   if (n == 'monthly') 刷新月统计();
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
