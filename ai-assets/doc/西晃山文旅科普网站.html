@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>西晃山 · 湘西秘境 山水灵境 — 湖南麻阳西晃山文旅科普官网</title>
+<meta name="description" content="西晃山，位于湖南麻阳苗族自治县，海拔1405米，湘西最美高山湿地、原始森林、云海仙境。探索西晃山风景名胜、苗族历史文化、山泉水文科普、游玩攻略与生态保护。">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        xh: {
+          green: { DEFAULT: '#5B8C5A', light: '#7BA88E', dark: '#3D6B4A', pale: '#E8F0E8' },
+          teal: '#3D5A80',
+          gold: '#C9A96E',
+          ink: '#2D3748',
+          gray: '#718096',
+          paper: '#F5F0E8',
+          mist: '#F0F4F0',
+          cinnabar: '#C23B22',
+        }
+      },
+      fontFamily: {
+        serif: ['"Noto Serif SC"', 'serif'],
+        sans: ['"Noto Sans SC"', 'sans-serif'],
+      },
+      animation: {
+        'fade-in': 'fadeIn 1s ease-out forwards',
+        'fade-up': 'fadeUp 0.8s ease-out forwards',
+        'fade-left': 'fadeLeft 0.8s ease-out forwards',
+        'fade-right': 'fadeRight 0.8s ease-out forwards',
+        'float': 'float 6s ease-in-out infinite',
+        'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+        'scroll-hint': 'scrollHint 2s ease-in-out infinite',
+        'slide-in': 'slideIn 0.6s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        fadeUp: { '0%': { opacity: '0', transform: 'translateY(40px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        fadeLeft: { '0%': { opacity: '0', transform: 'translateX(-40px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+        fadeRight: { '0%': { opacity: '0', transform: 'translateX(40px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+        pulseSoft: { '0%,100%': { opacity: '0.6' }, '50%': { opacity: '1' } },
+        scrollHint: { '0%,100%': { transform: 'translateY(0)', opacity: '0.6' }, '50%': { transform: 'translateY(8px)', opacity: '1' } },
+        slideIn: { '0%': { opacity: '0', transform: 'translateY(20px) scale(0.95)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+      }
+    }
+  }
+}
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Noto Sans SC', sans-serif; background: #F5F0E8; color: #2D3748; overflow-x: hidden; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F5F0E8; }
+::-webkit-scrollbar-thumb { background: #5B8C5A; border-radius: 3px; }
+
+/* Section reveal */
+.section-hidden { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.section-visible { opacity: 1; transform: translateY(0); }
+
+/* Hero parallax layers */
+.parallax-layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+.parallax-bg { background: linear-gradient(180deg, #1a2a1a 0%, #2d4a2d 30%, #3d6b3d 60%, #5B8C5A 100%); }
+.parallax-mountains { background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900"><path d="M0,500 Q180,300 360,400 T720,250 T1080,350 T1440,200 L1440,900 L0,900 Z" fill="rgba(255,255,255,0.08)"/><path d="M0,600 Q200,450 400,520 T800,380 T1200,480 T1440,350 L1440,900 L0,900 Z" fill="rgba(255,255,255,0.05)"/><path d="M0,700 Q250,580 500,650 T900,520 T1300,600 T1440,500 L1440,900 L0,900 Z" fill="rgba(255,255,255,0.03)"/></svg>') center bottom / cover no-repeat; }
+
+/* Carousel */
+.carousel-track { display: flex; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.carousel-slide { min-width: 100%; position: relative; }
+.carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.carousel-btn:hover { background: rgba(255,255,255,0.35); }
+.carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.4s; }
+.carousel-dot.active { background: white; width: 28px; border-radius: 5px; }
+
+/* Nav glass effect */
+.nav-glass { background: rgba(245,240,232,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(91,140,90,0.12); }
+.nav-scrolled .nav-link { color: #4A5568; }
+.nav-scrolled .nav-link:hover { color: #5B8C5A; }
+
+/* Card hover */
+.card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -12px rgba(91,140,90,0.2); }
+
+/* Button */
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: linear-gradient(135deg, #5B8C5A, #3D6B4A); color: white; border-radius: 8px; font-weight: 500; transition: all 0.3s; border: none; cursor: pointer; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(91,140,90,0.35); }
+.btn-outline { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border: 1.5px solid #5B8C5A; color: #5B8C5A; border-radius: 8px; font-weight: 500; transition: all 0.3s; background: transparent; cursor: pointer; }
+.btn-outline:hover { background: #5B8C5A; color: white; transform: translateY(-2px); }
+
+/* Image placeholder */
+.img-placeholder { background: linear-gradient(135deg, #E8F0E8, #D4E4D4); display: flex; align-items: center; justify-content: center; color: #5B8C5A; font-size: 14px; overflow: hidden; position: relative; }
+.img-placeholder::after { content: attr(data-label); position: absolute; }
+
+/* Water wave SVG divider */
+.wave-divider { position: relative; height: 80px; overflow: hidden; }
+.wave-divider svg { position: absolute; bottom: 0; width: 100%; height: 80px; }
+
+/* Vertical text for accent */
+.vertical-text { writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 0.3em; }
+
+/* Timeline */
+.timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, #5B8C5A, #7BA88E, #3D5A80); transform: translateX(-50%); }
+.timeline-dot { width: 16px; height: 16px; border-radius: 50%; background: #5B8C5A; border: 3px solid #F0F4F0; position: absolute; left: 50%; transform: translateX(-50%); z-index: 2; }
+
+/* Mobile nav */
+.mobile-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: rgba(245,240,232,0.98); backdrop-filter: blur(20px); z-index: 50; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 80px 32px 32px; box-shadow: -8px 0 32px rgba(0,0,0,0.08); }
+.mobile-menu.open { right: 0; }
+
+/* Counter number */
+.counter-number { font-size: 2.5rem; font-weight: 700; color: #5B8C5A; }
+
+/* Smooth image reveal */
+.reveal-img { opacity: 0; transform: scale(0.95); transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.reveal-img.revealed { opacity: 1; transform: scale(1); }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2rem !important; }
+  .section-padding { padding: 48px 16px !important; }
+  .carousel-btn { width: 36px; height: 36px; }
+}
+@media (max-width: 480px) {
+  .hero-title { font-size: 1.6rem !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 导航栏 ==================== -->
+<nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 nav-glass">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16 lg:h-20">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-xh-green to-xh-green-dark flex items-center justify-center text-white font-serif font-bold text-lg shadow-lg group-hover:shadow-xl transition-all">
+          西
+        </div>
+        <div class="hidden sm:block">
+          <div class="font-serif font-bold text-lg text-xh-ink leading-tight">西晃山</div>
+          <div class="text-xs text-xh-gray tracking-wider">XIHUANG MOUNTAIN</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <div class="hidden lg:flex items-center gap-1">
+        <a href="#home" class="nav-link px-4 py-2 text-sm font-medium text-xh-green rounded-lg hover:bg-xh-green-pale/50 transition-all">首页</a>
+        <a href="#scenery" class="nav-link px-4 py-2 text-sm font-medium text-xh-ink rounded-lg hover:bg-xh-green-pale/50 transition-all">风景名胜</a>
+        <a href="#culture" class="nav-link px-4 py-2 text-sm font-medium text-xh-ink rounded-lg hover:bg-xh-green-pale/50 transition-all">历史民俗</a>
+        <a href="#water" class="nav-link px-4 py-2 text-sm font-medium text-xh-ink rounded-lg hover:bg-xh-green-pale/50 transition-all">水知识科普</a>
+        <a href="#travel" class="nav-link px-4 py-2 text-sm font-medium text-xh-ink rounded-lg hover:bg-xh-green-pale/50 transition-all">游玩攻略</a>
+        <a href="#eco" class="nav-link px-4 py-2 text-sm font-medium text-xh-ink rounded-lg hover:bg-xh-green-pale/50 transition-all">生态保护</a>
+      </div>
+
+      <!-- Mobile menu button -->
+      <button id="menuBtn" class="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-xh-green-pale/50 transition-all" aria-label="菜单">
+        <i class="fas fa-bars text-xl text-xh-ink"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobileMenu" class="mobile-menu">
+  <button id="closeMenuBtn" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-xh-green-pale/50 transition-all">
+    <i class="fas fa-times text-xl text-xh-ink"></i>
+  </button>
+  <div class="flex flex-col gap-2">
+    <a href="#home" class="mobile-nav-link block px-4 py-3 rounded-lg text-xh-ink hover:bg-xh-green-pale/50 font-medium transition-all">首页</a>
+    <a href="#scenery" class="mobile-nav-link block px-4 py-3 rounded-lg text-xh-ink hover:bg-xh-green-pale/50 font-medium transition-all">风景名胜</a>
+    <a href="#culture" class="mobile-nav-link block px-4 py-3 rounded-lg text-xh-ink hover:bg-xh-green-pale/50 font-medium transition-all">历史民俗</a>
+    <a href="#water" class="mobile-nav-link block px-4 py-3 rounded-lg text-xh-ink hover:bg-xh-green-pale/50 font-medium transition-all">水知识科普</a>
+    <a href="#travel" class="mobile-nav-link block px-4 py-3 rounded-lg text-xh-ink hover:bg-xh-green-pale/50 font-medium transition-all">游玩攻略</a>
+    <a href="#eco" class="mobile-nav-link block px-4 py-3 rounded-lg text-xh-ink hover:bg-xh-green-pale/50 font-medium transition-all">生态保护</a>
+  </div>
+  <div class="absolute bottom-8 left-8 right-8">
+    <div class="border-t border-xh-green/20 pt-4">
+      <p class="text-xs text-xh-gray text-center">湘西秘境 · 山水灵境</p>
+    </div>
+  </div>
+</div>
+<div id="overlay" class="fixed inset-0 bg-black/30 z-40 hidden lg:hidden"></div>
+
+<!-- ==================== 首页英雄区 ==================== -->
+<section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <!-- Parallax bg layers -->
+  <div class="parallax-layer parallax-bg"></div>
+  <div class="parallax-layer parallax-mountains"></div>
+  
+  <!-- Cloud mist overlay -->
+  <div class="absolute inset-0 opacity-20">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-[100px] animate-pulse-soft"></div>
+    <div class="absolute top-1/3 right-1/4 w-72 h-72 bg-white rounded-full blur-[80px] animate-pulse-soft" style="animation-delay:1.5s"></div>
+  </div>
+
+  <!-- Floating particles -->
+  <div id="particles" class="absolute inset-0 pointer-events-none"></div>
+
+  <!-- Main content -->
+  <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
+    <!-- Subtitle -->
+    <div class="mb-6 animate-fade-in">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-sm tracking-wider">
+        <i class="fas fa-mountain mr-2"></i>湖南 · 麻阳苗族自治县
+      </span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="hero-title text-5xl md:text-7xl lg:text-8xl font-serif font-black text-white leading-tight mb-6 animate-fade-up" style="animation-delay:0.2s">
+      <span class="block">西 晃 山</span>
+      <span class="block mt-2 text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.3em] text-white/80">湘西秘境 · 山水灵境</span>
+    </h1>
+
+    <!-- Divider -->
+    <div class="w-20 h-0.5 bg-xh-gold mx-auto mb-6 animate-fade-up" style="animation-delay:0.4s"></div>
+
+    <!-- Description -->
+    <p class="text-white/70 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10 animate-fade-up" style="animation-delay:0.5s">
+      海拔1405米 · 万亩高山湿地 · 原始森林秘境 · 千年苗族圣山
+    </p>
+
+    <!-- CTA buttons -->
+    <div class="flex flex-wrap justify-center gap-4 animate-fade-up" style="animation-delay:0.6s">
+      <a href="#scenery" class="btn-primary text-base px-8 py-3.5">
+        <i class="fas fa-compass"></i>探索西晃山
+      </a>
+      <a href="#water" class="btn-outline text-base px-8 py-3.5 border-white/30 text-white hover:bg-white/10">
+        <i class="fas fa-droplet"></i>水知识科普
+      </a>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 text-center animate-scroll-hint">
+    <p class="text-white/40 text-xs mb-2 tracking-widest">SCROLL</p>
+    <div class="w-5 h-8 border border-white/30 rounded-full mx-auto flex justify-center pt-1.5">
+      <div class="w-1 h-2 bg-white/50 rounded-full"></div>
+    </div>
+  </div>
+</section>
+<!-- ==================== 风景名胜 ==================== -->
+<section id="scenery" class="relative py-20 md:py-28 lg:py-32 px-4 bg-xh-mist">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16 section-hidden">
+      <span class="text-xh-green font-medium text-sm tracking-[0.2em] uppercase">SCENERY</span>
+      <h2 class="font-serif font-bold text-3xl md:text-4xl lg:text-5xl text-xh-ink mt-3 mb-4">风景名胜</h2>
+      <div class="w-16 h-0.5 bg-xh-gold mx-auto"></div>
+      <p class="text-xh-gray mt-4 max-w-2xl mx-auto text-lg">西晃山，一座沉睡在湘西深处的绿色宝库，四季皆景，步步如画</p>
+    </div>
+
+    <!-- 大图轮播 -->
+    <div class="relative mb-16 rounded-2xl overflow-hidden shadow-2xl section-hidden">
+      <div id="sceneryCarousel" class="carousel-track">
+        <div class="carousel-slide">
+          <div class="img-placeholder h-[300px] md:h-[400px] lg:h-[500px]" data-label="📷 图片占位：西晃山云海日出全景（替换为您的图片）">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+              <span class="inline-block px-3 py-1 bg-xh-gold/80 text-xs rounded-full mb-3">必看景观</span>
+              <h3 class="font-serif text-2xl md:text-3xl font-bold mb-2">云海日出 · 天上人间</h3>
+              <p class="text-white/80 max-w-xl text-sm md:text-base">晨光微熹时，西晃山巅云海翻涌如仙境，金色朝阳从云层喷薄而出，霞光万丈蔚为壮观。</p>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="img-placeholder h-[300px] md:h-[400px] lg:h-[500px]" data-label="📷 图片占位：西晃山高山草甸（替换为您的图片）">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+              <span class="inline-block px-3 py-1 bg-xh-gold/80 text-xs rounded-full mb-3">自然馈赠</span>
+              <h3 class="font-serif text-2xl md:text-3xl font-bold mb-2">高山草甸 · 绿野仙踪</h3>
+              <p class="text-white/80 max-w-xl text-sm md:text-base">万亩高山草甸夏日绿草如茵、野花遍野，如铺展开来的绿色绒毯，是远离尘嚣的世外桃源。</p>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="img-placeholder h-[300px] md:h-[400px] lg:h-[500px]" data-label="📷 图片占位：西晃山原始森林（替换为您的图片）">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+              <span class="inline-block px-3 py-1 bg-xh-gold/80 text-xs rounded-full mb-3">生态秘境</span>
+              <h3 class="font-serif text-2xl md:text-3xl font-bold mb-2">原始森林 · 万物共生</h3>
+              <p class="text-white/80 max-w-xl text-sm md:text-base">千年古木参天，藤萝缠绕苔藓如毯，林间溪流潺潺鸟鸣山幽，是天然氧吧与生物基因库。</p>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="img-placeholder h-[300px] md:h-[400px] lg:h-[500px]" data-label="📷 图片占位：西晃山溪流山泉（替换为您的图片）">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+              <span class="inline-block px-3 py-1 bg-xh-gold/80 text-xs rounded-full mb-3">生命之源</span>
+              <h3 class="font-serif text-2xl md:text-3xl font-bold mb-2">溪流山泉 · 清冽甘甜</h3>
+              <p class="text-white/80 max-w-xl text-sm md:text-base">山泉从花岗岩深处涌出，清澈见底甘甜可口，富含天然矿物质，是大自然最珍贵的馈赠。</p>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="img-placeholder h-[300px] md:h-[400px] lg:h-[500px]" data-label="📷 图片占位：西晃山高山湿地（替换为您的图片）">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white">
+              <span class="inline-block px-3 py-1 bg-xh-gold/80 text-xs rounded-full mb-3">自然瑰宝</span>
+              <h3 class="font-serif text-2xl md:text-3xl font-bold mb-2">高山湿地 · 大地之肾</h3>
+              <p class="text-white/80 max-w-xl text-sm md:text-base">万亩高山湿地涵养水源调节气候，珍稀动植物栖息于此，被誉为"湘西之肾"。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="carouselPrev" class="carousel-btn left-4"><i class="fas fa-chevron-left"></i></button>
+      <button id="carouselNext" class="carousel-btn right-4"><i class="fas fa-chevron-right"></i></button>
+      <div id="carouselDots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+        <div class="carousel-dot active"></div><div class="carousel-dot"></div><div class="carousel-dot"></div><div class="carousel-dot"></div><div class="carousel-dot"></div>
+      </div>
+    </div>
+
+    <!-- 风景卡片网格 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md card-hover section-hidden">
+        <div class="img-placeholder h-52" data-label="📷 图片：云海奇观"></div>
+        <div class="p-6">
+          <span class="text-xs text-xh-green font-medium tracking-wider">自然奇观</span>
+          <h3 class="font-serif text-xl font-bold text-xh-ink mt-2 mb-2">云海奇观</h3>
+          <p class="text-xh-gray text-sm leading-relaxed">西晃山海拔1405米，独特地形使山顶常年云雾缭绕。雨后初晴，云海翻涌如万马奔腾，站在山巅仿佛脚踏祥云置身天宫。最佳观赏时间清晨5-7时，雨后尤为壮美。</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md card-hover section-hidden">
+        <div class="img-placeholder h-52" data-label="📷 图片：高山草甸绿野"></div>
+        <div class="p-6">
+          <span class="text-xs text-xh-green font-medium tracking-wider">自然奇观</span>
+          <h3 class="font-serif text-xl font-bold text-xh-ink mt-2 mb-2">高山草甸</h3>
+          <p class="text-xh-gray text-sm leading-relaxed">山顶近万亩高山草甸，夏季绿草茵茵、野花烂漫——金黄的野菊、紫红的杜鹃点缀其间。微风拂过草浪翻滚，如一首无声的田园牧歌，是露营摄影的绝佳之地。</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md card-hover section-hidden">
+        <div class="img-placeholder h-52" data-label="📷 图片：原始森林秘境"></div>
+        <div class="p-6">
+          <span class="text-xs text-xh-green font-medium tracking-wider">生态秘境</span>
+          <h3 class="font-serif text-xl font-bold text-xh-ink mt-2 mb-2">原始森林</h3>
+          <p class="text-xh-gray text-sm leading-relaxed">山腰至山顶分布大面积原始次生林，百年古木随处可见。国家一级保护植物红豆杉、银杏等珍稀物种藏身其间，藤蔓交织苔藓满地，是天然的植物王国与物种基因库。</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md card-hover section-hidden">
+        <div class="img-placeholder h-52" data-label="📷 图片：清冽山泉"></div>
+        <div class="p-6">
+          <span class="text-xs text-xh-green font-medium tracking-wider">生命之源</span>
+          <h3 class="font-serif text-xl font-bold text-xh-ink mt-2 mb-2">溪流山泉</h3>
+          <p class="text-xh-gray text-sm leading-relaxed">西晃山是麻阳重要水源地，山中泉眼众多终年不涸。泉水从深层花岗岩裂隙渗出，经多层天然过滤，水质纯净口感清冽甘甜。西晃山天然矿泉水即取自此，大自然的珍贵馈赠。</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md card-hover section-hidden">
+        <div class="img-placeholder h-52" data-label="📷 图片：高山湿地全景"></div>
+        <div class="p-6">
+          <span class="text-xs text-xh-green font-medium tracking-wider">自然瑰宝</span>
+          <h3 class="font-serif text-xl font-bold text-xh-ink mt-2 mb-2">高山湿地</h3>
+          <p class="text-xh-gray text-sm leading-relaxed">山顶保存完整的万亩高山湿地生态系统，泥炭藓层厚达数米，蓄水能力惊人。春夏之交野花竞相绽放，五彩斑斓如天然花园，多种珍稀水鸟与两栖动物在此栖息繁衍。</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl overflow-hidden shadow-md card-hover section-hidden">
+        <div class="img-placeholder h-52" data-label="📷 图片：日落晚霞"></div>
+        <div class="p-6">
+          <span class="text-xs text-xh-green font-medium tracking-wider">自然奇观</span>
+          <h3 class="font-serif text-xl font-bold text-xh-ink mt-2 mb-2">日落晚霞</h3>
+          <p class="text-xh-gray text-sm leading-relaxed">黄昏时分的西晃山，夕阳将天边染成绚烂的金红色，群山在晚霞中呈现层层叠叠的剪影。山风轻拂松涛阵阵，是登高望远、放空心灵的最佳时刻。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 历史民俗 ==================== -->
+<section id="culture" class="relative py-20 md:py-28 lg:py-32 px-4 bg-xh-paper">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16 section-hidden">
+      <span class="text-xh-green font-medium text-sm tracking-[0.2em] uppercase">CULTURE</span>
+      <h2 class="font-serif font-bold text-3xl md:text-4xl lg:text-5xl text-xh-ink mt-3 mb-4">历史民俗</h2>
+      <div class="w-16 h-0.5 bg-xh-gold mx-auto"></div>
+      <p class="text-xh-gray mt-4 max-w-2xl mx-auto text-lg">千年苗族圣山，承载着深厚的文化底蕴与动人的民间传说</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+      <!-- 历史典故 -->
+      <div class="section-hidden">
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 text-6xl text-xh-green/10 font-serif font-black">"</div>
+          <div class="relative bg-white rounded-2xl p-8 shadow-md border border-xh-green/5">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-book-open"></i></div>
+              <h3 class="font-serif text-xl font-bold text-xh-ink">盘瓠传说与苗族起源</h3>
+            </div>
+            <p class="text-xh-gray leading-relaxed mb-4">西晃山是麻阳苗族先民心中的圣山。相传远古时期，帝喾高辛氏之女与神犬盘瓠结合，生下六男六女，繁衍成苗族先民。盘瓠死后葬于西晃山深处，此后西晃山便被苗民视为祖山，世代祭祀。每年农历三月三，苗民们仍保留着登西晃山祭祖的古老习俗，吹芦笙、唱苗歌，场面庄重而热烈。</p>
+            <p class="text-xh-gray leading-relaxed">至今山中仍有多处与盘瓠传说相关的遗迹——盘瓠洞、苗王台、祭天石等，每一处都承载着苗族先民对天地自然的敬畏与感恩。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 民俗风情 -->
+      <div class="section-hidden">
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 text-6xl text-xh-green/10 font-serif font-black">"</div>
+          <div class="relative bg-white rounded-2xl p-8 shadow-md border border-xh-green/5">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-drum"></i></div>
+              <h3 class="font-serif text-xl font-bold text-xh-ink">苗乡民俗 · 薪火相传</h3>
+            </div>
+            <p class="text-xh-gray leading-relaxed mb-4">麻阳苗族文化源远流长，西晃山脚下的苗寨至今保留着丰富的非物质文化遗产。苗家拦门酒、长桌宴、花灯戏、傩戏等民俗活动代代相传。最具特色的是"四月八"跳花节，苗家儿女身着盛装，汇聚西晃山下，对歌、跳花、舞龙灯，欢庆春耕归来。</p>
+            <p class="text-xh-gray leading-relaxed">苗绣、蜡染、银饰锻造等传统手工艺亦在此地生生不息。苗家阿婆手中的绣针穿梭百年，将西晃山的云海、山花、飞鸟一针一线绣进衣裳，把对大自然的深情穿在身上。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 人文典故 -->
+      <div class="section-hidden">
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 text-6xl text-xh-green/10 font-serif font-black">"</div>
+          <div class="relative bg-white rounded-2xl p-8 shadow-md border border-xh-green/5">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-landmark"></i></div>
+              <h3 class="font-serif text-xl font-bold text-xh-ink">西晃山人文典故</h3>
+            </div>
+            <p class="text-xh-gray leading-relaxed mb-4">西晃山之名，源自一个美丽的爱情传说。相传古时有一对苗族青年男女——阿西与阿晃，为反抗土司强权，逃入深山，在山的最高处结庐而居，与云海为伴、以清泉为饮。他们死后化作两座相连的山峰，后人便将此山称为"西晃山"，寓意至死不渝的爱情。</p>
+            <p class="text-xh-gray leading-relaxed">明清时期，西晃山曾是湘西地区重要的佛教道教修行之地，山中尚有古寺遗址多处。抗战时期，西晃山更是当地百姓躲避战乱的天然屏障，山中密林深处的石屋遗迹至今可寻。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 非遗工艺 -->
+      <div class="section-hidden">
+        <div class="relative">
+          <div class="absolute -top-4 -left-4 text-6xl text-xh-green/10 font-serif font-black">"</div>
+          <div class="relative bg-white rounded-2xl p-8 shadow-md border border-xh-green/5">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-hands"></i></div>
+              <h3 class="font-serif text-xl font-bold text-xh-ink">非遗之美 · 匠心传承</h3>
+            </div>
+            <p class="text-xh-gray leading-relaxed mb-4">麻阳非物质文化遗产丰富多彩。麻阳花灯戏被列入省级非物质文化遗产名录，其唱腔婉转悠扬，表演诙谐生动，是西晃山地区最受欢迎的民间艺术形式。每年的正月十五，各村花灯队齐聚，夜如白昼、欢歌如潮。</p>
+            <p class="text-xh-gray leading-relaxed">此外，麻阳盘瓠祭、苗族武术、苗家酸鱼制作技艺等非遗项目，都是西晃山文化版图上不可或缺的瑰宝。这些历经千百年传承的文化遗产，如同西晃山的山泉一般，清澈而鲜活地流淌在苗乡人的血液中。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 文化数据卡片 -->
+    <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 section-hidden">
+      <div class="bg-white rounded-xl p-6 text-center shadow-sm border border-xh-green/5">
+        <div class="counter-number font-serif">2000+</div>
+        <div class="text-xh-gray text-sm mt-1">年苗族文化传承</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 text-center shadow-sm border border-xh-green/5">
+        <div class="counter-number font-serif">12</div>
+        <div class="text-xh-gray text-sm mt-1">项非遗名录</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 text-center shadow-sm border border-xh-green/5">
+        <div class="counter-number font-serif">36</div>
+        <div class="text-xh-gray text-sm mt-1">处古迹遗址</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 text-center shadow-sm border border-xh-green/5">
+        <div class="counter-number font-serif">8</div>
+        <div class="text-xh-gray text-sm mt-1">个传统苗寨</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 水知识科普 ==================== -->
+<section id="water" class="relative py-20 md:py-28 lg:py-32 px-4 bg-gradient-to-b from-xh-mist via-white to-xh-mist">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16 section-hidden">
+      <span class="text-xh-green font-medium text-sm tracking-[0.2em] uppercase">WATER SCIENCE</span>
+      <h2 class="font-serif font-bold text-3xl md:text-4xl lg:text-5xl text-xh-ink mt-3 mb-4">专业水知识科普</h2>
+      <div class="w-16 h-0.5 bg-xh-gold mx-auto"></div>
+      <p class="text-xh-gray mt-4 max-w-2xl mx-auto text-lg">从科学视角解读西晃山的水文生态系统，让每一滴山泉水都有故事可说</p>
+    </div>
+
+    <!-- 科普1: 山地水循环 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 section-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-5">
+        <div class="lg:col-span-2 img-placeholder min-h-[280px]" data-label="📷 图片：山地水循环示意图（建议用专业图示）"></div>
+        <div class="lg:col-span-3 p-8 md:p-10">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-water text-xl"></i></div>
+            <div>
+              <span class="text-xs text-blue-500 font-medium tracking-wider">CHAPTER 01</span>
+              <h3 class="font-serif text-2xl font-bold text-xh-ink">山地水循环 · 自然的水塔</h3>
+            </div>
+          </div>
+          <div class="space-y-3 text-xh-gray leading-relaxed">
+            <p>西晃山海拔1405米，是麻阳境内的最高峰。根据大气物理学原理，海拔每升高100米，气温下降约0.6℃。西晃山山顶的气温比山脚低约8℃，湿润气流遇山体抬升冷却后形成地形雨，年均降水量达1600-1800毫米，远高于周边地区。</p>
+            <p>充沛的降水一部分被森林冠层截留（约15-25%），一部分沿树干流下或被地表枯枝落叶吸收，剩余部分渗入地下形成地下水。西晃山的花岗岩体经过数亿年风化，裂隙发育良好，形成了天然的"地下水库"。</p>
+            <p>这些地下水在重力作用下沿岩层裂隙缓慢运移，经过深层岩石的天然过滤与矿化，最终以泉水的形式在山腰、山脚涌出地表。这个过程短则数年，长则数十年——我们今天喝到的每一口西晃山泉水，都是多年前的雨水穿越了时光的旅程。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 科普2: 森林与水源 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 section-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-5">
+        <div class="lg:col-span-3 p-8 md:p-10 lg:order-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-xh-green"><i class="fas fa-tree text-xl"></i></div>
+            <div>
+              <span class="text-xs text-xh-green font-medium tracking-wider">CHAPTER 02</span>
+              <h3 class="font-serif text-2xl font-bold text-xh-ink">森林涵养水源 · 绿色水库</h3>
+            </div>
+          </div>
+          <div class="space-y-3 text-xh-gray leading-relaxed">
+            <p>森林是西晃山水源涵养的"第一功臣"。西晃山森林覆盖率超过85%，拥有完整的垂直植被带谱——从山脚的常绿阔叶林到山顶的高山草甸和灌丛。每一片森林都是一个微型水库。</p>
+            <p>科学研究表明：一亩茂密的森林在雨季可蓄水约200立方米，相当于一个深2米、面积100平方米的水池。西晃山数万亩森林的蓄水能力相当于一座中型水库。森林土壤中的腐殖质层如同海绵，能够吸收自身重量5-8倍的水分，然后缓慢释放，维持山泉的长年不涸。</p>
+            <p>森林根系还能固持土壤、防止水土流失。西晃山的原始森林根系深达数米，将岩石碎屑和土壤牢牢固定，即使在暴雨季节，山涧溪流依然清澈见底，几乎不含泥沙。</p>
+          </div>
+        </div>
+        <div class="lg:col-span-2 img-placeholder min-h-[280px] lg:order-2" data-label="📷 图片：西晃山森林根系与水源关系示意图"></div>
+      </div>
+    </div>
+
+    <!-- 科普3: 山泉水质 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 section-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-5">
+        <div class="lg:col-span-2 img-placeholder min-h-[280px]" data-label="📷 图片：山泉水质检测数据图表或实拍"></div>
+        <div class="lg:col-span-3 p-8 md:p-10">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600"><i class="fas fa-flask text-xl"></i></div>
+            <div>
+              <span class="text-xs text-cyan-600 font-medium tracking-wider">CHAPTER 03</span>
+              <h3 class="font-serif text-2xl font-bold text-xh-ink">山泉水质科普 · 大自然的精酿</h3>
+            </div>
+          </div>
+          <div class="space-y-3 text-xh-gray leading-relaxed">
+            <p>西晃山天然矿泉水之所以清冽甘甜，秘密在于其独特的水文地质条件。水源地处于人迹罕至的高海拔原始森林区，周边无任何工业与农业污染源，从源头上保证了水质的纯净安全。</p>
+            <p>水质特点解析：① 低钠（Na⁺含量<5mg/L），适合低盐饮食人群；② 偏硅酸含量适中（H₂SiO₃约25-40mg/L），有助于维持血管弹性；③ 天然弱碱性（pH 7.2-7.8），接近人体体液酸碱平衡；④ 总溶解固体（TDS）约80-150mg/L，属于低矿化度优质软水，口感柔和顺滑；⑤ 不含任何人工添加物，是纯粹的自然之水。</p>
+            <p>经权威机构检测，西晃山泉水各项指标均优于国家《饮用天然矿泉水标准》（GB 8537-2018），是真正的"大自然的精酿"。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 科普4: 水资源保护与水土保持 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-8 section-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-5">
+        <div class="lg:col-span-3 p-8 md:p-10 lg:order-1">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600"><i class="fas fa-shield-halved text-xl"></i></div>
+            <div>
+              <span class="text-xs text-amber-600 font-medium tracking-wider">CHAPTER 04</span>
+              <h3 class="font-serif text-2xl font-bold text-xh-ink">水资源保护 · 水土保持</h3>
+            </div>
+          </div>
+          <div class="space-y-3 text-xh-gray leading-relaxed">
+            <p>水资源保护是西晃山生态保护的核心课题。主要措施包括：① 划定水源保护区，严禁在保护区内进行砍伐、开垦、采矿等破坏性活动；② 建设生态护坡与植被缓冲带，减少地表径流对土壤的冲刷；③ 推广生态农业，减少化肥农药对地下水的潜在污染。</p>
+            <p>水土保持是水源保护的基石。西晃山地区通过退耕还林、封山育林等工程，使森林覆盖率逐年提升。水土流失面积从十年前的12%降至目前的3%以下。每减少一吨土壤流失，就意味着保护了约50立方米的水源涵养能力。</p>
+            <p>当地政府与社区建立了"山长制+河长制"双轨管理机制，定期巡查水源地，监测水质变化，确保每一滴山泉水都经得起最严格的检验。</p>
+          </div>
+        </div>
+        <div class="lg:col-span-2 img-placeholder min-h-[280px] lg:order-2" data-label="📷 图片：水土保持工程实景或示意图"></div>
+      </div>
+    </div>
+
+    <!-- 科普5: 高山生态水文 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden section-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-5">
+        <div class="lg:col-span-2 img-placeholder min-h-[280px]" data-label="📷 图片：高山湿地生态水文图示"></div>
+        <div class="lg:col-span-3 p-8 md:p-10">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600"><i class="fas fa-mountain text-xl"></i></div>
+            <div>
+              <span class="text-xs text-emerald-600 font-medium tracking-wider">CHAPTER 05</span>
+              <h3 class="font-serif text-2xl font-bold text-xh-ink">高山生态水文 · 生命共同体</h3>
+            </div>
+          </div>
+          <div class="space-y-3 text-xh-gray leading-relaxed">
+            <p>高山湿地是西晃山水文生态系统中最为独特的一环。高山湿地像一个巨大的海绵体，雨季吸收并储存大量降水，旱季则缓慢释放补给下游溪流。西晃山山顶的万亩湿地系统，每年可调节水量超过200万立方米，相当于一个小型水库的库容。</p>
+            <p>高山湿地还拥有强大的水质净化功能。湿地中的泥炭藓、芦苇等水生植物能够吸附和分解水中的有机物、重金属和氮磷等营养物质，使流出湿地的水质更加纯净。同时湿地还储存着大量有机碳，对缓解气候变暖具有不可替代的作用。</p>
+            <p>西晃山的山水林田湖草是一个生命共同体——森林孕育水源，湿地涵养清水，清泉滋养万物，万物构成生态。保护这座山，就是保护这一方水土、这一脉清泉。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 游玩攻略 ==================== -->
+<section id="travel" class="relative py-20 md:py-28 lg:py-32 px-4 bg-xh-paper">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16 section-hidden">
+      <span class="text-xh-green font-medium text-sm tracking-[0.2em] uppercase">TRAVEL GUIDE</span>
+      <h2 class="font-serif font-bold text-3xl md:text-4xl lg:text-5xl text-xh-ink mt-3 mb-4">游玩攻略</h2>
+      <div class="w-16 h-0.5 bg-xh-gold mx-auto"></div>
+      <p class="text-xh-gray mt-4 max-w-2xl mx-auto text-lg">从心出发，遇见西晃山的四季之美</p>
+    </div>
+
+    <!-- 推荐路线 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-10 section-hidden">
+      <div class="p-8 md:p-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-route text-xl"></i></div>
+          <div>
+            <h3 class="font-serif text-2xl font-bold text-xh-ink">推荐游览路线</h3>
+            <p class="text-xh-gray text-sm">一日游 / 两日游 经典方案</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="border border-xh-green/10 rounded-xl p-6 hover:shadow-md transition-all">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 bg-xh-green text-white text-xs rounded-full font-medium">一日游</span>
+              <span class="text-xh-gray text-xs">约8小时</span>
+            </div>
+            <ul class="space-y-2 text-xh-gray text-sm">
+              <li class="flex gap-2"><span class="text-xh-green font-bold">08:00</span>麻阳县城出发</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">09:00</span>抵达西晃山脚，参观苗寨</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">10:00-12:00</span>登山徒步，穿越原始森林</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">12:00-13:00</span>山顶野餐，观云海</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">13:00-15:00</span>高山湿地探索，拍照</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">15:00-17:00</span>下山，游览山泉源头</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">17:30</span>返回麻阳县城</li>
+            </ul>
+          </div>
+          <div class="border border-xh-green/10 rounded-xl p-6 hover:shadow-md transition-all">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 bg-xh-teal text-white text-xs rounded-full font-medium">两日游</span>
+              <span class="text-xh-gray text-xs">含露营</span>
+            </div>
+            <ul class="space-y-2 text-xh-gray text-sm">
+              <li class="flex gap-2"><span class="text-xh-green font-bold">Day1 下午</span>抵达西晃山，入住苗家民宿</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">Day1 傍晚</span>山顶观日落晚霞</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">Day1 夜晚</span>篝火晚会，苗歌对唱</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">Day2 05:00</span>登顶观云海日出</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">Day2 08:00-12:00</span>深度探索高山湿地与原始森林</li>
+              <li class="flex gap-2"><span class="text-xh-green font-bold">Day2 13:00</span>品尝苗家长桌宴后返程</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 四季与实用信息 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+      <!-- 四季之美 -->
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden section-hidden">
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-xl bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-seedling text-xl"></i></div>
+            <h3 class="font-serif text-xl font-bold text-xh-ink">四季之美</h3>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="border border-green-100 rounded-xl p-4 text-center hover:bg-green-50/50 transition-all">
+              <i class="fas fa-leaf text-2xl text-green-500 mb-2"></i>
+              <h4 class="font-bold text-xh-ink text-sm">春</h4>
+              <p class="text-xs text-xh-gray mt-1">杜鹃花海，万物复苏</p>
+              <p class="text-xs text-xh-gray">3-5月最佳</p>
+            </div>
+            <div class="border border-green-100 rounded-xl p-4 text-center hover:bg-green-50/50 transition-all">
+              <i class="fas fa-sun text-2xl text-amber-500 mb-2"></i>
+              <h4 class="font-bold text-xh-ink text-sm">夏</h4>
+              <p class="text-xs text-xh-gray mt-1">避暑胜地，草甸野花</p>
+              <p class="text-xs text-xh-gray">6-8月最佳</p>
+            </div>
+            <div class="border border-green-100 rounded-xl p-4 text-center hover:bg-green-50/50 transition-all">
+              <i class="fas fa-leaf text-2xl text-orange-500 mb-2"></i>
+              <h4 class="font-bold text-xh-ink text-sm">秋</h4>
+              <p class="text-xs text-xh-gray mt-1">层林尽染，云海壮观</p>
+              <p class="text-xs text-xh-gray">9-11月最佳</p>
+            </div>
+            <div class="border border-green-100 rounded-xl p-4 text-center hover:bg-green-50/50 transition-all">
+              <i class="fas fa-snowflake text-2xl text-blue-400 mb-2"></i>
+              <h4 class="font-bold text-xh-ink text-sm">冬</h4>
+              <p class="text-xs text-xh-gray mt-1">银装素裹，冰晶雾凇</p>
+              <p class="text-xs text-xh-gray">12-2月最佳</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 实用贴士 -->
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden section-hidden">
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 rounded-xl bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-circle-info text-xl"></i></div>
+            <h3 class="font-serif text-xl font-bold text-xh-ink">实用贴士</h3>
+          </div>
+          <div class="space-y-3 text-sm text-xh-gray">
+            <div class="flex gap-3 items-start"><i class="fas fa-location-dot text-xh-green mt-0.5"></i><span><strong>交通：</strong>麻阳县城驾车约40分钟至山脚，建议自驾或包车</span></div>
+            <div class="flex gap-3 items-start"><i class="fas fa-clock text-xh-green mt-0.5"></i><span><strong>最佳时段：</strong>清晨5-7时观日出云海，傍晚17-19时观日落</span></div>
+            <div class="flex gap-3 items-start"><i class="fas fa-shoe-prints text-xh-green mt-0.5"></i><span><strong>装备：</strong>登山鞋、防风外套、防晒帽、充足饮水、少量干粮</span></div>
+            <div class="flex gap-3 items-start"><i class="fas fa-shield text-xh-green mt-0.5"></i><span><strong>安全：</strong>雨天山路湿滑注意防滑，不擅自进入未开发区域</span></div>
+            <div class="flex gap-3 items-start"><i class="fas fa-leaf text-xh-green mt-0.5"></i><span><strong>环保：</strong>请带走所有垃圾，保护高山生态环境</span></div>
+            <div class="flex gap-3 items-start"><i class="fas fa-phone text-xh-green mt-0.5"></i><span><strong>咨询：</strong>麻阳县文旅局（建议行前电询最新路况）</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 美食特产 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden section-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-5">
+        <div class="lg:col-span-2 img-placeholder min-h-[240px]" data-label="📷 图片：麻阳特色美食合集（腊肉、酸鱼、山笋、冰糖橙等）"></div>
+        <div class="lg:col-span-3 p-8 md:p-10">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500"><i class="fas fa-utensils text-xl"></i></div>
+            <div>
+              <h3 class="font-serif text-xl font-bold text-xh-ink">美食与特产</h3>
+              <p class="text-xh-gray text-sm">舌尖上的麻阳 · 西晃山的味道</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-xh-gray">
+            <div class="flex gap-2 items-start"><i class="fas fa-drumstick-bite text-orange-400 mt-1"></i><span><strong>苗家腊肉</strong>——柴火熏制，肥而不腻</span></div>
+            <div class="flex gap-2 items-start"><i class="fas fa-fish text-orange-400 mt-1"></i><span><strong>酸鱼</strong>——苗家传统发酵美味</span></div>
+            <div class="flex gap-2 items-start"><i class="fas fa-carrot text-orange-400 mt-1"></i><span><strong>山笋</strong>——西晃山野生鲜笋，脆嫩清甜</span></div>
+            <div class="flex gap-2 items-start"><i class="fas fa-apple-alt text-orange-400 mt-1"></i><span><strong>麻阳冰糖橙</strong>——国家地理标志产品</span></div>
+            <div class="flex gap-2 items-start"><i class="fas fa-wine-bottle text-orange-400 mt-1"></i><span><strong>西晃山矿泉水</strong>——天然弱碱性山泉</span></div>
+            <div class="flex gap-2 items-start"><i class="fas fa-bread-slice text-orange-400 mt-1"></i><span><strong>社饭</strong>——苗家三月三特色美食</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 生态保护 ==================== -->
+<section id="eco" class="relative py-20 md:py-28 lg:py-32 px-4 bg-gradient-to-b from-xh-mist via-green-50 to-xh-mist">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16 section-hidden">
+      <span class="text-xh-green font-medium text-sm tracking-[0.2em] uppercase">ECO CONSERVATION</span>
+      <h2 class="font-serif font-bold text-3xl md:text-4xl lg:text-5xl text-xh-ink mt-3 mb-4">生态保护</h2>
+      <div class="w-16 h-0.5 bg-xh-gold mx-auto"></div>
+      <p class="text-xh-gray mt-4 max-w-2xl mx-auto text-lg">守护西晃山，就是守护我们共同的家园</p>
+    </div>
+
+    <!-- 生态价值 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white rounded-2xl p-8 shadow-md card-hover text-center section-hidden">
+        <div class="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center text-xh-green mx-auto mb-4"><i class="fas fa-tree text-2xl"></i></div>
+        <h3 class="font-serif text-lg font-bold text-xh-ink mb-2">森林碳汇</h3>
+        <p class="text-xh-gray text-sm leading-relaxed">西晃山森林每年可吸收二氧化碳约1.2万吨，相当于8000辆汽车的年排放量。保护森林，就是为地球"降温"。</p>
+      </div>
+      <div class="bg-white rounded-2xl p-8 shadow-md card-hover text-center section-hidden">
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 mx-auto mb-4"><i class="fas fa-droplet text-2xl"></i></div>
+        <h3 class="font-serif text-lg font-bold text-xh-ink mb-2">水源涵养</h3>
+        <p class="text-xh-gray text-sm leading-relaxed">西晃山水源系统每年为麻阳及周边地区提供约500万立方米优质淡水，是区域生态安全的重要屏障。</p>
+      </div>
+      <div class="bg-white rounded-2xl p-8 shadow-md card-hover text-center section-hidden">
+        <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 mx-auto mb-4"><i class="fas fa-paw text-2xl"></i></div>
+        <h3 class="font-serif text-lg font-bold text-xh-ink mb-2">生物多样性</h3>
+        <p class="text-xh-gray text-sm leading-relaxed">西晃山已知高等植物1200余种、脊椎动物200余种，其中国家重点保护动植物30余种，是湘西生物多样性热点区域。</p>
+      </div>
+    </div>
+
+    <!-- 保护行动 -->
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden mb-10 section-hidden">
+      <div class="p-8 md:p-10">
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-12 h-12 rounded-xl bg-xh-green/10 flex items-center justify-center text-xh-green"><i class="fas fa-hands-holding-circle text-xl"></i></div>
+          <h3 class="font-serif text-2xl font-bold text-xh-ink">我们在行动</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex gap-4 p-4 rounded-xl border border-green-100 hover:bg-green-50/50 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-xh-green shrink-0"><i class="fas fa-gavel"></i></div>
+            <div>
+              <h4 class="font-bold text-xh-ink text-sm">立法保护</h4>
+              <p class="text-xs text-xh-gray mt-1">西晃山已纳入麻阳县生态红线保护范围，核心区严禁任何开发建设活动。</p>
+            </div>
+          </div>
+          <div class="flex gap-4 p-4 rounded-xl border border-green-100 hover:bg-green-50/50 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-xh-green shrink-0"><i class="fas fa-people-arrows"></i></div>
+            <div>
+              <h4 class="font-bold text-xh-ink text-sm">社区共管</h4>
+              <p class="text-xs text-xh-gray mt-1">建立"政府+社区+村民"三级共管机制，当地村民参与巡山护林、水源监测。</p>
+            </div>
+          </div>
+          <div class="flex gap-4 p-4 rounded-xl border border-green-100 hover:bg-green-50/50 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-xh-green shrink-0"><i class="fas fa-seedling"></i></div>
+            <div>
+              <h4 class="font-bold text-xh-ink text-sm">生态修复</h4>
+              <p class="text-xs text-xh-gray mt-1">累计完成退耕还林3000亩、封山育林1.2万亩，森林覆盖率提升至87%。</p>
+            </div>
+          </div>
+          <div class="flex gap-4 p-4 rounded-xl border border-green-100 hover:bg-green-50/50 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-xh-green shrink-0"><i class="fas fa-chalkboard-user"></i></div>
+            <div>
+              <h4 class="font-bold text-xh-ink text-sm">科普教育</h4>
+              <p class="text-xs text-xh-gray mt-1">每年组织中小学生开展"西晃山自然课堂"活动，让生态保护意识代代相传。</p>
+            </div>
+          </div>
+          <div class="flex gap-4 p-4 rounded-xl border border-green-100 hover:bg-green-50/50 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-xh-green shrink-0"><i class="fas fa-recycle"></i></div>
+            <div>
+              <h4 class="font-bold text-xh-ink text-sm">垃圾不落地</h4>
+              <p class="text-xs text-xh-gray mt-1">景区推行"垃圾随身带"行动，游客上山前领取环保袋，下山后兑换纪念品。</p>
+            </div>
+          </div>
+          <div class="flex gap-4 p-4 rounded-xl border border-green-100 hover:bg-green-50/50 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-xh-green shrink-0"><i class="fas fa-hand-sparkles"></i></div>
+            <div>
+              <h4 class="font-bold text-xh-ink text-sm">你我的力量</h4>
+              <p class="text-xs text-xh-gray mt-1">每一位到访者都是生态保护者。你的文明游览，就是对西晃山最大的守护。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 生态数据看板 -->
+    <div class="bg-gradient-to-r from-xh-green to-xh-green-dark rounded-2xl p-8 md:p-12 text-white section-hidden">
+      <div class="text-center mb-8">
+        <h3 class="font-serif text-2xl font-bold">西晃山生态数据看板</h3>
+        <p class="text-white/70 text-sm mt-2">数字见证保护成效</p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+          <div class="text-3xl md:text-4xl font-bold font-serif">87%</div>
+          <div class="text-white/70 text-sm mt-1">森林覆盖率</div>
+        </div>
+        <div>
+          <div class="text-3xl md:text-4xl font-bold font-serif">500万m³</div>
+          <div class="text-white/70 text-sm mt-1">年水源涵养量</div>
+        </div>
+        <div>
+          <div class="text-3xl md:text-4xl font-bold font-serif">1200+</div>
+          <div class="text-white/70 text-sm mt-1">高等植物物种</div>
+        </div>
+        <div>
+          <div class="text-3xl md:text-4xl font-bold font-serif">3%</div>
+          <div class="text-white/70 text-sm mt-1">水土流失率</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页脚 ==================== -->
+<footer class="bg-xh-ink text-white/70">
+  <div class="max-w-7xl mx-auto px-4 py-16 md:py-20">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-xh-green flex items-center justify-center text-white font-serif font-bold text-lg">西</div>
+          <div>
+            <div class="font-serif font-bold text-lg text-white">西晃山</div>
+            <div class="text-xs text-white/50 tracking-wider">XIHUANG MOUNTAIN</div>
+          </div>
+        </div>
+        <p class="text-sm text-white/60 leading-relaxed">湘西秘境 · 山水灵境。<br>湖南麻阳西晃山文旅科普官方网站。<br>探索自然之美，守护生态之源。</p>
+      </div>
+      <div>
+        <h4 class="text-white font-bold mb-4">快速导航</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#scenery" class="text-white/60 hover:text-xh-green transition-colors">风景名胜</a></li>
+          <li><a href="#culture" class="text-white/60 hover:text-xh-green transition-colors">历史民俗</a></li>
+          <li><a href="#water" class="text-white/60 hover:text-xh-green transition-colors">水知识科普</a></li>
+          <li><a href="#travel" class="text-white/60 hover:text-xh-green transition-colors">游玩攻略</a></li>
+          <li><a href="#eco" class="text-white/60 hover:text-xh-green transition-colors">生态保护</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-bold mb-4">联系我们</h4>
+        <ul class="space-y-2 text-sm text-white/60">
+          <li><i class="fas fa-map-pin w-5 text-xh-green"></i>湖南省麻阳苗族自治县</li>
+          <li><i class="fas fa-phone w-5 text-xh-green"></i>咨询服务：请联系麻阳县文旅局</li>
+          <li><i class="fas fa-envelope w-5 text-xh-green"></i>邮箱：请通过官方渠道咨询</li>
+          <li class="mt-4">
+            <span class="inline-block px-3 py-1 bg-white/5 rounded-full text-xs">
+              <i class="fas fa-droplet text-xh-green mr-1"></i>西晃山天然矿泉水
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 pt-6 text-center text-xs text-white/40">
+      <p>© 2026 西晃山文旅科普网站 · 湘西秘境 山水灵境 · 本站为科普宣传用途 | 
+      <a href="#" class="hover:text-xh-green transition-colors">返回首页</a></p>
+      <p class="mt-2">本站图片均为占位标注，请替换为您自己的实景照片</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+// ===== 1. 导航栏效果 =====
+const navbar = document.getElementById('navbar');
+let lastScroll = 0;
+window.addEventListener('scroll', function(){
+  const current = window.pageYOffset;
+  if(current > 80){
+    navbar.classList.add('shadow-lg');
+  } else {
+    navbar.classList.remove('shadow-lg');
+  }
+  lastScroll = current;
+});
+
+// ===== 2. 移动端菜单 =====
+const menuBtn = document.getElementById('menuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+const closeMenuBtn = document.getElementById('closeMenuBtn');
+const overlay = document.getElementById('overlay');
+const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+
+function openMenu(){ mobileMenu.classList.add('open'); overlay.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+function closeMenu(){ mobileMenu.classList.remove('open'); overlay.classList.add('hidden'); document.body.style.overflow = ''; }
+
+menuBtn && menuBtn.addEventListener('click', openMenu);
+closeMenuBtn && closeMenuBtn.addEventListener('click', closeMenu);
+overlay && overlay.addEventListener('click', closeMenu);
+mobileLinks.forEach(function(link){ link.addEventListener('click', closeMenu); });
+
+// ===== 3. 风景轮播 =====
+(function(){
+  const track = document.getElementById('sceneryCarousel');
+  if(!track) return;
+  const slides = track.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('#carouselDots .carousel-dot');
+  const prevBtn = document.getElementById('carouselPrev');
+  const nextBtn = document.getElementById('carouselNext');
+  let current = 0, total = slides.length, autoPlay;
+
+  function goTo(index){
+    if(index < 0) index = total - 1;
+    if(index >= total) index = 0;
+    current = index;
+    track.style.transform = 'translateX(-' + (current * 100) + '%)';
+    dots.forEach(function(d, i){ d.classList.toggle('active', i === current); });
+  }
+
+  function next(){ goTo(current + 1); }
+  function prev(){ goTo(current - 1); }
+
+  nextBtn && nextBtn.addEventListener('click', function(){ next(); resetAuto(); });
+  prevBtn && prevBtn.addEventListener('click', function(){ prev(); resetAuto(); });
+  dots && dots.forEach(function(dot, i){ dot.addEventListener('click', function(){ goTo(i); resetAuto(); }); });
+
+  function startAuto(){ autoPlay = setInterval(next, 5000); }
+  function resetAuto(){ clearInterval(autoPlay); startAuto(); }
+  startAuto();
+})();
+
+// ===== 4. 滚动动画（Intersection Observer）=====
+(function(){
+  const hiddenElements = document.querySelectorAll('.section-hidden');
+  if(hiddenElements.length === 0) return;
+
+  const observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('section-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+  hiddenElements.forEach(function(el){ observer.observe(el); });
+})();
+
+// ===== 5. 图片占位视觉优化 =====
+(function(){
+  document.querySelectorAll('.img-placeholder').forEach(function(el){
+    var label = el.getAttribute('data-label') || '📷 图片占位';
+    var colors = [
+      'linear-gradient(135deg, #E8F0E8, #C8DCC8)',
+      'linear-gradient(135deg, #DCE8F0, #B8CCD8)',
+      'linear-gradient(135deg, #F0E8D8, #E0D0B8)',
+      'linear-gradient(135deg, #E8F0E0, #C8D8C0)',
+      'linear-gradient(135deg, #F0E8E8, #D8C8C8)'
+    ];
+    var idx = Math.floor(Math.random() * colors.length);
+    el.style.background = colors[idx];
+    var textSpan = document.createElement('span');
+    textSpan.className = 'text-xs md:text-sm text-center px-4 py-2 bg-white/60 backdrop-blur-sm rounded-lg shadow-sm';
+    textSpan.textContent = label;
+    el.appendChild(textSpan);
+  });
+})();
+
+// ===== 6. 平滑滚动锚点 =====
+document.querySelectorAll('a[href^="#"]').forEach(function(anchor){
+  anchor.addEventListener('click', function(e){
+    var target = document.querySelector(this.getAttribute('href'));
+    if(target){
+      e.preventDefault();
+      var navHeight = navbar ? navbar.offsetHeight : 70;
+      var targetPos = target.getBoundingClientRect().top + window.pageYOffset - navHeight - 10;
+      window.scrollTo({ top: targetPos, behavior: 'smooth' });
+    }
+  });
+});
+
+// ===== 7. 粒子效果（首页） =====
+(function(){
+  var container = document.getElementById('particles');
+  if(!container) return;
+  var count = 30;
+  for(var i = 0; i < count; i++){
+    var dot = document.createElement('div');
+    var size = 2 + Math.random() * 4;
+    dot.style.cssText = [
+      'position: absolute',
+      'width: ' + size + 'px',
+      'height: ' + size + 'px',
+      'background: rgba(255,255,255,' + (0.2 + Math.random() * 0.3) + ')',
+      'border-radius: 50%',
+      'left: ' + (Math.random() * 100) + '%',
+      'top: ' + (Math.random() * 100) + '%',
+      'animation: float ' + (4 + Math.random() * 6) + 's ease-in-out infinite',
+      'animation-delay: ' + (Math.random() * 4) + 's'
+    ].join(';');
+    container.appendChild(dot);
+  }
+})();
+
+// ===== 8. 当前导航高亮 =====
+(function(){
+  var sections = document.querySelectorAll('section[id]');
+  var navLinks = document.querySelectorAll('.nav-link');
+  if(!sections.length || !navLinks.length) return;
+
+  function updateActive(){
+    var scrollY = window.pageYOffset + 150;
+    var activeId = '';
+    sections.forEach(function(sec){
+      if(sec.offsetTop <= scrollY && sec.offsetTop + sec.offsetHeight > scrollY){
+        activeId = sec.getAttribute('id');
+      }
+    });
+    navLinks.forEach(function(link){
+      var href = link.getAttribute('href');
+      if(href === '#' + activeId){
+        link.classList.add('text-xh-green');
+        link.classList.remove('text-xh-ink');
+      } else {
+        link.classList.remove('text-xh-green');
+        link.classList.add('text-xh-ink');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActive);
+  window.addEventListener('load', updateActive);
+})();
+
+console.log('西晃山文旅科普网站已加载完成 ✨');
+})();
+</script>
+
+</body>
+</html>

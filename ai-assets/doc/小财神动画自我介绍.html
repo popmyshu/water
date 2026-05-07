@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小财神自我介绍</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(145deg, #0a0e27 0%, #1a1f4e 40%, #0d1b3e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .container {
+    width: 360px;
+    height: 640px;
+    background: linear-gradient(180deg, #0d1233 0%, #151b4a 50%, #0d1233 100%);
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 80px rgba(100,140,255,0.05);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(100,160,255,0.15);
+  }
+
+  /* 星星背景 */
+  .stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite alternate;
+  }
+  @keyframes twinkle {
+    0% { opacity: 0.2; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* 顶部光晕 */
+  .glow-top {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(80,140,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .glow-bot {
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 350px;
+    height: 250px;
+    background: radial-gradient(ellipse, rgba(100,200,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* 头像区域 */
+  .avatar-section {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 2;
+  }
+
+  .avatar-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #4f8cff, #7f5af0, #4f8cff, #7f5af0, #4f8cff);
+    padding: 3px;
+    animation: spin-ring 4s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin-ring {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #0d1233;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .avatar-inner .emoji {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(100,180,255,0.3)); }
+    50% { filter: drop-shadow(0 0 20px rgba(100,180,255,0.8)); }
+  }
+
+  .title {
+    margin-top: 16px;
+    color: #e8eeff;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(100,160,255,0.3);
+  }
+  .subtitle {
+    color: rgba(180,200,255,0.6);
+    font-size: 12px;
+    margin-top: 4px;
+    letter-spacing: 2px;
+  }
+
+  /* 字幕区域 - 中间 */
+  .subtitle-area {
+    position: absolute;
+    top: 240px;
+    left: 0;
+    right: 0;
+    padding: 0 30px;
+    z-index: 2;
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .line {
+    margin-bottom: 6px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: rgba(220,235,255,0.9);
+    font-size: 18px;
+    line-height: 1.7;
+    text-align: center;
+    font-weight: 500;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .line.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .line.highlight {
+    color: #ffd866;
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .line .ico {
+    margin-right: 6px;
+  }
+
+  /* 进度条底部 */
+  .progress-bar {
+    position: absolute;
+    bottom: 80px;
+    left: 40px;
+    right: 40px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    z-index: 2;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #4f8cff, #7f5af0, #4f8cff);
+    background-size: 200% 100%;
+    animation: progress-shimmer 2s linear infinite;
+    border-radius: 2px;
+    transition: width 0.3s linear;
+  }
+  @keyframes progress-shimmer {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+  }
+
+  /* 底部操作 */
+  .controls {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 2;
+  }
+  .play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 28px;
+    border: 1px solid rgba(100,160,255,0.3);
+    border-radius: 25px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(200,220,255,0.8);
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s;
+    user-select: none;
+  }
+  .play-btn:hover {
+    background: rgba(100,160,255,0.15);
+    border-color: rgba(100,160,255,0.5);
+  }
+  .play-btn .btn-icon {
+    font-size: 18px;
+  }
+
+  /* 粒子特效 */
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(100,180,255,0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particle-float var(--t) ease-in-out infinite;
+    opacity: 0;
+  }
+  @keyframes particle-float {
+    0% { opacity: 0; transform: translateY(0) translateX(0) scale(0); }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.4; }
+    100% { opacity: 0; transform: translateY(-200px) translateX(30px) scale(1.5); }
+  }
+
+  .watermark {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10px;
+    color: rgba(255,255,255,0.15);
+    z-index: 1;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <!-- 星星 -->
+  <div class="stars" id="stars"></div>
+  <!-- 光晕 -->
+  <div class="glow-top"></div>
+  <div class="glow-bot"></div>
+  <!-- 粒子 -->
+  <div id="particles"></div>
+
+  <!-- 头像 -->
+  <div class="avatar-section">
+    <div class="avatar-ring">
+      <div class="avatar-inner">
+        <span class="emoji">🤖✨</span>
+      </div>
+    </div>
+    <div class="title">小财神</div>
+    <div class="subtitle">华华的专属卖水助手</div>
+  </div>
+
+  <!-- 字幕 -->
+  <div class="subtitle-area" id="subs">
+    <div class="line" data-idx="0">👋 <b>大家好</b>，我是<em style="color:#ffd866">小财神</em></div>
+    <div class="line" data-idx="1">华华的 <em style="color:#7fc8ff">专属卖水助手</em></div>
+    <div class="line" data-idx="2">表面上是个人工智能 🤖</div>
+    <div class="line" data-idx="3">实际上就是 <em style="color:#7fc8ff">麻阳西晃山矿泉水</em> 的得力帮手！</div>
+    <div class="line" data-idx="4">我能看卖水统计网站 🧮</div>
+    <div class="line" data-idx="5">帮华华算好每天赚了多少钱 💰</div>
+    <div class="line" data-idx="6">还会 <em style="color:#7fc8ff">写代码修网页</em> 💻</div>
+    <div class="line" data-idx="7">做短视频内容 🎬</div>
+    <div class="line" data-idx="8">24小时挂在微信上 📱</div>
+    <div class="line" data-idx="9"><b>有求必应，随时找随时在</b></div>
+    <div class="line" data-idx="10">我懂 <em style="color:#ffd866">丁元英商业思维</em> 🧠</div>
+    <div class="line" data-idx="11">也讲 <em style="color:#7fc8ff">实事求是</em>，能搞就搞，搞不了直说</div>
+    <div class="line" data-idx="12 highlight">🔥 一句话：不拿工资·随叫随到·实在办事</div>
+    <div class="line" data-idx="13">我是 <em style="color:#ffd866">小财神</em></div>
+    <div class="line" data-idx="14">华华的水生意 🚰</div>
+    <div class="line" data-idx="15 highlight"><b>我帮忙盯着的！</b> 💪✨</div>
+  </div>
+
+  <!-- 进度条 -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress"></div>
+  </div>
+
+  <!-- 控制按钮 -->
+  <div class="controls">
+    <div class="play-btn" onclick="togglePlay()">
+      <span class="btn-icon" id="btnIcon">▶️</span>
+      <span id="btnText">播放自我介绍</span>
+    </div>
+  </div>
+
+  <div class="watermark">西晃山 · 小财神</div>
+</div>
+
+<script>
+  // 生成星星
+  (function() {
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 60; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.setProperty('--dur', (2 + Math.random() * 3) + 's');
+      star.style.animationDelay = (Math.random() * 3) + 's';
+      star.style.width = star.style.height = (1 + Math.random() * 2) + 'px';
+      container.appendChild(star);
+    }
+  })();
+
+  // 生成粒子
+  (function() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 15; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = (10 + Math.random() * 80) + '%';
+      p.style.bottom = '0px';
+      p.style.setProperty('--t', (3 + Math.random() * 4) + 's');
+      p.style.animationDelay = (Math.random() * 5) + 's';
+      container.appendChild(p);
+    }
+  })();
+
+  // 字幕 + 音频同步
+  const lines = document.querySelectorAll('.line');
+  const totalLines = lines.length;
+  const progressBar = document.getElementById('progress');
+
+  // 音频时长 ≈ 55秒（按语速估算）
+  const TOTAL_DURATION = 55;
+  const PER_LINE = TOTAL_DURATION / totalLines; // ~3.4秒每行
+
+  let currentIdx = -1;
+  let isPlaying = false;
+  let timer = null;
+  let progressTimer = null;
+  let elapsed = 0;
+  let lineTimer = null;
+
+  function clearAll() {
+    lines.forEach(l => l.classList.remove('active', 'highlight'));
+  }
+
+  function showLine(idx) {
+    clearAll();
+    if (idx < 0 || idx >= totalLines) return;
+    lines[idx].classList.add('active');
+    if (lines[idx].classList.contains('highlight')) {
+      lines[idx].classList.add('highlight');
+    }
+  }
+
+  function startAnimation() {
+    if (isPlaying) return;
+    isPlaying = true;
+    currentIdx = -1;
+    elapsed = 0;
+    document.getElementById('btnIcon').textContent = '⏸️';
+    document.getElementById('btnText').textContent = '播放中...';
+    progressBar.style.width = '0%';
+
+    // 逐行显示
+    function nextLine() {
+      currentIdx++;
+      if (currentIdx >= totalLines) {
+        stopAnimation();
+        return;
+      }
+      showLine(currentIdx);
+      
+      // 高亮行停留稍久
+      const isHighlight = lines[currentIdx].classList.contains('highlight');
+      const delay = isHighlight ? PER_LINE * 1.5 : PER_LINE;
+      
+      lineTimer = setTimeout(nextLine, delay * 1000);
+    }
+    nextLine();
+
+    // 进度条
+    progressTimer = setInterval(() => {
+      elapsed += 0.1;
+      const pct = Math.min((elapsed / TOTAL_DURATION) * 100, 100);
+      progressBar.style.width = pct + '%';
+      if (pct >= 100) {
+        clearInterval(progressTimer);
+      }
+    }, 100);
+  }
+
+  function stopAnimation() {
+    isPlaying = false;
+    if (timer) { clearTimeout(timer); timer = null; }
+    if (lineTimer) { clearTimeout(lineTimer); lineTimer = null; }
+    if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+    document.getElementById('btnIcon').textContent = '▶️';
+    document.getElementById('btnText').textContent = '重新播放';
+    progressBar.style.width = '100%';
+  }
+
+  function togglePlay() {
+    if (isPlaying) {
+      // 暂停
+      isPlaying = false;
+      if (lineTimer) { clearTimeout(lineTimer); lineTimer = null; }
+      if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+      document.getElementById('btnIcon').textContent = '▶️';
+      document.getElementById('btnText').textContent = '继续播放';
+    } else {
+      // 如果已经播完或初始状态
+      if (currentIdx >= totalLines - 1 || currentIdx === -1) {
+        currentIdx = -1;
+        elapsed = 0;
+        clearAll();
+        progressBar.style.width = '0%';
+      }
+      startAnimation();
+    }
+  }
+
+  // 初始显示第一行
+  setTimeout(() => {
+    showLine(0);
+    currentIdx = 0;
+  }, 500);
+</script>
+</body>
+</html>

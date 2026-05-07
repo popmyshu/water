@@ -614,6 +614,7 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
     <div class="tab" onclick="切换标签('debt',this)">💰 欠款</div>
     <div class="tab" onclick="切换标签('all',this)">📈 总分析</div>
     <div class="tab" onclick="切换标签('settings',this)">⚙️ 管理</div>
+    <div class="tab" onclick="切换标签('ai',this)">🤖 AI资料</div>
 </div>
 
 <!-- ========== 今日填表 ========== -->
@@ -919,6 +920,27 @@ input:focus, select:focus { outline: none; border-color: #2d8a4e; background: wh
   <div class="card">
     <h3>📋 历史日期速查</h3>
     <div id="历史记录"><div class="empty-msg">暂无数据</div></div>
+  </div>
+</div>
+
+<!-- ========== AI资料 ========== -->
+<div id="page-ai" class="container">
+  <div class="card">
+    <h3>🤖 小财神AI资料库</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:12px;">小财神AI（Hermes Agent）的所有相关资料备份在此。点击即可查看/下载。</p>
+  </div>
+  <div class="card">
+    <h4 style="margin-bottom:10px;">📄 文档资料</h4>
+    <div id="ai文档列表" style="display:flex;flex-direction:column;gap:6px;"></div>
+  </div>
+  <div class="card">
+    <h4 style="margin-bottom:10px;">🛠️ 技能库</h4>
+    <div id="ai技能列表" style="display:flex;flex-direction:column;gap:6px;"></div>
+  </div>
+  <div class="card">
+    <h4 style="margin-bottom:10px;">📦 更多资源</h4>
+    <p style="font-size:12px;color:#888;">完整备份路径：<code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">/water/ai-assets/</code></p>
+    <p style="font-size:12px;color:#888;margin-top:4px;">这些资料由AI自动维护，实时同步到GitHub仓库。</p>
   </div>
 </div>
 
@@ -1870,6 +1892,7 @@ function 切换标签(n) {
   if (n == 'debt') { document.getElementById('欠款_日期').value = 今天(); 刷新欠款(); }
   if (n == 'all') 刷新分析(window._排序方式);
   if (n == 'settings') { document.getElementById('提醒天数').value = 读提醒天数(); 刷新分析(window._排序方式); 刷新待办(); 刷新日志(); try{ _dataCache.customVillages = JSON.parse(localStorage.getItem('卖水_custom_villages') || '[]'); }catch(e){} 渲染各村提醒天数(); 管理页渲染村庄列表(); }
+  if (n == 'ai') 刷新AI资料();
 }
 
 // ========== 金额隐藏功能 ==========
@@ -2264,5 +2287,52 @@ function 刷新语录() {
 }
 获取网络语录().then(刷新语录).catch(function(){刷新语录();});
 setInterval(刷新语录, 30000);
+
+// ========== AI资料 ==========
+const AI文档列表 = [
+  {名:'给豆豆的学习资料_天道+毛选', 路径:'ai-assets/doc/给豆豆的学习资料_天道+毛选.md', 图标:'📖'},
+  {名:'给豆豆的能力复制安装包', 路径:'ai-assets/doc/给豆豆的能力复制安装包.md', 图标:'📦'},
+  {名:'遥远的救世主（丁元英思想）', 路径:'ai-assets/doc/遥远的救世主.md', 图标:'📕'},
+  {名:'西晃山文旅科普网站', 路径:'ai-assets/doc/西晃山文旅科普网站.html', 图标:'🌐'},
+  {名:'小财神动画自我介绍', 路径:'ai-assets/doc/小财神动画自我介绍.html', 图标:'🎬'},
+  {名:'麻阳万事通-可行性报告', 路径:'ai-assets/doc/麻阳万事通-可行性报告.md', 图标:'📄'},
+  {名:'麻阳便民-推广方案', 路径:'ai-assets/doc/麻阳便民-推广方案.md', 图标:'📄'},
+  {名:'麻阳便民-朋友圈模板', 路径:'ai-assets/doc/麻阳便民-朋友圈模板.md', 图标:'📱'},
+  {名:'麻阳便民-自动回复流程', 路径:'ai-assets/doc/麻阳便民-自动回复流程.md', 图标:'🔄'},
+  {名:'麻阳便民-豆豆设置步骤', 路径:'ai-assets/doc/麻阳便民-豆豆设置步骤.md', 图标:'⚙️'},
+  {名:'麻阳卖水广告模板', 路径:'ai-assets/doc/麻阳卖水广告模板.txt', 图标:'📢'},
+  {名:'麻阳卖水路线图', 路径:'ai-assets/doc/麻阳卖水路线图.svg', 图标:'🗺️'},
+  {名:'小财神AI日报', 路径:'ai-assets/doc/mayang_report_feishu.txt', 图标:'📋'},
+];
+const AI技能列表 = [
+  {名:'麻阳同城AI客服（自动回复）', 路径:'ai-assets/skills/mayang-ai-cs.md', 图标:'🤖'},
+  {名:'麻阳同城内容生成（短视频）', 路径:'ai-assets/skills/mayang-content-gen.md', 图标:'📱'},
+  {名:'麻阳定时任务配置', 路径:'ai-assets/skills/mayang-cron-setup.md', 图标:'⏰'},
+];
+function 刷新AI资料() {
+  var 文档容器 = document.getElementById('ai文档列表');
+  if (!文档容器) return;
+  var html = '';
+  for (var i = 0; i < AI文档列表.length; i++) {
+    var d = AI文档列表[i];
+    html += '<a href="' + d.路径 + '" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f8faf8;border-radius:8px;text-decoration:none;color:#333;border:1px solid #e8f0e8;">' +
+      '<span style="font-size:18px;">' + d.图标 + '</span>' +
+      '<span style="flex:1;font-size:13px;font-weight:500;">' + d.名 + '</span>' +
+      '<span style="font-size:11px;color:#2d8a4e;">📥 查看</span></a>';
+  }
+  文档容器.innerHTML = html;
+
+  var 技能容器 = document.getElementById('ai技能列表');
+  if (!技能容器) return;
+  var 技能html = '';
+  for (var i = 0; i < AI技能列表.length; i++) {
+    var d = AI技能列表[i];
+    技能html += '<a href="' + d.路径 + '" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f8faf8;border-radius:8px;text-decoration:none;color:#333;border:1px solid #e8f0e8;">' +
+      '<span style="font-size:18px;">' + d.图标 + '</span>' +
+      '<span style="flex:1;font-size:13px;font-weight:500;">' + d.名 + '</span>' +
+      '<span style="font-size:11px;color:#2d8a4e;">📥 查看</span></a>';
+  }
+  技能容器.innerHTML = 技能html;
+}
 </script>
 
