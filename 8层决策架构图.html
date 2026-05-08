@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8层决策架构流程图</title>
+<script src="https://cdn.tailwindcss.com">
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;600;700&display=swap');
+body { font-family: 'Noto Sans SC', sans-serif; background: #f8f9fa; }
+.arrow-down { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 14px solid #666; margin: 4px auto; }
+.layer-card { transition: transform 0.2s; }
+.layer-card:hover { transform: translateX(5px); }
+</style>
+</head>
+<body class="p-4 md:p-8">
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-2xl font-bold text-center mb-2 text-gray-800">🧠 小财神AI · 8层决策架构</h1>
+  <p class="text-center text-gray-500 mb-8 text-sm">用户提问 / 老板发任务 → 逐层处理 → 越用越聪明</p>
+
+  <!-- 1. 人格层 -->
+  <div class="layer-card bg-red-100 border-l-8 border-red-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">👤</div>
+      <div>
+        <div class="font-bold text-lg text-red-800">① 人格层 · 总控大脑</div>
+        <div class="text-sm text-gray-700 mt-1">判断任务类型 → 评估紧急程度 → 决定直接干还是先规划</div>
+        <div class="text-xs text-gray-500 mt-1">品牌语气：接地气、靠谱、带点幽默</div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 2. 规划层 -->
+  <div class="layer-card bg-orange-100 border-l-8 border-orange-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">🧠</div>
+      <div>
+        <div class="font-bold text-lg text-orange-800">② 规划层 · 战略参谋</div>
+        <div class="text-sm text-gray-700 mt-1">拆解任务 → 制定执行步骤 → 确定所需工具和资料</div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 3. 能力层 -->
+  <div class="layer-card bg-yellow-100 border-l-8 border-yellow-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">🔧</div>
+      <div>
+        <div class="font-bold text-lg text-yellow-800">③ 能力层 · Skills矩阵</div>
+        <div class="text-sm text-gray-700 mt-1">24个技能就绪：视频创作 · 内容运营 · 网页开发 · 数据分析 · 运维 · 思维框架</div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 4. 事实层 -->
+  <div class="layer-card bg-green-100 border-l-8 border-green-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">📁</div>
+      <div>
+        <div class="font-bold text-lg text-green-800">④ 事实层 · 企业档案柜</div>
+        <div class="text-sm text-gray-700 mt-1">10大资料库：文案 · 视觉 · 音频 · SOP · 课程 · 产品 · 公司 · IP · 话术 · 竞品</div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 5. 审核层 -->
+  <div class="layer-card bg-blue-100 border-l-8 border-blue-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">🚦</div>
+      <div>
+        <div class="font-bold text-lg text-blue-800">⑤ 审核层 · 三级放行</div>
+        <div class="text-sm text-gray-700 mt-1">
+          <span class="inline-block bg-green-500 text-white px-2 py-0.5 rounded text-xs mr-1">🟢 绿灯</span> 日常内容 → 自动放行
+          <span class="inline-block bg-yellow-500 text-white px-2 py-0.5 rounded text-xs mx-1">🟡 黄灯</span> 涉及钱/账号 → 告知老板
+          <span class="inline-block bg-red-500 text-white px-2 py-0.5 rounded text-xs mx-1">🔴 红灯</span> 删数据/法律 → 老板亲口确认
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 6. 执行层 -->
+  <div class="layer-card bg-purple-100 border-l-8 border-purple-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">⚡</div>
+      <div>
+        <div class="font-bold text-lg text-purple-800">⑥ 执行层 · 按计划执行</div>
+        <div class="text-sm text-gray-700 mt-1">调用工具完成任务 → 如需补充信息则回退到①或②</div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 7. 复盘层 -->
+  <div class="layer-card bg-pink-100 border-l-8 border-pink-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">🔄</div>
+      <div>
+        <div class="font-bold text-lg text-pink-800">⑦ 复盘层 · 经验总结</div>
+        <div class="text-sm text-gray-700 mt-1">成功经验 → 保留入库 ｜ 失败教训 → 沉淀反思 ｜ 减少人工干预</div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow-down"></div>
+
+  <!-- 8. 更新层 -->
+  <div class="layer-card bg-teal-100 border-l-8 border-teal-500 rounded-lg p-4 mb-1 shadow">
+    <div class="flex items-start">
+      <div class="text-3xl mr-3">📖</div>
+      <div>
+        <div class="font-bold text-lg text-teal-800">⑧ 知识更新层 · 越用越聪明</div>
+        <div class="text-sm text-gray-700 mt-1">复盘成果写回资料库 → 同步更新技能库 → 系统持续进化</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 反馈循环 -->
+  <div class="mt-8 p-4 bg-gray-100 rounded-lg border-2 border-dashed border-gray-400 text-center">
+    <div class="text-lg">↩ <span class="font-semibold">反馈闭环</span></div>
+    <div class="text-sm text-gray-600 mt-1">⑧ 更新层 → ④ 事实层（资料更新）→ ③ 能力层（技能升级）→ ① 人格层（规则优化）</div>
+    <div class="text-xs text-gray-400 mt-2">每完成一个任务，系统就变强一点 💪</div>
+  </div>
+
+</div>
+</body>
+</html>
