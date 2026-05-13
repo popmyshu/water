@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>西晃山 · 任务看板</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -10,250 +10,199 @@ body {
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: #f0f4f0;
   color: #333;
-  padding: 16px;
+  padding: 12px;
 }
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
 }
-.header h1 { font-size: 20px; color: #2d8a4e; }
-.header .date { font-size: 14px; color: #888; }
-.stats-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.stat-box {
-  background: white;
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-.stat-num { font-size: 26px; font-weight: 700; color: #2d8a4e; }
-.stat-label { font-size: 12px; color: #888; margin-top: 2px; }
-.board {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-}
+.header h1 { font-size:18px; color:#2d8a4e; }
+.header .date { font-size:12px; color:#888; }
+.stats-row { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:12px; }
+.stat-box { background:white; border-radius:8px; padding:10px; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.stat-num { font-size:22px; font-weight:700; color:#2d8a4e; }
+.stat-label { font-size:11px; color:#888; margin-top:2px; }
+.board { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+@media (max-width:600px) { .board { grid-template-columns:1fr; } }
 .column {
-  background: #e8ece8;
-  border-radius: 12px;
-  padding: 12px;
-  min-height: 300px;
+  background:#e8ece8; border-radius:10px; padding:10px; min-height:200px;
 }
 .column-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #ddd;
-  display: flex;
-  justify-content: space-between;
+  font-size:13px; font-weight:600; margin-bottom:8px; padding-bottom:6px;
+  border-bottom:2px solid #ddd; display:flex; justify-content:space-between;
 }
 .column-title .count {
-  background: #ddd;
-  border-radius: 10px;
-  padding: 1px 8px;
-  font-size: 12px;
+  background:#ddd; border-radius:8px; padding:0 7px; font-size:11px; line-height:18px;
 }
 .card {
-  background: white;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  cursor: pointer;
-  transition: all 0.15s;
-  border-left: 3px solid #2d8a4e;
+  background:white; border-radius:6px; padding:10px; margin-bottom:7px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.05); border-left:3px solid #2d8a4e;
 }
-.card:active { transform: scale(0.98); }
-.card.high { border-left-color: #e53935; }
-.card.medium { border-left-color: #ff8f00; }
-.card.done { border-left-color: #43a047; }
-.card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-.card-desc { font-size: 12px; color: #888; }
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  font-size: 11px;
-  color: #aaa;
+.card.high { border-left-color:#e53935; }
+.card.medium { border-left-color:#ff8f00; }
+.card.done { border-left-color:#43a047; }
+.card-title { font-weight:600; font-size:14px; margin-bottom:3px; }
+.card-desc { font-size:12px; color:#888; margin-bottom:5px; }
+.card-footer { display:flex; justify-content:space-between; font-size:11px; color:#999; }
+.tag {
+  display:inline-block; font-size:10px; padding:1px 6px; border-radius:3px;
+  font-weight:500;
 }
-.meta-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
+.tag-red { background:#ffe8e6; color:#c62828; }
+.tag-orange { background:#fff3e0; color:#e65100; }
+.tag-green { background:#e8f5e9; color:#2e7d32; }
+.tag-gray { background:#f5f5f5; color:#666; }
+.meta-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+@media (max-width:600px) { .meta-row { grid-template-columns:1fr; } }
+.meta-card { background:white; border-radius:8px; padding:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.meta-title { font-size:12px; font-weight:600; color:#555; margin-bottom:6px; }
+.meta-item { font-size:12px; padding:4px 0; border-bottom:1px solid #f3f3f3; }
+.meta-item:last-child { border:none; }
+.meta-item .lbl { color:#888; }
+.detail-bar {
+  background:white; border-radius:8px; padding:10px 12px; margin-bottom:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06); font-size:12px; color:#666;
+  display:flex; justify-content:space-between; align-items:center;
 }
-.meta-card {
-  background: white;
-  border-radius: 10px;
-  padding: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+.detail-bar .ref {
+  background:#e8f5e9; color:#2d8a4e; padding:2px 8px; border-radius:4px;
+  font-weight:600; font-size:11px;
 }
-.meta-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-.meta-item { font-size: 13px; color: #333; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
-.meta-item:last-child { border-bottom: none; }
-.meta-item .label { color: #888; }
-@media (max-width: 600px) {
-  .board { grid-template-columns: 1fr; }
-  .stats-row { grid-template-columns: 1fr 1fr; }
-  .meta-row { grid-template-columns: 1fr; }
-}
+.empty { color:#aaa; text-align:center; padding:20px 0; font-size:13px; }
 </style>
 </head>
 <body>
 <div class="header">
-  <h1>🏔️ 西晃山 · 今日看板</h1>
+  <h1>🏔️ 西晃山 · 看板</h1>
   <span class="date" id="today"></span>
 </div>
 
-<div class="stats-row">
-  <div class="stat-box">
-    <div class="stat-num" id="stat-todo">0</div>
-    <div class="stat-label">待办</div>
-  </div>
-  <div class="stat-box">
-    <div class="stat-num" id="stat-doing">0</div>
-    <div class="stat-label">进行中</div>
-  </div>
-  <div class="stat-box">
-    <div class="stat-num" id="stat-done">0</div>
-    <div class="stat-label">已完成</div>
-  </div>
-  <div class="stat-box">
-    <div class="stat-num" id="stat-water">0</div>
-    <div class="stat-label">今日送水</div>
-  </div>
+<div class="stats-row" id="stats">
+  <div class="stat-box"><div class="stat-num" id="sn0">-</div><div class="stat-label">待办</div></div>
+  <div class="stat-box"><div class="stat-num" id="sn1">-</div><div class="stat-label">进行中</div></div>
+  <div class="stat-box"><div class="stat-num" id="sn2">-</div><div class="stat-label">已完成</div></div>
+  <div class="stat-box"><div class="stat-num" id="sn3">-</div><div class="stat-label">今日送水</div></div>
 </div>
 
-<div class="board">
-  <div class="column">
-    <div class="column-title">
-      📋 待办
-      <span class="count" id="count-todo">0</span>
-    </div>
-    <div id="col-todo"></div>
-  </div>
-  <div class="column">
-    <div class="column-title">
-      🔄 进行中
-      <span class="count" id="count-doing">0</span>
-    </div>
-    <div id="col-doing"></div>
-  </div>
-  <div class="column">
-    <div class="column-title">
-      ✅ 已完成
-      <span class="count" id="count-done">0</span>
-    </div>
-    <div id="col-done"></div>
-  </div>
+<div class="detail-bar">
+  <span>📋 看板数据由 <b>小财神 (Hermes v0.13.0)</b> 自动更新</span>
+  <span class="ref" id="update-time">--</span>
 </div>
+
+<div class="board" id="board"></div>
 
 <div class="meta-row">
   <div class="meta-card">
     <div class="meta-title">📢 今日科普</div>
-    <div id="today-science" class="meta-item" style="border:none;">
-      <span class="label">加载中...</span>
-    </div>
+    <div class="meta-item"><span class="lbl" id="today-sci">加载中...</span></div>
   </div>
   <div class="meta-card">
-    <div class="meta-title">🤖 AI运行状态</div>
-    <div id="ai-status">
-      <div class="meta-item">内容生成：<span class="label" id="s-status">-</span></div>
-      <div class="meta-item">定时任务：<span class="label" id="cron-status">-</span></div>
-      <div class="meta-item">便民客服：<span class="label" id="cs-status">-</span></div>
-    </div>
+    <div class="meta-title">🤖 AI运行</div>
+    <div class="meta-item">内容生成：<span class="lbl" id="s-st">-</span></div>
+    <div class="meta-item">定时任务：<span class="lbl" id="c-st">-</span></div>
+    <div class="meta-item">便民客服：<span class="lbl" id="cs-st">-</span></div>
   </div>
 </div>
 
 <script>
-// 初始化日期
-document.getElementById('today').textContent = new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+document.getElementById('today').textContent = new Date().toLocaleDateString('zh-CN', {month:'long',day:'numeric',weekday:'short'});
 
-// 看板数据（由Hermes自动更新）
-const DEFAULT_DATA = {
+const colNames = ['📋 待办', '🔄 进行中', '✅ 已完成'];
+const colKeys = ['todo', 'doing', 'done'];
+const colColors = ['', 'medium', 'done'];
+
+const DEFAULT = {
   todo: [
-    { title: '发送科普图文', desc: '今日西晃山科普内容已生成，转发朋友圈', priority: 'high' },
+    {title:'转发今日科普图文', desc:'已生成文案，转发到朋友圈+3个群', priority:'high'},
+    {title:'整理昨日未收款', desc:'5月12日欠款客户跟进', priority:'medium'},
+    {title:'备水10桶', desc:'高村镇客户预约', priority:'medium'},
   ],
   doing: [
-    { title: '监控便民圈消息', desc: 'AI自动回复用户咨询', priority: 'medium' },
+    {title:'监控便民圈消息', desc:'AI自动回复用户咨询', priority:'medium'},
   ],
   done: [
-    { title: '生成科普文案', desc: '每日8:00自动完成', priority: 'done' },
+    {title:'生成今日科普', desc:'D1: 矿泉水vs纯净水', priority:'done'},
+    {title:'送水1-5号客户', desc:'老街片区5户', priority:'done'},
+    {title:'送水6-10号客户', desc:'城南小区5户', priority:'done'},
+    {title:'更新销售统计', desc:'录入送水数据到系统', priority:'done'},
   ],
-  water_today: 0,
-  science_today: '等待今日内容...',
-  ai_status: { content: '✅ 正常', cron: '✅ 已调度', cs: '⏸ 待接入' }
+  water_today: 12,
+  science_today: 'D1 矿泉水vs纯净水，差别在哪？',
+  ai_status: {content:'✅ 正常', cron:'✅ 已调度', cs:'⏸ 待接入'},
+  updated_at: new Date().toLocaleString()
 };
 
 function render(data) {
-  data = data || DEFAULT_DATA;
+  data = data || DEFAULT;
+  const board = document.getElementById('board');
+  board.innerHTML = '';
   
-  // 统计
-  document.getElementById('stat-todo').textContent = data.todo.length;
-  document.getElementById('stat-doing').textContent = data.doing.length;
-  document.getElementById('stat-done').textContent = data.done.length;
-  document.getElementById('stat-water').textContent = data.water_today || 0;
+  const stats = [data.todo.length, data.doing.length, data.done.length, data.water_today || 0];
+  stats.forEach((v,i) => document.getElementById('sn'+i).textContent = v);
   
-  document.getElementById('count-todo').textContent = data.todo.length;
-  document.getElementById('count-doing').textContent = data.doing.length;
-  document.getElementById('count-done').textContent = data.done.length;
-  
-  // 渲染各列
-  ['todo', 'doing', 'done'].forEach(col => {
-    const container = document.getElementById('col-' + col);
-    container.innerHTML = '';
-    (data[col] || []).forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'card ' + (item.priority || 'medium');
-      card.innerHTML = `
-        <div class="card-title">${item.title}</div>
-        <div class="card-desc">${item.desc}</div>
-        <div class="card-footer">
-          <span>${item.assignee || '小财神'}</span>
-          <span>${item.time || ''}</span>
-        </div>
-      `;
-      container.appendChild(card);
-    });
+  colKeys.forEach((key, ci) => {
+    const col = document.createElement('div');
+    col.className = 'column';
+    const items = data[key] || [];
+    col.innerHTML = `<div class="column-title">${colNames[ci]} <span class="count">${items.length}</span></div>`;
+    
+    if (items.length === 0) {
+      col.innerHTML += '<div class="empty">暂无任务</div>';
+    } else {
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card ' + (colColors[ci] || item.priority || 'medium');
+        const tagClass = item.priority === 'high' ? 'tag-red' : 
+                         item.priority === 'medium' ? 'tag-orange' : 
+                         item.priority === 'done' ? 'tag-green' : 'tag-gray';
+        const tagText = item.priority === 'high' ? '紧急' : 
+                        item.priority === 'medium' ? '中等' : 
+                        item.priority === 'done' ? '完成' : '普通';
+        card.innerHTML = `
+          <div class="card-title">${item.title}</div>
+          <div class="card-desc">${item.desc}</div>
+          <div class="card-footer">
+            <span>${item.assignee || '小财神'}</span>
+            <span class="tag ${tagClass}">${tagText}</span>
+          </div>`;
+        col.appendChild(card);
+      });
+    }
+    board.appendChild(col);
   });
   
-  // 科普和状态
-  document.getElementById('today-science').innerHTML = `<span class="label">${data.science_today || '暂无'}</span>`;
-  if (data.ai_status) {
-    document.getElementById('s-status').textContent = data.ai_status.content || '-';
-    document.getElementById('cron-status').textContent = data.ai_status.cron || '-';
-    document.getElementById('cs-status').textContent = data.ai_status.cs || '-';
-  }
+  document.getElementById('today-sci').textContent = data.science_today || '暂无';
+  document.getElementById('update-time').textContent = data.updated_at || '--';
+  document.getElementById('s-st').textContent = data.ai_status?.content || '-';
+  document.getElementById('c-st').textContent = data.ai_status?.cron || '-';
+  document.getElementById('cs-st').textContent = data.ai_status?.cs || '-';
 }
 
-// 尝试加载云端数据
+// 加载数据
 async function load() {
-  try {
-    const resp = await fetch('kanban_data.json?' + Date.now());
-    if (resp.ok) {
-      const data = await resp.json();
+  const now = new Date().toLocaleString();
+  const d = localStorage.getItem('xihuanshan_kanban');
+  if (d) {
+    try {
+      const data = JSON.parse(d);
+      data.updated_at = now;
       render(data);
+      return;
+    } catch(e) {}
+  }
+  // fallback: 尝试从云端json文件加载
+  try {
+    const r = await fetch('kanban_data.json?'+Date.now());
+    if (r.ok) {
+      const data = await r.json();
+      data.updated_at = now;
+      render(data);
+      localStorage.setItem('xihuanshan_kanban', JSON.stringify(data));
       return;
     }
   } catch(e) {}
+  // 用默认数据
   render();
-  
-  // 也试localStorage
-  try {
-    const local = localStorage.getItem('xihuanshan_kanban');
-    if (local) render(JSON.parse(local));
-  } catch(e) {}
 }
-
-// 每30秒刷新
 load();
 setInterval(load, 30000);
 </script>
