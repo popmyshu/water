@@ -3,267 +3,215 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>西晃山 · 智能看板</title>
+<title>小财神 · 看板</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #0d1117;
-  color: #e6edf3;
-  padding: 20px;
-  min-height: 100vh;
-}
-.header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px; padding-bottom: 16px;
-  border-bottom: 1px solid #30363d;
-}
-.header h1 { font-size: 22px; font-weight: 600; }
-.header h1 span { color: #2d8a4e; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.header-right .date { font-size: 13px; color: #8b949e; }
-.status-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  margin-right: 6px;
-}
-.dot-green { background: #3fb950; }
-.dot-yellow { background: #d29922; }
-
-.stats-row {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-  margin-bottom: 20px;
-}
-.stat-box {
-  background: #161b22; border-radius: 8px; padding: 16px;
-  border: 1px solid #30363d;
-}
-.stat-num { font-size: 28px; font-weight: 700; color: #58a6ff; }
-.stat-label { font-size: 12px; color: #8b949e; margin-top: 4px; }
-.stat-num.green { color: #3fb950; }
-.stat-num.orange { color: #d29922; }
-.stat-num.red { color: #f85149; }
-
-.board {
-  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
-  margin-bottom: 20px;
-}
-.column {
-  background: #161b22; border-radius: 8px; padding: 12px;
-  border: 1px solid #30363d;
-  min-height: 200px;
-}
-.column-header {
-  display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 12px; margin-bottom: 12px;
-  border-bottom: 1px solid #30363d;
-}
-.column-header .title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.column-header .count {
-  background: #21262d; border-radius: 10px; padding: 2px 8px;
-  font-size: 11px; color: #8b949e;
-}
-.todo .column-header { border-bottom-color: #58a6ff; }
-.doing .column-header { border-bottom-color: #d29922; }
-.done .column-header { border-bottom-color: #3fb950; }
-
-.card {
-  background: #21262d; border-radius: 6px; padding: 12px;
-  margin-bottom: 8px; border-left: 3px solid #30363d;
-  transition: all 0.15s;
-}
-.card:hover { background: #292e36; }
-.card.todo { border-left-color: #58a6ff; }
-.card.doing { border-left-color: #d29922; }
-.card.done { border-left-color: #3fb950; }
-.card-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-.card-desc { font-size: 12px; color: #8b949e; }
-.card-footer {
-  display: flex; justify-content: space-between; margin-top: 8px;
-  font-size: 11px; color: #484f58;
-}
-.card-tag {
-  display: inline-block; padding: 2px 6px; border-radius: 3px;
-  font-size: 10px; margin-right: 4px;
-}
-.tag-ready { background: #1f6feb33; color: #58a6ff; }
-.tag-blocked { background: #f8514933; color: #f85149; }
-.tag-done { background: #3fb95033; color: #3fb950; }
-
-.bottom-row {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-}
-.info-card {
-  background: #161b22; border-radius: 8px; padding: 14px;
-  border: 1px solid #30363d;
-}
-.info-title { font-size: 12px; font-weight: 600; color: #8b949e; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-.info-item { font-size: 13px; padding: 4px 0; }
-.info-item .label { color: #8b949e; }
-
-.empty-state {
-  text-align: center; padding: 30px 0; color: #484f58; font-size: 13px;
-}
-.empty-state .icon { font-size: 24px; margin-bottom: 8px; }
-
-@media (max-width: 768px) {
-  .stats-row { grid-template-columns: 1fr 1fr; }
-  .board { grid-template-columns: 1fr; }
-  .bottom-row { grid-template-columns: 1fr; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0d1117;color:#e6edf3;padding:16px;min-height:100vh}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.header h1{font-size:20px;color:#58a6ff;display:flex;align-items:center;gap:8px}
+.header .badge{background:#21262d;color:#8b949e;padding:2px 10px;border-radius:10px;font-size:12px;border:1px solid #30363d}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.stat-box{background:#161b22;border-radius:8px;padding:12px;text-align:center;border:1px solid #30363d}
+.stat-num{font-size:24px;font-weight:700;color:#58a6ff}
+.stat-label{font-size:12px;color:#8b949e;margin-top:2px}
+.board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.col{background:#161b22;border-radius:10px;padding:12px;min-height:200px;border:1px solid #30363d}
+.col-title{font-size:13px;font-weight:600;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center;color:#e6edf3}
+.col-title .count{background:#21262d;color:#8b949e;border-radius:8px;padding:0 8px;font-size:11px}
+.col-ready .col-title{border-bottom-color:#1f6feb}
+.col-running .col-title{border-bottom-color:#d29922}
+.col-done .col-title{border-bottom-color:#3fb950}
+.card{background:#21262d;border-radius:6px;padding:10px;margin-bottom:8px;border:1px solid #30363d;border-left:3px solid#58a6ff;transition:all .1s}
+.card:hover{border-color:#58a6ff}
+.card.pri-high{border-left-color:#f85149}
+.card.pri-med{border-left-color:#d29922}
+.card.pri-low{border-left-color:#8b949e}
+.card-title{font-size:13px;font-weight:500;margin-bottom:4px;color:#e6edf3}
+.card-id{font-size:10px;color:#484f58;font-family:monospace}
+.card-body{font-size:11px;color:#8b949e;margin:4px 0}
+.card-footer{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#484f58}
+.card-footer .assignee{color:#58a6ff}
+.card-footer .time{color:#484f58}
+.status-tag{font-size:10px;padding:1px 5px;border-radius:3px}
+.s-ready{background:#0d419d;color:#58a6ff}
+.s-running{background:#3d2e00;color:#d29922}
+.s-done{background:#003d1a;color:#3fb950}
+.s-blocked{background:#3d0000;color:#f85149}
+.empty-state{text-align:center;color:#484f58;padding:20px 0;font-size:12px}
+.footer{margin-top:16px;display:flex;gap:12px}
+.info-card{background:#161b22;border-radius:8px;padding:10px;border:1px solid #30363d;flex:1}
+.info-title{font-size:11px;color:#8b949e;margin-bottom:4px}
+.info-text{font-size:13px;color:#e6edf3}
+.info-text .label{color:#8b949e;font-size:12px}
+@media(max-width:600px){
+  .board{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
-
 <div class="header">
-  <h1>⛰️ 西晃山 · <span>智能看板</span></h1>
-  <div class="header-right">
-    <span><span class="status-dot dot-green"></span>系统在线</span>
-    <span class="date" id="todayDate"></span>
-  </div>
+  <h1>📋 小财神 · 看板</h1>
+  <span class="badge" id="update-time">读取中...</span>
 </div>
 
-<div class="stats-row">
-  <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">任务总数</div></div>
-  <div class="stat-box"><div class="stat-num orange" id="statTodo">0</div><div class="stat-label">待办任务</div></div>
-  <div class="stat-box"><div class="stat-num" id="statDoing">0</div><div class="stat-label">进行中</div></div>
-  <div class="stat-box"><div class="stat-num green" id="statDone">0</div><div class="stat-label">已完成</div></div>
+<div class="stats" id="stats">
+  <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">待办</div></div>
+  <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">进行中</div></div>
+  <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">已完成</div></div>
+  <div class="stat-box"><div class="stat-num">-</div><div class="stat-label">总任务</div></div>
 </div>
 
 <div class="board">
-  <div class="column todo">
-    <div class="column-header"><span class="title">📋 待办</span><span class="count" id="countTodo">0</span></div>
-    <div id="colTodo"></div>
+  <div class="col col-ready">
+    <div class="col-title">📋 待办 <span class="count">0</span></div>
+    <div id="col-ready"><div class="empty-state">暂无任务</div></div>
   </div>
-  <div class="column doing">
-    <div class="column-header"><span class="title">🔄 进行中</span><span class="count" id="countDoing">0</span></div>
-    <div id="colDoing"></div>
+  <div class="col col-running">
+    <div class="col-title">🔄 进行中 <span class="count">0</span></div>
+    <div id="col-running"><div class="empty-state">暂无任务</div></div>
   </div>
-  <div class="column done">
-    <div class="column-header"><span class="title">✅ 已完成</span><span class="count" id="countDone">0</span></div>
-    <div id="colDone"></div>
+  <div class="col col-done">
+    <div class="col-title">✅ 已完成 <span class="count">0</span></div>
+    <div id="col-done"><div class="empty-state">暂无任务</div></div>
   </div>
 </div>
 
-<div class="bottom-row">
+<div class="footer">
   <div class="info-card">
-    <div class="info-title">📢 今日科普（即将发送）</div>
-    <div class="info-item">📌 <span class="label">矿泉水 vs 纯净水对比</span></div>
-    <div class="info-item">⏰ <span class="label">定时 08:00 自动发送</span></div>
-    <div class="info-item">🤖 <span class="label">AI 内容生成：运行正常</span></div>
+    <div class="info-title">🤖 小财神状态</div>
+    <div class="info-text">
+      <span id="agent-status">连接中...</span><br>
+      <span class="label">模型: DeepSeek Chat</span>
+    </div>
   </div>
   <div class="info-card">
-    <div class="info-title">⚙️ 系统状态</div>
-    <div class="info-item">📋 Kanban 看板：<span class="label">✅ 已连接</span></div>
-    <div class="info-item">⏰ 每日科普：<span class="label">✅ 已调度</span></div>
-    <div class="info-item">🔌 便民客服：<span class="label">⏸ 待接入</span></div>
-    <div class="info-item">💾 数据存储：<span class="label">✅ localStorage</span></div>
+    <div class="info-title">📢 今日科普</div>
+    <div class="info-text"><span class="label" id="today-science">加载中...</span></div>
   </div>
 </div>
 
 <script>
-// 设置日期
-function updateDate() {
-  const now = new Date();
-  const opts = { year:'numeric', month:'long', day:'numeric', weekday:'long' };
-  document.getElementById('todayDate').textContent = now.toLocaleDateString('zh-CN', opts);
-}
-updateDate();
+const STATUS_MAP = {ready:'待办',running:'进行中',done:'已完成',blocked:'阻塞',todo:'待办',triage:'待分类'};
+const PRI_CLASS = {1:'pri-high',2:'pri-med',3:'pri-low',0:'pri-low'};
 
-// 从 Hermes Kanban API 获取数据
-async function loadKanban() {
+function fmtTime(ts) {
+  if(!ts) return '';
+  const d = new Date(ts * 1000);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if(diff < 60) return '刚刚';
+  if(diff < 3600) return Math.floor(diff/60)+'分钟前';
+  if(diff < 86400) return Math.floor(diff/3600)+'小时前';
+  return d.toLocaleDateString('zh-CN');
+}
+
+async function load() {
   try {
-    const resp = await fetch('/api/plugins/kanban/tasks?' + Date.now());
-    if (resp.ok) {
+    const resp = await fetch('kanban_data.json?'+Date.now());
+    if(resp.ok) {
       const data = await resp.json();
-      renderTasks(data.tasks || []);
+      render(data);
       return;
     }
-  } catch(e) {
-    // 如果API不可用，用静态示例数据
-  }
-  
-  // Fallback: 用之前在命令里创建的kanban任务数据
-  // 这个会由 Hermes 在页面加载时自动更新
-  const fallback = [
-    { id: 't_e435a7f2', title: '今日科普 - 矿泉水vs纯净水对比', body: 'D1科普内容已生成，转发朋友圈', status: 'ready', priority: 1, created_at: Date.now()/1000 }
-  ];
-  renderTasks(fallback);
+  } catch(e) {}
+  // fallback: 在线版读取静态数据
+  loadStatic();
 }
 
-function renderTasks(tasks) {
-  const todoCol = document.getElementById('colTodo');
-  const doingCol = document.getElementById('colDoing');
-  const doneCol = document.getElementById('colDone');
+function render(data) {
+  const tasks = data.tasks || [];
+  const stats = data.stats || {};
+  const science = data.science_today || '暂无';
   
-  todoCol.innerHTML = '';
-  doingCol.innerHTML = '';
-  doneCol.innerHTML = '';
+  document.getElementById('update-time').textContent = new Date().toLocaleTimeString('zh-CN');
   
-  let todoCount = 0, doingCount = 0, doneCount = 0;
+  // 统计数据
+  const counts = {};
+  for(const t of tasks) {
+    const s = t.status || 'ready';
+    counts[s] = (counts[s]||0) + 1;
+  }
+  document.querySelectorAll('.stat-box')[0].querySelector('.stat-num').textContent = (counts.ready||0)+(counts.todo||0)+(counts.triage||0);
+  document.querySelectorAll('.stat-box')[1].querySelector('.stat-num').textContent = counts.running||0;
+  document.querySelectorAll('.stat-box')[2].querySelector('.stat-num').textContent = counts.done||0;
+  document.querySelectorAll('.stat-box')[3].querySelector('.stat-num').textContent = tasks.length;
   
-  tasks.forEach(t => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    
-    const status = t.status || 'ready';
-    const priority = t.priority || 0;
-    const created = t.created_at ? new Date(t.created_at * 1000).toLocaleString('zh-CN') : '';
-    
-    let statusClass, statusTag, statusText;
-    if (status === 'ready' || status === 'todo') {
-      statusClass = 'todo'; statusTag = 'tag-ready'; statusText = '待办';
-      todoCount++;
-    } else if (status === 'doing' || status === 'in_progress' || status === 'claimed') {
-      statusClass = 'doing'; statusTag = ''; statusText = '进行中';
-      doingCount++;
-    } else if (status === 'done' || status === 'completed') {
-      statusClass = 'done'; statusTag = 'tag-done'; statusText = '已完成';
-      doneCount++;
+  // 按状态分组
+  const cols = {ready:[],todo:[],triage:[],running:[],done:[],blocked:[]};
+  for(const t of tasks) {
+    const s = t.status || 'ready';
+    if(cols[s]) cols[s].push(t);
+  }
+  
+  ['ready','running','done'].forEach(colKey => {
+    // 合并ready+todo+triage
+    let items = [];
+    if(colKey === 'ready') {
+      items = [...(cols.triage||[]), ...(cols.todo||[]), ...(cols.ready||[])];
     } else {
-      statusClass = 'todo'; statusTag = 'tag-ready'; statusText = status;
-      todoCount++;
+      items = cols[colKey] || [];
     }
-    card.classList.add(statusClass);
     
-    card.innerHTML = `
-      <div class="card-title">${t.title || '未命名任务'}</div>
-      <div class="card-desc">${t.body || ''}</div>
-      <div class="card-footer">
-        <span>${created}</span>
-        <span><span class="card-tag ${statusTag}">${statusText}</span></span>
-      </div>
-    `;
+    const container = document.getElementById('col-'+colKey);
+    const countEl = container.parentElement.querySelector('.count');
     
-    if (status === 'ready' || status === 'todo') todoCol.appendChild(card);
-    else if (status === 'doing' || status === 'in_progress' || status === 'claimed') doingCol.appendChild(card);
-    else if (status === 'done' || status === 'completed') doneCol.appendChild(card);
-    else todoCol.appendChild(card);
+    if(!items.length) {
+      container.innerHTML = '<div class="empty-state">暂无任务</div>';
+      countEl.textContent = '0';
+      return;
+    }
+    
+    countEl.textContent = items.length;
+    container.innerHTML = items.map(t => {
+      const pri = t.priority || 0;
+      const statusLabel = STATUS_MAP[t.status] || t.status;
+      const assignee = t.assignee || '-';
+      const cls = PRI_CLASS[pri] || 'pri-low';
+      return `<div class="card ${cls}">
+        <div class="card-title">${t.title||'无标题'}</div>
+        <div class="card-id">${t.id} · <span class="status-tag s-${t.status||'ready'}">${statusLabel}</span></div>
+        ${t.body ? `<div class="card-body">${t.body}</div>` : ''}
+        <div class="card-footer">
+          <span>${assignee === 'hermes' ? '🤖 小财神' : assignee === 'user' ? '👤 华华' : '👤 '+assignee}</span>
+          <span class="time">${fmtTime(t.created_at)}</span>
+        </div>
+      </div>`;
+    }).join('');
   });
   
-  // 更新计数
-  document.getElementById('statTotal').textContent = tasks.length;
-  document.getElementById('statTodo').textContent = todoCount;
-  document.getElementById('statDoing').textContent = doingCount;
-  document.getElementById('statDone').textContent = doneCount;
-  document.getElementById('countTodo').textContent = todoCount;
-  document.getElementById('countDoing').textContent = doingCount;
-  document.getElementById('countDone').textContent = doneCount;
-  
-  // 空状态
-  if (todoCount === 0) {
-    todoCol.innerHTML = '<div class="empty-state"><div class="icon">📭</div>暂无待办任务<br>有新任务将自动显示在这里</div>';
-  }
-  if (doingCount === 0) {
-    doingCol.innerHTML = '<div class="empty-state"><div class="icon">⏳</div>暂无进行中的任务</div>';
-  }
-  if (doneCount === 0) {
-    doneCol.innerHTML = '<div class="empty-state"><div class="icon">🏁</div>暂无已完成任务</div>';
-  }
+  document.getElementById('today-science').textContent = science;
+  document.getElementById('agent-status').textContent = '✅ 运行中';
 }
 
-// 每30秒刷新
-loadKanban();
-setInterval(loadKanban, 30000);
+function loadStatic() {
+  document.getElementById('update-time').textContent = '离线模式';
+  document.querySelectorAll('.stat-box')[0].querySelector('.stat-num').textContent = '4';
+  document.querySelectorAll('.stat-box')[1].querySelector('.stat-num').textContent = '0';
+  document.querySelectorAll('.stat-box')[2].querySelector('.stat-num').textContent = '0';
+  document.querySelectorAll('.stat-box')[3].querySelector('.stat-num').textContent = '4';
+  
+  document.getElementById('col-ready').innerHTML = [
+    {id:'t_001',title:'今日科普 - 矿泉水vs纯净水对比',body:'D1科普内容已生成，转发朋友圈',priority:1,status:'ready',assignee:'hermes',created_at:Math.floor(Date.now()/1000)-300},
+    {id:'t_002',title:'🚚 送水 - 城南明珠小区5户',body:'',priority:1,status:'ready',assignee:'',created_at:Math.floor(Date.now()/1000)-600},
+    {id:'t_003',title:'💰 整理昨日欠款',body:'',priority:2,status:'ready',assignee:'',created_at:Math.floor(Date.now()/1000)-900},
+    {id:'t_004',title:'📢 便民圈发布招工信息',body:'麻阳本地招工',priority:0,status:'ready',assignee:'',created_at:Math.floor(Date.now()/1000)-1800},
+  ].map(t => {
+    const pri = t.priority||0;
+    return `<div class="card ${PRI_CLASS[pri]||'pri-low'}">
+      <div class="card-title">${t.title}</div>
+      <div class="card-id">${t.id} · <span class="status-tag s-ready">待办</span></div>
+      ${t.body ? `<div class="card-body">${t.body}</div>` : ''}
+      <div class="card-footer"><span>${t.assignee === 'hermes' ? '🤖 小财神' : '👤 华华'}</span><span class="time">刚刚</span></div>
+    </div>`;
+  }).join('');
+  document.querySelector('#col-ready').parentElement.querySelector('.count').textContent = '4';
+  document.getElementById('today-science').textContent = '矿泉水vs纯净水对比';
+  document.getElementById('agent-status').textContent = '✅ 演示数据';
+}
+
+load();
+setInterval(load, 30000);
 </script>
 </body>
 </html>
