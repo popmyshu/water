@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 双色球AI预测 v3.0 胆拖版</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Microsoft YaHei','PingFang SC',sans-serif; background:linear-gradient(135deg,#0f0c29,#302b63,#24243e); min-height:100vh; padding:15px; }
+.container { max-width:1100px; margin:0 auto; }
+.header { text-align:center; padding:25px 15px; color:#fff; }
+.header h1 { font-size:1.8em; text-shadow:0 0 20px rgba(102,126,234,0.5); }
+.header p { opacity:0.7; margin-top:8px; font-size:0.9em; }
+.card { background:rgba(255,255,255,0.08); backdrop-filter:blur(10px); border-radius:16px; padding:20px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
+.card-title { font-size:1.1em; font-weight:bold; color:#a8b2ff; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(168,178,255,0.2); }
+.ball { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; margin:2px; font-weight:bold; font-size:15px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.3); }
+.ball-red { background:radial-gradient(circle at 30% 30%,#ff6b6b,#c0392b); box-shadow:0 2px 8px rgba(192,57,43,0.4); }
+.ball-blue { background:radial-gradient(circle at 30% 30%,#74b9ff,#2980b9); box-shadow:0 2px 8px rgba(41,128,185,0.4); }
+.ball-gold { background:radial-gradient(circle at 30% 30%,#ffd700,#ff8c00); box-shadow:0 2px 8px rgba(255,140,0,0.5); }
+.small-ball { width:28px; height:28px; font-size:12px; }
+.pred-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:700px){.pred-grid{grid-template-columns:1fr;}}
+.pred-item { background:rgba(255,255,255,0.06); border-radius:12px; padding:15px; border-left:4px solid #ffd700; }
+.pred-item .title { display:flex; justify-content:space-between; align-items:center; }
+.pred-item .title strong { color:#ffd700; }
+.pred-item .conf-bar { height:5px; background:rgba(255,255,255,0.1); border-radius:3px; margin:6px 0 10px; overflow:hidden; }
+.pred-item .conf-fill { height:100%; background:linear-gradient(90deg,#f7971e,#ffd200); border-radius:3px; }
+.copy-btn { background:rgba(255,215,0,0.3); color:#ffd700; border:1px solid rgba(255,215,0,0.4); padding:5px 14px; border-radius:6px; cursor:pointer; font-size:13px; transition:all 0.2s; }
+.copy-btn:hover { background:rgba(255,215,0,0.5); transform:translateY(-1px); }
+.price-tag { display:inline-block; background:rgba(255,215,0,0.15); color:#ffd700; padding:2px 10px; border-radius:10px; font-size:0.75em; }
+.toast { position:fixed; top:20px; right:20px; background:rgba(39,174,96,0.9); color:#fff; padding:10px 20px; border-radius:8px; display:none; z-index:9999; backdrop-filter:blur(5px); }
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+@media(max-width:700px){.stats-row{grid-template-columns:1fr 1fr;}}
+.stat-box { text-align:center; padding:12px; background:rgba(255,255,255,0.05); border-radius:10px; }
+.stat-num { font-size:1.8em; font-weight:bold; color:#a8b2ff; }
+.stat-label { color:rgba(255,255,255,0.6); font-size:0.8em; margin-top:4px; }
+.hot-tags { margin-top:10px; }
+.hot-tags span { display:inline-block; padding:3px 10px; border-radius:12px; margin:3px; font-size:0.85em; }
+.hot-red { background:rgba(255,107,107,0.3); color:#ff6b6b; }
+.hot-blue { background:rgba(116,185,255,0.3); color:#74b9ff; }
+.recent-box { max-height:250px; overflow-y:auto; }
+.recent-row { padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; gap:8px; font-size:0.9em; }
+.recent-row .p { color:rgba(255,255,255,0.5); min-width:50px; }
+footer { text-align:center; color:rgba(255,255,255,0.4); padding:20px; font-size:0.85em; }
+.legend-row { display:flex; align-items:center; gap:15px; margin-bottom:10px; font-size:0.85em; color:rgba(255,255,255,0.6); }
+.legend-row .lg { display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:middle; margin-right:4px; }
+</style>
+</head>
+<body>
+<div class="toast" id="toast">✅ 已复制到剪贴板</div>
+<div class="container">
+  <div class="header">
+    <h1>🎯 双色球AI预测系统 v3.0</h1>
+    <p>📡 数据源: 福利彩票官方 | 分析 100 期 | 更新 2026-06-10 22:42</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 数据概览</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num">100</div><div class="stat-label">分析期数</div></div>
+      <div class="stat-box"><div class="stat-num">65</div><div class="stat-label">2026年数据</div></div>
+      <div class="stat-box"><div class="stat-num">28</div><div class="stat-label">最热红球次数</div></div>
+      <div class="stat-box"><div class="stat-num">12</div><div class="stat-label">最热蓝球次数</div></div>
+    </div>
+    <div class="hot-tags">
+      <strong style="color:rgba(255,255,255,0.5);font-size:0.85em;">🔥热号:</strong>
+      <span class="hot-red">02(28次)</span> <span class="hot-red">13(27次)</span> <span class="hot-red">30(26次)</span> <span class="hot-red">09(25次)</span> <span class="hot-red">01(24次)</span>
+      <span style="color:rgba(255,255,255,0.2);margin:0 5px;">|</span>
+      <span class="hot-blue">10(12次)</span> <span class="hot-blue">02(10次)</span> <span class="hot-blue">01(8次)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 红球出现频率</div>
+    <canvas id="redChart" height="90"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 蓝球出现频率</div>
+    <canvas id="blueChart" height="70"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🤖 AI胆拖预测推荐 <span class="price-tag">每组20元</span></div>
+    <div class="legend-row">
+      <span><span class="lg" style="background:#ffd700;"></span> 胆码(必出)</span>
+      <span><span class="lg" style="background:#ff6b6b;"></span> 拖码(候选)</span>
+      <span><span class="lg" style="background:#74b9ff;"></span> 蓝球</span>
+    </div>
+    <div class="pred-grid">
+
+      <div class="pred-item">
+        <div class="title">
+          <strong>🎯 胆拖方案1</strong>
+          <button class="copy-btn" onclick="copyDt(1)">📋 复制投注</button>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:88%"></div></div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.8em;margin-bottom:5px;">
+          可信度 88% | 胆3+拖5 = 10注 <span class="price-tag">20元</span>
+        </div>
+        <div><strong style="color:#ffd700;">胆码</strong> <span class="ball ball-gold">09</span><span class="ball ball-gold">24</span><span class="ball ball-gold">30</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">拖码</strong> <span class="ball ball-red">01</span><span class="ball ball-red">02</span><span class="ball ball-red">13</span><span class="ball ball-red">15</span><span class="ball ball-red">22</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">蓝球</strong> <span class="ball ball-blue">02</span></div>
+      </div>
+
+      <div class="pred-item">
+        <div class="title">
+          <strong>🎯 胆拖方案2</strong>
+          <button class="copy-btn" onclick="copyDt(2)">📋 复制投注</button>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:84%"></div></div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.8em;margin-bottom:5px;">
+          可信度 84% | 胆3+拖5 = 10注 <span class="price-tag">20元</span>
+        </div>
+        <div><strong style="color:#ffd700;">胆码</strong> <span class="ball ball-gold">02</span><span class="ball ball-gold">22</span><span class="ball ball-gold">30</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">拖码</strong> <span class="ball ball-red">01</span><span class="ball ball-red">13</span><span class="ball ball-red">25</span><span class="ball ball-red">28</span><span class="ball ball-red">33</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">蓝球</strong> <span class="ball ball-blue">07</span></div>
+      </div>
+
+      <div class="pred-item">
+        <div class="title">
+          <strong>🎯 胆拖方案3</strong>
+          <button class="copy-btn" onclick="copyDt(3)">📋 复制投注</button>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:90%"></div></div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.8em;margin-bottom:5px;">
+          可信度 90% | 胆3+拖5 = 10注 <span class="price-tag">20元</span>
+        </div>
+        <div><strong style="color:#ffd700;">胆码</strong> <span class="ball ball-gold">01</span><span class="ball ball-gold">25</span><span class="ball ball-gold">28</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">拖码</strong> <span class="ball ball-red">02</span><span class="ball ball-red">08</span><span class="ball ball-red">22</span><span class="ball ball-red">29</span><span class="ball ball-red">33</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">蓝球</strong> <span class="ball ball-blue">05</span></div>
+      </div>
+
+      <div class="pred-item">
+        <div class="title">
+          <strong>🎯 胆拖方案4</strong>
+          <button class="copy-btn" onclick="copyDt(4)">📋 复制投注</button>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:81%"></div></div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.8em;margin-bottom:5px;">
+          可信度 81% | 胆3+拖5 = 10注 <span class="price-tag">20元</span>
+        </div>
+        <div><strong style="color:#ffd700;">胆码</strong> <span class="ball ball-gold">03</span><span class="ball ball-gold">08</span><span class="ball ball-gold">24</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">拖码</strong> <span class="ball ball-red">01</span><span class="ball ball-red">02</span><span class="ball ball-red">10</span><span class="ball ball-red">13</span><span class="ball ball-red">14</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">蓝球</strong> <span class="ball ball-blue">01</span></div>
+      </div>
+
+      <div class="pred-item">
+        <div class="title">
+          <strong>🎯 胆拖方案5</strong>
+          <button class="copy-btn" onclick="copyDt(5)">📋 复制投注</button>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" style="width:87%"></div></div>
+        <div style="color:rgba(255,255,255,0.5);font-size:0.8em;margin-bottom:5px;">
+          可信度 87% | 胆3+拖5 = 10注 <span class="price-tag">20元</span>
+        </div>
+        <div><strong style="color:#ffd700;">胆码</strong> <span class="ball ball-gold">02</span><span class="ball ball-gold">10</span><span class="ball ball-gold">33</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">拖码</strong> <span class="ball ball-red">15</span><span class="ball ball-red">18</span><span class="ball ball-red">29</span><span class="ball ball-red">30</span><span class="ball ball-red">31</span></div>
+        <div style="margin-top:6px;"><strong style="color:rgba(255,255,255,0.6);">蓝球</strong> <span class="ball ball-blue">15</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 近期开奖（最新20期）</div>
+    <div class="recent-box">
+
+      <div class="recent-row">
+        <span class="p">26046(04-26)</span>
+        <span class="ball ball-red small-ball">02</span><span class="ball ball-red small-ball">09</span><span class="ball ball-red small-ball">10</span><span class="ball ball-red small-ball">24</span><span class="ball ball-red small-ball">31</span><span class="ball ball-red small-ball">33</span> + <span class="ball ball-blue small-ball">16</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26047(04-28)</span>
+        <span class="ball ball-red small-ball">07</span><span class="ball ball-red small-ball">16</span><span class="ball ball-red small-ball">21</span><span class="ball ball-red small-ball">24</span><span class="ball ball-red small-ball">27</span><span class="ball ball-red small-ball">30</span> + <span class="ball ball-blue small-ball">07</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26048(04-30)</span>
+        <span class="ball ball-red small-ball">09</span><span class="ball ball-red small-ball">15</span><span class="ball ball-red small-ball">18</span><span class="ball ball-red small-ball">24</span><span class="ball ball-red small-ball">28</span><span class="ball ball-red small-ball">33</span> + <span class="ball ball-blue small-ball">01</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26049(05-03)</span>
+        <span class="ball ball-red small-ball">03</span><span class="ball ball-red small-ball">04</span><span class="ball ball-red small-ball">14</span><span class="ball ball-red small-ball">15</span><span class="ball ball-red small-ball">18</span><span class="ball ball-red small-ball">20</span> + <span class="ball ball-blue small-ball">02</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26050(05-05)</span>
+        <span class="ball ball-red small-ball">06</span><span class="ball ball-red small-ball">09</span><span class="ball ball-red small-ball">25</span><span class="ball ball-red small-ball">27</span><span class="ball ball-red small-ball">28</span><span class="ball ball-red small-ball">30</span> + <span class="ball ball-blue small-ball">03</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26051(05-07)</span>
+        <span class="ball ball-red small-ball">09</span><span class="ball ball-red small-ball">14</span><span class="ball ball-red small-ball">15</span><span class="ball ball-red small-ball">16</span><span class="ball ball-red small-ball">29</span><span class="ball ball-red small-ball">30</span> + <span class="ball ball-blue small-ball">10</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26052(05-10)</span>
+        <span class="ball ball-red small-ball">01</span><span class="ball ball-red small-ball">03</span><span class="ball ball-red small-ball">11</span><span class="ball ball-red small-ball">22</span><span class="ball ball-red small-ball">26</span><span class="ball ball-red small-ball">31</span> + <span class="ball ball-blue small-ball">11</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26053(05-12)</span>
+        <span class="ball ball-red small-ball">01</span><span class="ball ball-red small-ball">02</span><span class="ball ball-red small-ball">03</span><span class="ball ball-red small-ball">08</span><span class="ball ball-red small-ball">13</span><span class="ball ball-red small-ball">14</span> + <span class="ball ball-blue small-ball">02</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26054(05-14)</span>
+        <span class="ball ball-red small-ball">13</span><span class="ball ball-red small-ball">20</span><span class="ball ball-red small-ball">25</span><span class="ball ball-red small-ball">29</span><span class="ball ball-red small-ball">30</span><span class="ball ball-red small-ball">33</span> + <span class="ball ball-blue small-ball">02</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26055(05-17)</span>
+        <span class="ball ball-red small-ball">04</span><span class="ball ball-red small-ball">11</span><span class="ball ball-red small-ball">24</span><span class="ball ball-red small-ball">25</span><span class="ball ball-red small-ball">32</span><span class="ball ball-red small-ball">33</span> + <span class="ball ball-blue small-ball">13</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26056(05-19)</span>
+        <span class="ball ball-red small-ball">10</span><span class="ball ball-red small-ball">19</span><span class="ball ball-red small-ball">21</span><span class="ball ball-red small-ball">22</span><span class="ball ball-red small-ball">31</span><span class="ball ball-red small-ball">33</span> + <span class="ball ball-blue small-ball">05</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26057(05-21)</span>
+        <span class="ball ball-red small-ball">01</span><span class="ball ball-red small-ball">10</span><span class="ball ball-red small-ball">22</span><span class="ball ball-red small-ball">24</span><span class="ball ball-red small-ball">28</span><span class="ball ball-red small-ball">30</span> + <span class="ball ball-blue small-ball">07</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26058(05-24)</span>
+        <span class="ball ball-red small-ball">01</span><span class="ball ball-red small-ball">04</span><span class="ball ball-red small-ball">07</span><span class="ball ball-red small-ball">21</span><span class="ball ball-red small-ball">29</span><span class="ball ball-red small-ball">30</span> + <span class="ball ball-blue small-ball">01</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26059(05-26)</span>
+        <span class="ball ball-red small-ball">08</span><span class="ball ball-red small-ball">16</span><span class="ball ball-red small-ball">26</span><span class="ball ball-red small-ball">28</span><span class="ball ball-red small-ball">29</span><span class="ball ball-red small-ball">30</span> + <span class="ball ball-blue small-ball">15</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26060(05-28)</span>
+        <span class="ball ball-red small-ball">07</span><span class="ball ball-red small-ball">09</span><span class="ball ball-red small-ball">10</span><span class="ball ball-red small-ball">16</span><span class="ball ball-red small-ball">22</span><span class="ball ball-red small-ball">27</span> + <span class="ball ball-blue small-ball">11</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26061(05-31)</span>
+        <span class="ball ball-red small-ball">01</span><span class="ball ball-red small-ball">04</span><span class="ball ball-red small-ball">05</span><span class="ball ball-red small-ball">15</span><span class="ball ball-red small-ball">23</span><span class="ball ball-red small-ball">28</span> + <span class="ball ball-blue small-ball">07</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26062(06-02)</span>
+        <span class="ball ball-red small-ball">02</span><span class="ball ball-red small-ball">04</span><span class="ball ball-red small-ball">07</span><span class="ball ball-red small-ball">14</span><span class="ball ball-red small-ball">28</span><span class="ball ball-red small-ball">29</span> + <span class="ball ball-blue small-ball">09</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26063(06-04)</span>
+        <span class="ball ball-red small-ball">02</span><span class="ball ball-red small-ball">08</span><span class="ball ball-red small-ball">25</span><span class="ball ball-red small-ball">28</span><span class="ball ball-red small-ball">30</span><span class="ball ball-red small-ball">31</span> + <span class="ball ball-blue small-ball">02</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26064(06-07)</span>
+        <span class="ball ball-red small-ball">01</span><span class="ball ball-red small-ball">09</span><span class="ball ball-red small-ball">15</span><span class="ball ball-red small-ball">18</span><span class="ball ball-red small-ball">29</span><span class="ball ball-red small-ball">33</span> + <span class="ball ball-blue small-ball">15</span>
+      </div>
+
+      <div class="recent-row">
+        <span class="p">26065(06-09)</span>
+        <span class="ball ball-red small-ball">07</span><span class="ball ball-red small-ball">08</span><span class="ball ball-red small-ball">16</span><span class="ball ball-red small-ball">24</span><span class="ball ball-red small-ball">30</span><span class="ball ball-red small-ball">32</span> + <span class="ball ball-blue small-ball">02</span>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>⚠️ 彩票有风险，投注需谨慎。本预测基于历史数据统计，仅供参考娱乐。</footer>
+</div>
+
+<script>
+const results = [{"dan": [9, 24, 30], "tuo": [1, 2, 13, 15, 22], "blue": 2, "confidence": 88}, {"dan": [2, 22, 30], "tuo": [1, 13, 25, 28, 33], "blue": 7, "confidence": 84}, {"dan": [1, 25, 28], "tuo": [2, 8, 22, 29, 33], "blue": 5, "confidence": 90}, {"dan": [3, 8, 24], "tuo": [1, 2, 10, 13, 14], "blue": 1, "confidence": 81}, {"dan": [2, 10, 33], "tuo": [15, 18, 29, 30, 31], "blue": 15, "confidence": 87}];
+
+new Chart(document.getElementById('redChart'), {
+  type:'bar',
+  data:{labels:Array.from({length:33},(_,i)=>i+1),datasets:[{label:'出现次数',data:[24, 28, 24, 18, 14, 17, 17, 18, 25, 20, 11, 13, 27, 15, 17, 14, 13, 19, 17, 12, 10, 22, 19, 24, 22, 13, 14, 19, 16, 26, 16, 17, 19],backgroundColor:'rgba(102,126,234,0.6)',borderColor:'#667eea',borderWidth:1,borderRadius:3}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false},ticks:{color:'rgba(255,255,255,0.5)'}}}}
+});
+
+new Chart(document.getElementById('blueChart'), {
+  type:'bar',
+  data:{labels:Array.from({length:16},(_,i)=>i+1),datasets:[{label:'出现次数',data:[8, 10, 7, 6, 6, 5, 7, 6, 2, 12, 5, 5, 7, 2, 7, 5],backgroundColor:'rgba(116,185,255,0.6)',borderColor:'#74b9ff',borderWidth:1,borderRadius:3}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false},ticks:{color:'rgba(255,255,255,0.5)'}}}}
+});
+
+function copyDt(i) {
+  const r = results[i-1];
+  const text = '胆码: ' + r.dan.join(' ') + '  拖码: ' + r.tuo.join(' ') + '  蓝球: ' + r.blue;
+  navigator.clipboard.writeText(text).then(()=>{
+    const t = document.getElementById('toast');
+    t.style.display = 'block';
+    setTimeout(()=>t.style.display='none',2000);
+  });
+}
+</script>
+</body>
+</html>
